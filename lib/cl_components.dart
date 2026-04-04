@@ -4,6 +4,9 @@ library cl_components;
 export 'src/theme/cl_theme_data.dart';
 export 'src/theme/cl_theme_provider.dart';
 
+// Buttons
+export 'src/buttons/cl_button.dart';
+
 // Layout
 export 'src/layout/cl_divider.dart';
 
