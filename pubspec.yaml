@@ -1,6 +1,6 @@
 name: cl_components
 description: CL UI Components for Generazione AI projects
-version: 1.0.0
+version: 2.0.0
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -9,13 +9,69 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  font_awesome_flutter: ^10.8.0
-  flutter_svg: ^2.1.0
+
+  # Theme & styling
   google_fonts: ^6.2.1
   responsive_framework: ^1.5.1
-  intl: ^0.20.2
+  font_awesome_flutter: ^10.8.0
+  flutter_svg: ^2.1.0
+
+  # State & DI
   provider: ^6.1.2
+
+  # Core utilities
+  intl: ^0.20.2
+  equatable: ^2.0.5
+  http: ^1.3.0
+  rxdart: ^0.28.0
+  shared_preferences: any
+  path_provider: any
+  path: any
+  collection: any
+
+  # Form & input
   file_picker: ^8.1.4
+  flex_color_picker: ^3.7.0
+  month_picker_dialog: ^6.0.3
+  calendar_date_picker2: ^2.0.0
+  auto_size_text: ^3.0.0
+
+  # Icons
+  hugeicons: ^1.1.5
+
+  # Data display
+  barcode_widget: ^2.0.4
+  syncfusion_flutter_charts: ^29.1.38
+  syncfusion_flutter_calendar: ^29.1.38
+  fl_chart: ^1.1.1
+
+  # Media & documents
+  video_player: ^2.9.5
+  chewie: ^1.11.3
+  pdf: ^3.10.0
+  pdfrx: ^2.2.4
+
+  # Animation
+  flutter_animate: ^4.2.0+1
+
+  # Table & list
+  diffutil_sliverlist: ^0.5.1
+
+  # Drag & drop
+  desktop_drop: ^0.6.0
+  flutter_dropzone: ^4.2.1
+
+  # Interactive
+  custom_interactive_viewer: ^0.0.9
+
+  # Misc
+  universal_html: ^2.2.4
+  star_rating: ^0.11.0
+  flutter_hooks: ^0.21.2
+  json_annotation: any
+  mime_type: ^1.0.1
+  uuid: any
+  mime: any
 
 dev_dependencies:
   flutter_test:

@@ -1,0 +1,334 @@
+import 'dart:math';
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import 'utils/providers/module_theme.util.provider.dart';
+import 'utils/shared_manager.util.dart';
+
+const kThemeModeKey = '__theme_mode__';
+
+/// --- Utils ---------------------------------------------------------------
+
+class ColorUtils {
+  const ColorUtils._();
+
+  static Color fromHex(String code) => Color(int.parse(code.substring(1, 7), radix: 16) + 0xFF000000);
+
+  static String toHex(Color color, {bool leadingHashSign = true}) =>
+      '${leadingHashSign ? '#' : ''}'
+      '${color.alpha.toRadixString(16).padLeft(2, '0')}'
+      '${color.red.toRadixString(16).padLeft(2, '0')}'
+      '${color.green.toRadixString(16).padLeft(2, '0')}'
+      '${color.blue.toRadixString(16).padLeft(2, '0')}';
+}
+
+/// --- Theme root ----------------------------------------------------------
+
+abstract class CLTheme {
+  const CLTheme({
+    required this.primary,
+    required this.secondary,
+    required this.alternate,
+    required this.primaryText,
+    required this.secondaryText,
+    required this.primaryBackground,
+    required this.secondaryBackground,
+    required this.tertiaryBackground,
+    required this.success,
+    required this.warning,
+    required this.danger,
+    required this.info,
+    required this.borderColor,
+    required this.background,
+    required this.fillColor,
+  });
+
+  static Color hexToColor(String code) => ColorUtils.fromHex(code);
+
+  static String toHex(Color color, {bool leadingHashSign = true}) => ColorUtils.toHex(color, leadingHashSign: leadingHashSign);
+
+  static ThemeMode get themeMode {
+    final darkMode = SharedManager.getBool(kThemeModeKey);
+    return darkMode == null ? ThemeMode.system : (darkMode ? ThemeMode.dark : ThemeMode.light);
+  }
+
+  static Future<void> saveThemeMode(ThemeMode mode) async {
+    await SharedManager.setBool(kThemeModeKey, mode == ThemeMode.dark);
+  }
+
+  static CLTheme of(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    try {
+      final mp = Provider.of<ModuleThemeProvider>(context);
+      return isDark ? mp.darkTheme : mp.lightTheme;
+    } catch (_) {
+      return isDark ? dark : light;
+    }
+  }
+
+  // Singletons (default ID/azzurro)
+  static const CLTheme light = LightModeTheme();
+  static const CLTheme dark = DarkModeTheme();
+
+  // Palette
+  final Color primary;
+  final Color secondary;
+  final Color alternate;
+  final Color primaryText;
+  final Color secondaryText;
+  final Color primaryBackground;
+  final Color secondaryBackground;
+  final Color tertiaryBackground;
+  final Color success;
+  final Color warning;
+  final Color danger;
+  final Color info;
+  final Color borderColor;
+  final Color background;
+  final Color fillColor;
+
+  /// Typography provider
+  Typography get typography => ThemeTypography(this);
+
+  /// --------- Getter compatibili (no refactor in app) ----------
+  TextStyle get heading1 => typography.heading1;
+
+  TextStyle get heading2 => typography.heading2;
+
+  TextStyle get heading3 => typography.heading3;
+
+  TextStyle get heading4 => typography.heading4;
+
+  TextStyle get heading5 => typography.heading5;
+
+  TextStyle get heading6 => typography.heading6;
+
+  TextStyle get title => typography.title;
+
+  TextStyle get subTitle => typography.subTitle;
+
+  TextStyle get bodyText => typography.bodyText;
+
+  TextStyle get smallText => typography.smallText;
+
+  TextStyle get bodyLabel => typography.bodyLabel;
+
+  TextStyle get bodyLabelTableHead => typography.bodyLabelTableHead;
+
+  TextStyle get smallLabel => typography.smallLabel;
+
+  /// ------------------------------------------------------------
+
+  // Utility stabile (niente stato)
+  Color generateColorFromText(String text) {
+    final int hash = text.hashCode;
+    final Random random = Random(hash);
+    return Color.fromARGB(255, 100 + random.nextInt(155), 100 + random.nextInt(155), 100 + random.nextInt(155));
+  }
+}
+
+/// --- Light / Dark --------------------------------------------------------
+
+class LightModeTheme extends CLTheme {
+  const LightModeTheme({
+    Color primary = const Color(0xFF0C8EC7),
+    Color secondary = const Color(0xFF0A7AAD),
+  }) : super(
+        primary: primary,
+        secondary: secondary,
+        alternate: const Color(0xFFE8EBF0),
+        primaryText: const Color(0xFF2E2E38),
+        secondaryText: const Color(0xFF6B7080),
+        primaryBackground: const Color(0xFFFAF9F7),
+        secondaryBackground: const Color(0xFFFFFFFF),
+        tertiaryBackground: const Color(0xFFF0F1F4),
+        success: const Color(0xFF16A34A),
+        warning: const Color(0xFFD97706),
+        danger: const Color(0xFFDC2626),
+        info: const Color(0xFF0C8EC7),
+        borderColor: const Color(0xFFE8EBF0),
+        background: const Color(0xFFFAF9F7),
+        fillColor: const Color(0xFFF0F1F4),
+      );
+}
+
+class DarkModeTheme extends CLTheme {
+  const DarkModeTheme({
+    Color primary = const Color(0xFF3BA8D8),
+    Color secondary = const Color(0xFF0C8EC7),
+  }) : super(
+        primary: primary,
+        secondary: secondary,
+        alternate: const Color(0xFF2A2A34),
+        primaryText: const Color(0xFFE8E8EC),
+        secondaryText: const Color(0xFF8B8FA0),
+        primaryBackground: const Color(0xFF121218),
+        secondaryBackground: const Color(0xFF1E1E26),
+        tertiaryBackground: const Color(0xFF2A2A34),
+        success: const Color(0xFF4ADE80),
+        warning: const Color(0xFFFBBF24),
+        danger: const Color(0xFFF87171),
+        info: const Color(0xFF3BA8D8),
+        borderColor: const Color(0xFF2A2A34),
+        background: const Color(0xFF121218),
+        fillColor: const Color(0xFF1E1E26),
+      );
+}
+
+/// --- Typography ----------------------------------------------------------
+
+abstract class Typography {
+  TextStyle get heading1;
+
+  TextStyle get heading2;
+
+  TextStyle get heading3;
+
+  TextStyle get heading4;
+
+  TextStyle get heading5;
+
+  TextStyle get heading6;
+
+  TextStyle get title;
+
+  TextStyle get subTitle;
+
+  TextStyle get bodyText;
+
+  TextStyle get smallText;
+
+  TextStyle get bodyLabel;
+
+  TextStyle get bodyLabelTableHead;
+
+  TextStyle get smallLabel;
+}
+
+class ThemeTypography extends Typography {
+  ThemeTypography(this.theme);
+
+  final CLTheme theme;
+  static const _bodyFamily = 'Inter';
+  static const _displayFamily = 'Plus Jakarta Sans';
+
+  /// Body/UI text helper (Inter)
+  TextStyle _text(
+    double size, {
+    FontWeight? weight,
+    Color? color,
+    double? letterSpacing,
+    FontStyle? fontStyle,
+    TextDecoration? decoration,
+    double? lineHeight,
+  }) {
+    return GoogleFonts.getFont(
+      _bodyFamily,
+      color: color ?? theme.primaryText,
+      fontSize: size,
+      letterSpacing: letterSpacing ?? 0,
+      fontWeight: weight,
+      fontStyle: fontStyle,
+      decoration: decoration,
+      height: lineHeight,
+    );
+  }
+
+  /// Display/heading text helper (Plus Jakarta Sans)
+  TextStyle _display(
+    double size, {
+    FontWeight? weight,
+    Color? color,
+    double? letterSpacing,
+    double? lineHeight,
+  }) {
+    return GoogleFonts.getFont(
+      _displayFamily,
+      color: color ?? theme.primaryText,
+      fontSize: size,
+      letterSpacing: letterSpacing ?? 0,
+      fontWeight: weight,
+      height: lineHeight,
+    );
+  }
+
+  // Headings use Plus Jakarta Sans (display font)
+  @override
+  TextStyle get heading1 => _display(32, weight: FontWeight.w800, letterSpacing: -0.03 * 32, lineHeight: 1.2);
+
+  @override
+  TextStyle get heading2 => _display(24, weight: FontWeight.w700, letterSpacing: -0.02 * 24, lineHeight: 1.2);
+
+  @override
+  TextStyle get heading3 => _display(18, weight: FontWeight.w700, letterSpacing: -0.01 * 18, lineHeight: 1.3);
+
+  // UI elements use Inter (body font)
+  @override
+  TextStyle get heading4 => _text(16, weight: FontWeight.w600, letterSpacing: -0.01 * 16, lineHeight: 1.3);
+
+  @override
+  TextStyle get heading5 => _text(14, weight: FontWeight.w600, lineHeight: 1.4);
+
+  @override
+  TextStyle get heading6 => _text(12, weight: FontWeight.w600, lineHeight: 1.4);
+
+  @override
+  TextStyle get title => _text(16, weight: FontWeight.w600, letterSpacing: -0.01 * 16, lineHeight: 1.4);
+
+  @override
+  TextStyle get subTitle => _text(14, weight: FontWeight.w500, lineHeight: 1.5);
+
+  @override
+  TextStyle get bodyText => _text(14, weight: FontWeight.w400, lineHeight: 1.5);
+
+  @override
+  TextStyle get smallText => _text(12, weight: FontWeight.w400, lineHeight: 1.4);
+
+  @override
+  TextStyle get bodyLabel => _text(14, weight: FontWeight.w500, color: theme.secondaryText, lineHeight: 1.5);
+
+  @override
+  TextStyle get bodyLabelTableHead => _text(11, weight: FontWeight.w600, color: theme.secondaryText, letterSpacing: 0.05 * 11, lineHeight: 1.4);
+
+  @override
+  TextStyle get smallLabel => _text(12, weight: FontWeight.w500, color: theme.secondaryText, lineHeight: 1.4);
+}
+
+/// --- TextStyle extension --------------------------------------------------
+
+extension TextStyleHelper on TextStyle {
+  TextStyle override({
+    String? fontFamily,
+    Color? color,
+    double? fontSize,
+    FontWeight? fontWeight,
+    double? letterSpacing,
+    FontStyle? fontStyle,
+    bool useGoogleFonts = true,
+    TextDecoration? decoration,
+    double? lineHeight,
+  }) {
+    if (useGoogleFonts) {
+      return GoogleFonts.getFont(
+        fontFamily ?? 'Inter',
+        color: color ?? this.color,
+        fontSize: fontSize ?? this.fontSize,
+        letterSpacing: letterSpacing ?? this.letterSpacing,
+        fontWeight: fontWeight ?? this.fontWeight,
+        fontStyle: fontStyle ?? this.fontStyle,
+        decoration: decoration,
+        height: lineHeight,
+      );
+    }
+    return copyWith(
+      fontFamily: fontFamily,
+      color: color,
+      fontSize: fontSize,
+      letterSpacing: letterSpacing,
+      fontWeight: FontWeight.w300,
+      fontStyle: fontStyle,
+      decoration: decoration,
+      height: lineHeight,
+    );
+  }
+}

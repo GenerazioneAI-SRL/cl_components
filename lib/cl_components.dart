@@ -1,60 +1,90 @@
+/// CL Components — UI component library for Generazione AI projects.
 library cl_components;
 
 // Theme
-export 'src/theme/cl_theme_data.dart';
-export 'src/theme/cl_theme_provider.dart';
-
-// Buttons
-export 'src/buttons/cl_button.dart';
+export 'cl_theme.dart';
 
 // Layout
-export 'src/layout/cl_divider.dart';
-export 'src/layout/cl_container.dart';
-export 'src/layout/cl_card.dart';
-export 'src/layout/cl_section_card.dart';
+export 'layout/constants/sizes.constant.dart';
 
-// States
-export 'src/states/cl_shimmer.dart';
-export 'src/states/cl_empty_state.dart';
+// Buttons
+export 'widgets/buttons/cl_button.widget.dart';
+export 'widgets/buttons/cl_outline_button.widget.dart';
+export 'widgets/buttons/cl_ghost_button.widget.dart';
+export 'widgets/buttons/cl_soft_button.widget.dart';
+export 'widgets/buttons/cl_action_text.widget.dart';
+export 'widgets/buttons/cl_confirm_dialog.dart';
+
+// Layout widgets
+export 'widgets/cl_card.widget.dart';
+export 'widgets/cl_container.widget.dart';
+export 'widgets/cl_divider.widget.dart';
+export 'widgets/cl_section_card.widget.dart';
 
 // Form
-export 'src/form/cl_text_field.dart';
-export 'src/form/cl_password_field.dart';
-export 'src/form/cl_checkbox.dart';
-export 'src/form/cl_date_field.dart';
-export 'src/form/cl_time_field.dart';
-export 'src/form/cl_color_field.dart';
-export 'src/form/cl_dropdown.dart';
-export 'src/form/cl_file_picker.dart';
+export 'widgets/cl_text_field.widget.dart';
+export 'widgets/cl_checkbox.widget.dart';
+export 'widgets/cl_dropdown/cl_dropdown.dart';
+export 'widgets/cl_file_picker.widget.dart';
 
-// Data
-export 'src/data/cl_avatar.dart';
-export 'src/data/cl_status_badge.dart';
-export 'src/data/cl_pill.dart';
-export 'src/data/cl_role_badge.dart';
-export 'src/data/cl_code_text.dart';
-export 'src/data/cl_clipboard.dart';
-export 'src/data/cl_media_viewer.dart';
-export 'src/data/cl_data_table/cl_data_table.dart';
+// Data display
+export 'widgets/avatar.widget.dart';
+export 'widgets/cl_clipboard.widget.dart';
+export 'widgets/cl_code_text.widget.dart';
+export 'widgets/cl_pill.widget.dart';
+export 'widgets/cl_role_badge.widget.dart';
+export 'widgets/cl_status_badge.widget.dart';
+export 'widgets/cl_media_viewer.widget.dart';
 
 // Navigation
-export 'src/navigation/cl_page_header.dart';
-export 'src/navigation/cl_tab_view.dart';
-export 'src/navigation/cl_pagination.dart';
-export 'src/navigation/cl_view_toggle.dart';
-export 'src/navigation/cl_popup_menu.dart';
-export 'src/navigation/cl_bottom_nav.dart';
-
-// Progress
-export 'src/progress/cl_lifecycle_progress.dart';
-export 'src/progress/cl_confirm_reject_buttons.dart';
-
-// Grid
-export 'src/grid/cl_responsive_grid.dart';
+export 'widgets/cl_page_header.widget.dart';
+export 'widgets/cl_pagination.widget.dart';
+export 'widgets/cl_popup_menu.widget.dart';
+export 'widgets/cl_view_toggle.widget.dart';
+export 'widgets/cl_tabs/cl_tab_view.widget.dart';
 
 // Feedback
-export 'src/feedback/cl_info_banner.dart';
-export 'src/feedback/cl_alert.dart';
+export 'widgets/cl_alert.widget.dart';
+export 'widgets/cl_info_banner.widget.dart';
+export 'widgets/alertmanager/alert_manager.dart';
+
+// Progress
+export 'widgets/cl_lifecycle_progress.widget.dart';
+export 'widgets/cl_confirm_refuse_buttons.widget.dart';
+
+// States
+export 'widgets/cl_shimmer.widget.dart';
+export 'widgets/loading.widget.dart';
+
+// Calendar
+export 'widgets/cl_calendar.widget.dart';
+export 'widgets/cl_month_calendar.widget.dart';
+
+// Charts
+export 'widgets/charts/cl_bar_chart.widget.dart';
+export 'widgets/charts/cl_pie_chart.widget.dart';
+export 'widgets/charts/cl_spline_chart.widget.dart';
+export 'widgets/charts/cl_spline_area_chart.widget.dart';
+
+// Data table
+export 'widgets/paged_datatable/paged_datatable.dart';
+
+// Org chart
+export 'widgets/cl_org_chart/org_chart.dart';
+
+// Survey
+export 'widgets/cl_survey/survey.dart';
+
+// Grid
+export 'widgets/cl_responsive_grid/flutter_responsive_flex_grid.dart';
+
+// Utils
+export 'utils/shared_manager.util.dart';
+export 'utils/providers/module_theme.util.provider.dart';
+export 'utils/models/custom_model.model.dart';
+export 'utils/download_extension_io.dart';
 
 // Models
-export 'models/cl_form_mode.dart';
+export 'models/user_graph_data.model.dart';
+export 'models/city_graph_data.model.dart';
+
