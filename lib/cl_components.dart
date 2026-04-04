@@ -25,6 +25,7 @@ export 'src/form/cl_date_field.dart';
 export 'src/form/cl_time_field.dart';
 export 'src/form/cl_color_field.dart';
 export 'src/form/cl_dropdown.dart';
+export 'src/form/cl_file_picker.dart';
 
 // Data
 export 'src/data/cl_avatar.dart';
@@ -33,6 +34,8 @@ export 'src/data/cl_pill.dart';
 export 'src/data/cl_role_badge.dart';
 export 'src/data/cl_code_text.dart';
 export 'src/data/cl_clipboard.dart';
+export 'src/data/cl_media_viewer.dart';
+export 'src/data/cl_data_table/cl_data_table.dart';
 
 // Navigation
 export 'src/navigation/cl_page_header.dart';

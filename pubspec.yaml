@@ -15,6 +15,7 @@ dependencies:
   responsive_framework: ^1.5.1
   intl: ^0.20.2
   provider: ^6.1.2
+  file_picker: ^8.1.4
 
 dev_dependencies:
   flutter_test:
