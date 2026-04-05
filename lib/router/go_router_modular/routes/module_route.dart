@@ -18,6 +18,10 @@ class ModuleRoute extends ModularRoute {
   /// Se true, il modulo compare nel side menu.
   final bool showInSideMenu;
 
+  /// Se true, cliccando la tab nella top bar si naviga alla root del modulo.
+  /// Se false, cambia solo il menu laterale senza navigare.
+  final bool navigateOnTabTap;
+
   ModuleRoute({
     required this.module,
     this.icon,
@@ -25,6 +29,7 @@ class ModuleRoute extends ModularRoute {
     this.isVisible = true,
     this.showInTopBar = true,
     this.showInSideMenu = true,
+    this.navigateOnTabTap = false,
   }) {
     name = module.moduleRoute.name;
     path = module.moduleRoute.path;

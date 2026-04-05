@@ -593,7 +593,8 @@ class _TenantCard extends StatelessWidget {
 
 /// Voce di menu — stile coerente per tutte le label.
 /// Active: suite color tint bg, weight 600, border-right 2.5px.
-class _MenuTile extends StatelessWidget {
+/// Hover: leggero tint di sfondo.
+class _MenuTile extends StatefulWidget {
   const _MenuTile({required this.label, required this.selected, required this.isMobile, required this.onTap, this.indent = 0});
 
   final String label;
@@ -603,35 +604,58 @@ class _MenuTile extends StatelessWidget {
   final int indent;
 
   @override
+  State<_MenuTile> createState() => _MenuTileState();
+}
+
+class _MenuTileState extends State<_MenuTile> {
+  bool _hovered = false;
+
+  @override
   Widget build(BuildContext context) {
     final theme = CLTheme.of(context);
     final suiteColor = theme.primary;
 
+    Color bg;
+    if (widget.selected) {
+      bg = suiteColor.withValues(alpha: 0.10);
+    } else if (_hovered) {
+      bg = suiteColor.withValues(alpha: 0.05);
+    } else {
+      bg = Colors.transparent;
+    }
+
     return GestureDetector(
-      onTap: onTap,
+      onTap: widget.onTap,
       child: MouseRegion(
         cursor: SystemMouseCursors.click,
-        child: Container(
+        onEnter: (_) => setState(() => _hovered = true),
+        onExit: (_) => setState(() => _hovered = false),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
           padding: EdgeInsets.fromLTRB(
             14,
-            isMobile ? 11 : 10,
+            widget.isMobile ? 11 : 10,
             14,
-            isMobile ? 11 : 10,
+            widget.isMobile ? 11 : 10,
           ),
           decoration: BoxDecoration(
-            color: selected ? suiteColor.withValues(alpha: 0.10) : Colors.transparent,
+            color: bg,
             border: Border(
               right: BorderSide(
-                color: selected ? suiteColor : Colors.transparent,
+                color: widget.selected ? suiteColor : Colors.transparent,
                 width: 2.5,
               ),
             ),
           ),
           child: Text(
-            label,
+            widget.label,
             style: theme.bodyLabel.copyWith(
-              fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-              color: selected ? suiteColor : theme.secondaryText,
+              fontWeight: widget.selected ? FontWeight.w600 : FontWeight.w400,
+              color: widget.selected
+                  ? suiteColor
+                  : _hovered
+                      ? theme.primaryText
+                      : theme.secondaryText,
               fontSize: 13,
               height: 1.4,
             ),

@@ -114,16 +114,22 @@ class _AppLayoutState extends State<AppLayout> with WidgetsBindingObserver {
           Expanded(
             child: Row(
               children: [
-                if (showSidebar)
-                  Container(
-                    width: 220,
-                    decoration: BoxDecoration(
-                      color: theme.secondaryBackground,
-                      border: Border(right: BorderSide(color: theme.borderColor, width: 1)),
-                    ),
-                    clipBehavior: Clip.hardEdge,
-                    child: MenuLayout(routes: widget.shellRoutes, moduleTabsEnabled: true),
-                  ),
+                AnimatedSize(
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeInOut,
+                  alignment: Alignment.centerLeft,
+                  child: showSidebar
+                      ? Container(
+                          width: 220,
+                          decoration: BoxDecoration(
+                            color: theme.secondaryBackground,
+                            border: Border(right: BorderSide(color: theme.borderColor, width: 1)),
+                          ),
+                          clipBehavior: Clip.hardEdge,
+                          child: MenuLayout(routes: widget.shellRoutes, moduleTabsEnabled: true),
+                        )
+                      : const SizedBox.shrink(),
+                ),
                 Expanded(child: widget.shellChild),
                 const NotificationsPanel(),
               ],
@@ -318,7 +324,7 @@ class _TopBarState extends State<_TopBar> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: widget.modules.length, vsync: this, animationDuration: Duration.zero);
+    _tabController = TabController(length: widget.modules.length, vsync: this, animationDuration: const Duration(milliseconds: 200));
     _tabController.index = _currentTabIndex();
     _tabController.addListener(_onTabTapped);
   }
@@ -331,7 +337,8 @@ class _TopBarState extends State<_TopBar> with SingleTickerProviderStateMixin {
     if (_tabController.length != widget.modules.length) {
       _tabController.removeListener(_onTabTapped);
       _tabController.dispose();
-      _tabController = TabController(length: widget.modules.length, vsync: this, initialIndex: desired, animationDuration: Duration.zero);
+      _tabController =
+          TabController(length: widget.modules.length, vsync: this, initialIndex: desired, animationDuration: const Duration(milliseconds: 200));
       _tabController.addListener(_onTabTapped);
     } else if (_tabController.index != desired) {
       _tabController.removeListener(_onTabTapped);
@@ -360,8 +367,9 @@ class _TopBarState extends State<_TopBar> with SingleTickerProviderStateMixin {
     final mod = widget.modules[_tabController.index];
     final modEnum = _moduleEnumFromPath(mod.path);
     widget.moduleTheme.selectModule(modEnum);
-    // Naviga alla root del modulo selezionato
-    context.go(mod.path);
+    if (mod.navigateOnTabTap) {
+      context.go(mod.path);
+    }
   }
 
   /// Restituisce il colore primario light per un modulo dal suo path.
