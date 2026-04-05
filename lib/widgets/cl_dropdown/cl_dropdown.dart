@@ -3,7 +3,6 @@ import 'package:hugeicons/hugeicons.dart';
 import 'package:provider/provider.dart';
 
 import '../../cl_theme.dart';
-import '../../layout/constants/sizes.constant.dart';
 import '../cl_text_field.widget.dart';
 import 'dropdown_state.dart';
 

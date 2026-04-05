@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' as INTL;
 
-import '../../cl_theme.dart';
 
 class AnalogClockPainter extends CustomPainter {
   DateTime datetime;

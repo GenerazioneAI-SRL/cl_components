@@ -81,9 +81,14 @@ class CLApp {
       refreshListenable:
           Listenable.merge([authState, navigationState, appState, errorState]),
       redirect: (context, state) {
-        if (config.customRedirect != null) {
-          final result = config.customRedirect!(context, state);
-          if (result != null) return result;
+        try {
+          if (config.customRedirect != null) {
+            final result = config.customRedirect!(context, state);
+            if (result != null) return result;
+          }
+        } catch (_) {
+          // Durante hot-restart, il context può essere deactivato
+          // e i Provider non sono ancora disponibili
         }
         return null;
       },

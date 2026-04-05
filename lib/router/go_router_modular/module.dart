@@ -341,6 +341,7 @@ abstract class Module {
       return NoTransitionPage(
         key: state.pageKey,
         child: route.child(context, state),
+        arguments: allParams,
       );
     }
 

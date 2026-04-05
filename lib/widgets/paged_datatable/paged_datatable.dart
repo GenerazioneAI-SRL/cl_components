@@ -2,13 +2,10 @@ import '../../utils/models/pagination.model.dart';
 import 'dart:async';
 import 'dart:collection';
 import 'dart:math';
-import 'package:auto_size_text/auto_size_text.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:cl_components/cl_theme.dart';
 import 'package:cl_components/layout/constants/sizes.constant.dart';
 import 'package:cl_components/widgets/buttons/cl_button.widget.dart';
-import 'package:cl_components/widgets/buttons/cl_outline_button.widget.dart';
 import 'package:cl_components/widgets/cl_shimmer.widget.dart';
 import 'package:cl_components/widgets/cl_text_field.widget.dart';
 import 'package:cl_components/widgets/cl_container.widget.dart';
@@ -22,7 +19,6 @@ import 'package:intl/intl.dart' hide TextDirection;
 import 'package:provider/provider.dart';
 import 'package:equatable/equatable.dart';
 import 'package:responsive_framework/responsive_framework.dart';
-import 'package:cl_components/widgets/cl_responsive_grid/flutter_responsive_flex_grid.dart';
 
 part 'controls.dart';
 

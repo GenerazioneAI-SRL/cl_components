@@ -30,7 +30,7 @@ class _BreadcrumbsLayoutState extends State<BreadcrumbsLayout> {
                       navigationState.breadcrumbs.asMap().entries.map((entry) {
                         var segment = entry.value;
                         String label = segment.name;
-                        bool isLast = navigationState.breadcrumbs.last.name == label;
+                        bool isLast = entry.key == navigationState.breadcrumbs.length - 1;
                         Widget content;
                         if (isLast) {
                           content = Text(label, style: CLTheme.of(context).bodyText.merge(TextStyle(color: CLTheme.of(context).primary)));
