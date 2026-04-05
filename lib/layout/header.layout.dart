@@ -17,6 +17,7 @@ class HeaderLayout extends StatefulWidget {
   final double? headerHeight;
   final Color? iconColor;
   final double? iconSize;
+
   /// Callback quando l'utente clicca "Profilo". Se null, la voce non viene mostrata.
   final VoidCallback? onProfileTap;
 
@@ -142,16 +143,16 @@ class _HeaderLayoutState extends State<HeaderLayout> {
       maxWidth: 260,
       items: [
         if (widget.onProfileTap != null)
-        CLPopupMenuItem(
-          content: Row(
-            children: [
-              HugeIcon(icon: HugeIcons.strokeRoundedUser, color: CLTheme.of(context).primaryText, size: Sizes.medium),
-              const SizedBox(width: 12),
-              Text('Profilo', style: CLTheme.of(context).bodyText),
-            ],
+          CLPopupMenuItem(
+            content: Row(
+              children: [
+                HugeIcon(icon: HugeIcons.strokeRoundedUser, color: CLTheme.of(context).primaryText, size: Sizes.medium),
+                const SizedBox(width: 12),
+                Text('Profilo', style: CLTheme.of(context).bodyText),
+              ],
+            ),
+            onTap: () => widget.onProfileTap!(),
           ),
-          onTap: () => widget.onProfileTap!(),
-        ),
         CLPopupMenuItem(
           content: Row(
             children: [
@@ -266,18 +267,17 @@ class _HeaderLayoutState extends State<HeaderLayout> {
                     child: Column(
                       children: [
                         if (widget.onProfileTap != null)
-                        _ProfileAction(
-                          icon: HugeIcons.strokeRoundedUserAccount,
-                          label: 'Profilo',
-                          subtitle: 'Visualizza e modifica il profilo',
-                          color: t.primary,
-                          onTap: () {
-                            Navigator.pop(ctx);
-                            widget.onProfileTap!();
-                          },
-                        ),
-                        if (widget.onProfileTap != null)
-                        const SizedBox(height: 8),
+                          _ProfileAction(
+                            icon: HugeIcons.strokeRoundedUserAccount,
+                            label: 'Profilo',
+                            subtitle: 'Visualizza e modifica il profilo',
+                            color: t.primary,
+                            onTap: () {
+                              Navigator.pop(ctx);
+                              widget.onProfileTap!();
+                            },
+                          ),
+                        if (widget.onProfileTap != null) const SizedBox(height: 8),
                         _ProfileAction(
                           icon: HugeIcons.strokeRoundedLogout01,
                           label: 'Logout',

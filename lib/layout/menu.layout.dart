@@ -97,7 +97,7 @@ class _MenuLayoutState extends State<MenuLayout> {
           Expanded(
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
-              padding: EdgeInsets.fromLTRB(Sizes.padding * 0.6, 0, Sizes.padding * 0.6, Sizes.padding),
+              padding: EdgeInsets.fromLTRB(0, 0, 0, Sizes.padding),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: _buildMenuItems(navigationState, isMobile),
@@ -428,7 +428,7 @@ class _MenuLayoutState extends State<MenuLayout> {
       isSelected: isSelected,
       isMobile: isMobile,
       depth: depth,
-      icon: subRoute.buildIcon(size: iconSize, color: iconColor) ?? Icon(Icons.folder_outlined, size: iconSize, color: iconColor),
+      icon: subRoute.buildIcon(size: iconSize, color: iconColor) ?? HugeIcon(icon: HugeIcons.strokeRoundedFolder01, size: iconSize, color: iconColor),
       children: [
         for (var childRoute in subRoute.module.routes)
           if (childRoute is ChildRoute && childRoute.isVisible)
@@ -589,8 +589,10 @@ class _TenantCard extends StatelessWidget {
   }
 }
 
-/// Voce di menu principale con pill indicatore, sfondo e hover
-class _MenuTile extends StatefulWidget {
+/// Voce di menu — design system §8.4
+/// Active: suite color tint bg piena, weight 600, border-left 3px.
+/// Nessun hover, nessuna stondatura, nessun margin.
+class _MenuTile extends StatelessWidget {
   const _MenuTile({required this.label, required this.selected, required this.isMobile, required this.onTap, this.icon});
 
   final String label;
@@ -600,63 +602,40 @@ class _MenuTile extends StatefulWidget {
   final VoidCallback onTap;
 
   @override
-  State<_MenuTile> createState() => _MenuTileState();
-}
-
-class _MenuTileState extends State<_MenuTile> {
-  bool _hovered = false;
-
-  void _safeSetState(VoidCallback fn) {
-    if (!mounted) return;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) setState(fn);
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
     final theme = CLTheme.of(context);
-    final h = widget.isMobile ? 42.0 : 40.0;
+    final suiteColor = theme.primary;
 
-    return MouseRegion(
-      onEnter: (_) => _safeSetState(() => _hovered = true),
-      onExit: (_) => _safeSetState(() => _hovered = false),
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: widget.onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 160),
-          height: h,
-          margin: const EdgeInsets.symmetric(vertical: 1.5),
+    return GestureDetector(
+      onTap: onTap,
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: 14,
+            vertical: isMobile ? 13 : 12,
+          ),
           decoration: BoxDecoration(
-            color: widget.selected
-                ? theme.primary.withValues(alpha: 0.12)
-                : _hovered
-                    ? theme.primary.withValues(alpha: 0.05)
-                    : Colors.transparent,
-            borderRadius: BorderRadius.circular(10),
+            color: selected ? suiteColor.withValues(alpha: 0.10) : Colors.transparent,
+            border: Border(
+              left: BorderSide(
+                color: selected ? suiteColor : Colors.transparent,
+                width: 3,
+              ),
+            ),
           ),
           child: Row(
             children: [
-              // Pill indicatore selezione
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 160),
-                width: 3,
-                height: widget.selected ? 20 : 0,
-                margin: const EdgeInsets.only(left: 2, right: 10),
-                decoration: BoxDecoration(color: theme.primary, borderRadius: BorderRadius.circular(99)),
-              ),
-              if (!widget.selected) const SizedBox(width: 15),
-              // Icona
-              if (widget.icon != null) ...[widget.icon!, const SizedBox(width: 10)],
-              // Label
+              if (icon != null) ...[icon!, const SizedBox(width: 10)],
               Expanded(
                 child: Text(
-                  widget.label,
-                  style: theme.bodyLabel.override(
-                    color: widget.selected ? theme.primary : theme.secondaryText,
-                    fontWeight: widget.selected ? FontWeight.w600 : FontWeight.w500,
-                    fontSize: widget.isMobile ? 13 : 13.5,
+                  label,
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 13,
+                    fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                    color: selected ? suiteColor : const Color(0xFF6B7080),
+                    height: 1.4,
                   ),
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,
@@ -670,7 +649,10 @@ class _MenuTileState extends State<_MenuTile> {
   }
 }
 
-/// Gruppo espandibile con stile coerente
+/// Gruppo espandibile — design system §8.4
+/// Section header in overline style: 9px, uppercase, letter-spacing 0.1em, suite color 60%.
+/// Top level: overline header + accordion figli.
+/// Nested: indented con linea verticale sottile.
 class _MenuGroup extends StatefulWidget {
   const _MenuGroup({
     required this.title,
@@ -697,13 +679,6 @@ class _MenuGroupState extends State<_MenuGroup> with SingleTickerProviderStateMi
   late AnimationController _rotationCtrl;
   bool _hovered = false;
 
-  void _safeSetState(VoidCallback fn) {
-    if (!mounted) return;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) setState(fn);
-    });
-  }
-
   @override
   void initState() {
     super.initState();
@@ -724,74 +699,54 @@ class _MenuGroupState extends State<_MenuGroup> with SingleTickerProviderStateMi
 
   @override
   Widget build(BuildContext context) {
-    final theme = CLTheme.of(context);
     final isNested = widget.depth > 0;
-
-    // Stile diverso per gruppi annidati
     if (isNested) {
-      return _buildNestedGroup(theme);
+      return _buildNestedGroup();
     }
-    return _buildTopLevelGroup(theme);
+    return _buildTopLevelGroup();
   }
 
-  /// Gruppo di primo livello (depth == 0) — stile originale con pill
-  Widget _buildTopLevelGroup(CLTheme theme) {
-    final h = widget.isMobile ? 42.0 : 40.0;
+  /// Gruppo di primo livello — header con icona + label + accordion
+  Widget _buildTopLevelGroup() {
+    final theme = CLTheme.of(context);
+    final suiteColor = theme.primary;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        MouseRegion(
-          onEnter: (_) => _safeSetState(() => _hovered = true),
-          onExit: (_) => _safeSetState(() => _hovered = false),
-          cursor: SystemMouseCursors.click,
-          child: GestureDetector(
-            onTap: _toggle,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 160),
-              height: h,
-              margin: const EdgeInsets.symmetric(vertical: 1.5),
-              decoration: BoxDecoration(
-                color: widget.isSelected
-                    ? theme.primary.withValues(alpha: 0.08)
-                    : _hovered
-                        ? theme.primary.withValues(alpha: 0.05)
-                        : Colors.transparent,
-                borderRadius: BorderRadius.circular(10),
-              ),
+        // ── Section header con icona ──
+        Padding(
+          padding: const EdgeInsets.fromLTRB(14, 12, 10, 4),
+          child: MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: GestureDetector(
+              onTap: _toggle,
               child: Row(
                 children: [
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 160),
-                    width: 3,
-                    height: widget.isSelected ? 20 : 0,
-                    margin: const EdgeInsets.only(left: 2, right: 10),
-                    decoration: BoxDecoration(color: theme.primary, borderRadius: BorderRadius.circular(99)),
-                  ),
-                  if (!widget.isSelected) const SizedBox(width: 15),
+                  // Icona del modulo (o cartella default)
                   widget.icon,
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       widget.title,
-                      style: theme.bodyLabel.override(
-                        color: widget.isSelected ? theme.primary : theme.secondaryText,
-                        fontWeight: widget.isSelected ? FontWeight.w600 : FontWeight.w500,
-                        fontSize: widget.isMobile ? 13 : 13.5,
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: widget.isSelected ? suiteColor : const Color(0xFF2E2E38),
+                        height: 1.4,
                       ),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(right: 10),
-                    child: RotationTransition(
-                      turns: Tween(begin: 0.0, end: 0.25).animate(CurvedAnimation(parent: _rotationCtrl, curve: Curves.easeInOut)),
-                      child: HugeIcon(
-                        icon: HugeIcons.strokeRoundedArrowRight01,
-                        size: 15,
-                        color: widget.isSelected ? theme.primary : theme.secondaryText,
-                      ),
+                  AnimatedRotation(
+                    duration: const Duration(milliseconds: 200),
+                    turns: _expanded ? 0.25 : 0.0,
+                    child: HugeIcon(
+                      icon: HugeIcons.strokeRoundedArrowRight01,
+                      size: 14,
+                      color: widget.isSelected ? suiteColor : const Color(0xFF6B7080),
                     ),
                   ),
                 ],
@@ -799,12 +754,13 @@ class _MenuGroupState extends State<_MenuGroup> with SingleTickerProviderStateMi
             ),
           ),
         ),
+        // ── Children accordion ──
         AnimatedSize(
-          duration: const Duration(milliseconds: 220),
+          duration: const Duration(milliseconds: 200),
           curve: Curves.easeInOut,
           child: _expanded
               ? Padding(
-                  padding: const EdgeInsets.only(bottom: 2),
+                  padding: const EdgeInsets.only(bottom: 4),
                   child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: widget.children),
                 )
               : const SizedBox.shrink(),
@@ -813,73 +769,70 @@ class _MenuGroupState extends State<_MenuGroup> with SingleTickerProviderStateMi
     );
   }
 
-  /// Gruppo annidato (depth >= 1) — stile indentato con linea verticale
-  Widget _buildNestedGroup(CLTheme theme) {
-    final h = widget.isMobile ? 38.0 : 36.0;
-    final leftIndent = 18.0 + (widget.depth - 1) * 14.0;
+  /// Gruppo annidato (depth >= 1) — indentato con linea verticale
+  Widget _buildNestedGroup() {
+    final theme = CLTheme.of(context);
+    final suiteColor = theme.primary;
+    final leftIndent = 14.0 + (widget.depth) * 12.0;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         MouseRegion(
-          onEnter: (_) => _safeSetState(() => _hovered = true),
-          onExit: (_) => _safeSetState(() => _hovered = false),
+          onEnter: (_) => setState(() => _hovered = true),
+          onExit: (_) => setState(() => _hovered = false),
           cursor: SystemMouseCursors.click,
           child: GestureDetector(
             onTap: _toggle,
             child: AnimatedContainer(
-              duration: const Duration(milliseconds: 160),
-              height: h,
+              duration: const Duration(milliseconds: 150),
               margin: const EdgeInsets.symmetric(vertical: 1),
+              padding: EdgeInsets.symmetric(horizontal: leftIndent, vertical: widget.isMobile ? 11 : 10),
               decoration: BoxDecoration(
                 color: widget.isSelected
-                    ? theme.primary.withValues(alpha: 0.08)
+                    ? suiteColor.withValues(alpha: 0.08)
                     : _hovered
-                        ? theme.primary.withValues(alpha: 0.04)
+                        ? const Color(0xFFFAFBFC)
                         : Colors.transparent,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(6),
               ),
               child: Row(
                 children: [
-                  SizedBox(width: leftIndent),
                   // Linea verticale
                   AnimatedContainer(
-                    duration: const Duration(milliseconds: 160),
+                    duration: const Duration(milliseconds: 150),
                     width: 2,
-                    height: h * 0.55,
+                    height: 16,
+                    margin: const EdgeInsets.only(right: 10),
                     decoration: BoxDecoration(
                       color: widget.isSelected
-                          ? theme.primary
+                          ? suiteColor
                           : _hovered
-                              ? theme.primary.withValues(alpha: 0.4)
-                              : theme.borderColor,
+                              ? suiteColor.withValues(alpha: 0.4)
+                              : const Color(0xFFE8EBF0),
                       borderRadius: BorderRadius.circular(99),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  // Label
                   Expanded(
                     child: Text(
                       widget.title,
-                      style: theme.bodyText.copyWith(
-                        color: widget.isSelected ? theme.primary : theme.secondaryText,
-                        fontWeight: widget.isSelected ? FontWeight.w600 : FontWeight.w500,
-                        fontSize: widget.isMobile ? 12 : 12.5,
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 12,
+                        fontWeight: widget.isSelected ? FontWeight.w600 : FontWeight.w400,
+                        color: widget.isSelected ? suiteColor : const Color(0xFF6B7080),
                       ),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
                     ),
                   ),
-                  // Freccia rotante
-                  Padding(
-                    padding: const EdgeInsets.only(right: 10),
-                    child: RotationTransition(
-                      turns: Tween(begin: 0.0, end: 0.25).animate(CurvedAnimation(parent: _rotationCtrl, curve: Curves.easeInOut)),
-                      child: HugeIcon(
-                        icon: HugeIcons.strokeRoundedArrowRight01,
-                        size: 13,
-                        color: widget.isSelected ? theme.primary : theme.secondaryText,
-                      ),
+                  AnimatedRotation(
+                    duration: const Duration(milliseconds: 200),
+                    turns: _expanded ? 0.25 : 0.0,
+                    child: HugeIcon(
+                      icon: HugeIcons.strokeRoundedArrowRight01,
+                      size: 12,
+                      color: widget.isSelected ? suiteColor : const Color(0xFF6B7080),
                     ),
                   ),
                 ],
@@ -887,9 +840,8 @@ class _MenuGroupState extends State<_MenuGroup> with SingleTickerProviderStateMi
             ),
           ),
         ),
-        // Figli con indentazione extra
         AnimatedSize(
-          duration: const Duration(milliseconds: 220),
+          duration: const Duration(milliseconds: 200),
           curve: Curves.easeInOut,
           child: _expanded
               ? Padding(
@@ -903,8 +855,10 @@ class _MenuGroupState extends State<_MenuGroup> with SingleTickerProviderStateMi
   }
 }
 
-/// Voce figlia indentata con linea verticale (senza pallino)
-class _MenuSubTile extends StatefulWidget {
+/// Voce figlia — design system §8.4
+/// Stile identico a _MenuTile ma con indent tramite padding.
+/// Nessun hover, nessuna stondatura, nessun margin.
+class _MenuSubTile extends StatelessWidget {
   const _MenuSubTile({required this.label, required this.selected, required this.isMobile, required this.onTap, this.depth = 0});
 
   final String label;
@@ -914,76 +868,42 @@ class _MenuSubTile extends StatefulWidget {
   final int depth;
 
   @override
-  State<_MenuSubTile> createState() => _MenuSubTileState();
-}
-
-class _MenuSubTileState extends State<_MenuSubTile> {
-  bool _hovered = false;
-
-  void _safeSetState(VoidCallback fn) {
-    if (!mounted) return;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) setState(fn);
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
     final theme = CLTheme.of(context);
-    final h = widget.isMobile ? 36.0 : 34.0;
-    final leftIndent = 18.0 + widget.depth * 14.0;
+    final suiteColor = theme.primary;
+    final leftPad = 14.0 + (depth + 1) * 10.0;
 
-    return MouseRegion(
-      onEnter: (_) => _safeSetState(() => _hovered = true),
-      onExit: (_) => _safeSetState(() => _hovered = false),
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: widget.onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 160),
-          height: h,
-          margin: const EdgeInsets.symmetric(vertical: 1),
-          decoration: BoxDecoration(
-            color: widget.selected
-                ? theme.primary.withValues(alpha: 0.1)
-                : _hovered
-                    ? theme.primary.withValues(alpha: 0.04)
-                    : Colors.transparent,
-            borderRadius: BorderRadius.circular(8),
+    return GestureDetector(
+      onTap: onTap,
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: Container(
+          padding: EdgeInsets.fromLTRB(
+            leftPad,
+            isMobile ? 11 : 10,
+            14,
+            isMobile ? 11 : 10,
           ),
-          child: Row(
-            children: [
-              // Indentazione basata sul depth
-              SizedBox(width: leftIndent),
-              // Linea verticale
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 160),
-                width: 2,
-                height: h * 0.55,
-                decoration: BoxDecoration(
-                  color: widget.selected
-                      ? theme.primary
-                      : _hovered
-                          ? theme.primary.withValues(alpha: 0.4)
-                          : theme.borderColor,
-                  borderRadius: BorderRadius.circular(99),
-                ),
+          decoration: BoxDecoration(
+            color: selected ? suiteColor.withValues(alpha: 0.10) : Colors.transparent,
+            border: Border(
+              left: BorderSide(
+                color: selected ? suiteColor : Colors.transparent,
+                width: 3,
               ),
-              const SizedBox(width: 12),
-              // Label
-              Expanded(
-                child: Text(
-                  widget.label,
-                  style: theme.bodyText.copyWith(
-                    color: widget.selected ? theme.primary : theme.secondaryText,
-                    fontWeight: widget.selected ? FontWeight.w600 : FontWeight.w400,
-                    fontSize: widget.isMobile ? 12 : 12.5,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                ),
-              ),
-            ],
+            ),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 13,
+              fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+              color: selected ? suiteColor : const Color(0xFF6B7080),
+              height: 1.4,
+            ),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
           ),
         ),
       ),

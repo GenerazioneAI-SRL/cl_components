@@ -41,16 +41,6 @@ class AppLayout extends StatefulWidget {
 class _AppLayoutState extends State<AppLayout> with WidgetsBindingObserver {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  /// Colori dei moduli per le tab (path → Color)
-  static const _moduleColors = <String, Color>{
-    '/dashboard': Color(0xFF0C8EC7),
-    '/skill-id': Color(0xFF0C8EC7),
-    '/skill-hr': Color(0xFFE8734A),
-    '/skill-cert': Color(0xFF16A34A),
-    '/skill-lms': Color(0xFF7C3AED),
-    '/help': Color(0xFF64748B),
-  };
-
   @override
   void initState() {
     super.initState();
@@ -77,10 +67,6 @@ class _AppLayoutState extends State<AppLayout> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {}
-
-  Color _colorForRoute(ModuleRoute route) {
-    return _moduleColors[route.path] ?? const Color(0xFF0C8EC7);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -121,7 +107,6 @@ class _AppLayoutState extends State<AppLayout> with WidgetsBindingObserver {
           _TopBar(
             modules: visibleModules,
             currentPath: currentPath,
-            colorForRoute: _colorForRoute,
             moduleTheme: moduleTheme,
           ),
           Expanded(
@@ -306,21 +291,72 @@ class _AppLayoutState extends State<AppLayout> with WidgetsBindingObserver {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TOP BAR — dark bar con logo + module tabs + user profile
+// TOP BAR — dark bar con logo + module tabs (TabController) + user profile
 // ═══════════════════════════════════════════════════════════════════════════════
 
-class _TopBar extends StatelessWidget {
+class _TopBar extends StatefulWidget {
   const _TopBar({
     required this.modules,
     required this.currentPath,
-    required this.colorForRoute,
     required this.moduleTheme,
   });
 
   final List<ModuleRoute> modules;
   final String currentPath;
-  final Color Function(ModuleRoute) colorForRoute;
   final ModuleThemeProvider moduleTheme;
+
+  @override
+  State<_TopBar> createState() => _TopBarState();
+}
+
+class _TopBarState extends State<_TopBar> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: widget.modules.length, vsync: this);
+    _tabController.index = _currentTabIndex();
+    _tabController.addListener(_onTabTapped);
+  }
+
+  @override
+  void didUpdateWidget(covariant _TopBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Aggiorna l'indice senza triggerare il listener
+    final desired = _currentTabIndex();
+    if (_tabController.length != widget.modules.length) {
+      _tabController.removeListener(_onTabTapped);
+      _tabController.dispose();
+      _tabController = TabController(length: widget.modules.length, vsync: this, initialIndex: desired);
+      _tabController.addListener(_onTabTapped);
+    } else if (_tabController.index != desired) {
+      _tabController.removeListener(_onTabTapped);
+      _tabController.index = desired;
+      _tabController.addListener(_onTabTapped);
+    }
+  }
+
+  @override
+  void dispose() {
+    _tabController.removeListener(_onTabTapped);
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  int _currentTabIndex() {
+    final selected = widget.moduleTheme.selectedModule;
+    for (int i = 0; i < widget.modules.length; i++) {
+      if (_moduleEnumFromPath(widget.modules[i].path) == selected) return i;
+    }
+    return 0;
+  }
+
+  void _onTabTapped() {
+    if (_tabController.indexIsChanging) return;
+    final mod = widget.modules[_tabController.index];
+    widget.moduleTheme.selectModule(_moduleEnumFromPath(mod.path));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -330,21 +366,60 @@ class _TopBar extends StatelessWidget {
     final fullName = '$firstName $lastName'.trim();
 
     return Container(
-      height: 50,
+      height: 58,
       color: const Color(0xFF2E2E38),
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         children: [
           // ── Logo ──
-          LogoWidget(height: 20, dark: false, color: const Color(0xFF0C8EC7)),
+          LogoWidget(height: 22, dark: false, color: const Color(0xFF0C8EC7)),
           const SizedBox(width: 24),
 
-          // ── Module Tabs ──
+          // ── Module Tabs (1:1 CLTabView su sfondo scuro) ──
           Expanded(
-            child: Row(
-              children: [
-                for (final mod in modules) _buildTab(context, mod),
-              ],
+            child: Center(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.06),
+                  borderRadius: BorderRadius.circular(Sizes.borderRadius),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                ),
+                padding: const EdgeInsets.all(4),
+                child: Theme(
+                  data: Theme.of(context).copyWith(splashFactory: NoSplash.splashFactory),
+                  child: TabBar(
+                    controller: _tabController,
+                    indicator: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(Sizes.borderRadius - 2),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
+                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.12), blurRadius: 4, offset: const Offset(0, 1))],
+                    ),
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    dividerColor: Colors.transparent,
+                    overlayColor: WidgetStateProperty.all(Colors.transparent),
+                    labelColor: Colors.white,
+                    unselectedLabelColor: const Color(0x73FFFFFF),
+                    labelStyle: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w600, fontSize: 13),
+                    unselectedLabelStyle: const TextStyle(fontFamily: 'Inter', fontWeight: FontWeight.w400, fontSize: 13),
+                    padding: EdgeInsets.zero,
+                    indicatorPadding: EdgeInsets.zero,
+                    labelPadding: EdgeInsets.zero,
+                    isScrollable: true,
+                    tabAlignment: TabAlignment.start,
+                    tabs: List.generate(widget.modules.length, (i) {
+                      final mod = widget.modules[i];
+                      return Tab(
+                        height: 38,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Text(mod.name, overflow: TextOverflow.ellipsis, maxLines: 1, textAlign: TextAlign.center),
+                        ),
+                      );
+                    }),
+                  ),
+                ),
+              ),
             ),
           ),
 
@@ -406,57 +481,6 @@ class _TopBar extends StatelessWidget {
     );
   }
 
-  Widget _buildTab(BuildContext context, ModuleRoute mod) {
-    final color = colorForRoute(mod);
-    // La tab è selezionata se il path corrente è nel modulo OPPURE se il modulo è stato selezionato manualmente
-    final isSelected = currentPath.startsWith(mod.path) ||
-        moduleTheme.selectedModule == _moduleEnumFromPath(mod.path);
-
-    return GestureDetector(
-      onTap: () {
-        // Non naviga — cambia solo il modulo selezionato nella sidebar
-        final moduleEnum = _moduleEnumFromPath(mod.path);
-        moduleTheme.selectModule(moduleEnum);
-      },
-      child: MouseRegion(
-        cursor: SystemMouseCursors.click,
-        child: Container(
-          height: 50,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(
-                color: isSelected ? color : Colors.transparent,
-                width: 2.5,
-              ),
-            ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (isSelected)
-                Container(
-                  width: 6,
-                  height: 6,
-                  margin: const EdgeInsets.only(right: 7),
-                  decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-                ),
-              Text(
-                mod.name,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                  color: isSelected ? color : const Color(0xFF64748B),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// Mappa un path di modulo al corrispondente SkilleraModule
   static SkilleraModule _moduleEnumFromPath(String path) {
     if (path.startsWith('/skill-hr')) return SkilleraModule.hr;
     if (path.startsWith('/skill-cert')) return SkilleraModule.cert;
@@ -465,3 +489,4 @@ class _TopBar extends StatelessWidget {
     return SkilleraModule.concierge;
   }
 }
+

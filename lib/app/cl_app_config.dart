@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/single_child_widget.dart';
 import '../auth/cl_auth_state.dart';
 import '../router/go_router_modular/routes/i_modular_route.dart';
 import '../widgets/cl_ai_assistant/flutter_ai_assistant.dart';
@@ -31,8 +31,9 @@ abstract class CLAppConfig {
   /// Path della route di autenticazione (per redirect dalla shell)
   String get authRoute;
 
-  /// Provider aggiuntivi specifici dell'app
-  List<ChangeNotifierProvider> get extraProviders => [];
+  /// Provider aggiuntivi specifici dell'app.
+  /// Usare tipi espliciti: `ChangeNotifierProvider<MioState>.value(value: ...)`.
+  List<SingleChildWidget> get extraProviders => [];
 
   /// Configurazione AI assistant (null = disabilitato)
   AiAssistantConfig? get aiConfig => null;
