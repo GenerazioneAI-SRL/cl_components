@@ -26,6 +26,8 @@ abstract class CLAuthState extends ChangeNotifier {
   Future<void> signIn(BuildContext context);
   Future<void> signOut();
 
+
+
   // ── Permessi (opzionale — override nelle app che li usano) ──
   bool can(String action, String subject, {Map<String, dynamic>? resource}) => true;
   bool checkTenantContext(String tenantContext) => true;
