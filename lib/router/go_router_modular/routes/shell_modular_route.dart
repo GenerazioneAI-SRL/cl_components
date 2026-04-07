@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'modular_route.dart';
-import 'modular_route.dart';
 
 class ShellModularRoute extends ModularRoute {
   final FutureOr<String?> Function(BuildContext context, GoRouterState state)? redirect;

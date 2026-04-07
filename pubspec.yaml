@@ -1,6 +1,16 @@
 name: cl_components
-description: CL UI Components for Generazione AI projects
+description: A comprehensive Flutter UI component library with theming, routing, state management, charts, and 30+ reusable widgets. Built for rapid app development with sensible defaults.
 version: 2.0.0
+homepage: https://github.com/generazione-ai/cl_components
+repository: https://github.com/generazione-ai/cl_components
+issue_tracker: https://github.com/generazione-ai/cl_components/issues
+
+topics:
+  - ui
+  - widgets
+  - theme
+  - components
+  - design-system
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -24,14 +34,14 @@ dependencies:
   equatable: ^2.0.5
   http: ^1.3.0
   rxdart: ^0.28.0
-  shared_preferences: any
-  path_provider: any
-  path: any
-  collection: any
+  shared_preferences: ^2.3.0
+  path_provider: ^2.1.0
+  path: ^1.9.0
+  collection: ^1.18.0
 
   # Form & input
   file_picker: ^8.1.4
-  image_picker: any
+  image_picker: ^1.1.0
   flex_color_picker: ^3.7.0
   month_picker_dialog: ^6.0.3
   calendar_date_picker2: ^2.0.0
@@ -67,7 +77,7 @@ dependencies:
 
   # Router & Navigation
   go_router: ^14.3.0
-  flutter_breadcrumb: any
+  flutter_breadcrumb: ^1.0.1
 
   # ViewModel
   stacked: ^3.4.4
@@ -76,8 +86,8 @@ dependencies:
   package_info_plus: ^8.3.0
 
   # HTTP parsing
-  http_parser: any
-  timeago: any
+  http_parser: ^4.1.0
+  timeago: ^3.7.0
 
   # Localization
   flutter_localizations:
@@ -87,10 +97,10 @@ dependencies:
   universal_html: ^2.2.4
   star_rating: ^0.11.0
   flutter_hooks: ^0.21.2
-  json_annotation: any
+  json_annotation: ^4.9.0
   mime_type: ^1.0.1
-  uuid: any
-  mime: any
+  uuid: ^4.5.0
+  mime: ^2.0.0
 
 dev_dependencies:
   flutter_test:

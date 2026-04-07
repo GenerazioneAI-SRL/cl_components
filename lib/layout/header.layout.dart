@@ -97,7 +97,7 @@ class _HeaderLayoutState extends State<HeaderLayout> {
   }
 
   /// Pulsante Assistente AI
-  Widget _buildAiButton(BuildContext context) {
+  /*Widget _buildAiButton(BuildContext context) {
     final theme = CLTheme.of(context);
     return Tooltip(
       message: 'Assistente AI',
@@ -118,7 +118,7 @@ class _HeaderLayoutState extends State<HeaderLayout> {
         ),
       ),
     );
-  }
+  }*/
 
   /// Profilo utente
   Widget _buildUserProfile(BuildContext context, CLAuthState authState, bool isMobile) {

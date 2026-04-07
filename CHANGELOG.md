@@ -1,0 +1,21 @@
+# Changelog
+
+## 2.0.0
+
+- **Breaking:** Refactored as standalone library for pub.dev publication
+- **CLApp:** Generic app bootstrap with `CLAppConfig` — OIDC, routing, providers out of the box
+- **CLTheme:** Light/dark mode with per-module color overrides via `ModuleThemeProvider`
+- **GoRouterModular:** Custom routing system wrapping GoRouter — `Module`, `CLRoute`, `ChildRoute`, `ModuleRoute`, `ShellModularRoute`
+- **ApiManager:** HTTP wrapper with auto Bearer token, tenant header, multipart upload
+- **CLBaseViewModel:** Stacked MVVM base class with page actions, breadcrumbs, lifecycle
+- **Layout:** `AppLayout`, `MenuLayout`, `HeaderLayout`, `FooterLayout`, `BreadcrumbsLayout`
+- **Charts:** Generic `CLBarChart<T>`, `CLPieChart<T>`, `CLSplineChart<T>`, `CLSplineAreaChart<T>`, `CLAreaChart<T>` with `CLChartSeries<T>`
+- **Widgets:** `CLButton`, `CLTextField`, `CLDropdown`, `CLPagination`, `PagedDataTable`, `CLOrgChart`, `CLSurvey`, `CLAiAssistant`, and 30+ reusable components
+- **Auth:** Abstract `CLAuthState`, `CLUserInfo`, `CLTenant` interfaces
+- **Providers:** `AppState`, `ErrorState`, `ThemeProvider`, `NavigationState`
+- **Core models:** `BaseModel`, `Media`, `City`, `Country`, `Province`, `PageAction`
+
+## 1.0.0
+
+- Initial release — internal package via GitHub
+

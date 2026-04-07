@@ -6,6 +6,13 @@ UI component library for Flutter projects. Works out of the box with sensible de
 
 ```yaml
 dependencies:
+  cl_components: ^2.0.0
+```
+
+Or from GitHub:
+
+```yaml
+dependencies:
   cl_components:
     git:
       url: git@github.com:generazione-ai/cl_components.git

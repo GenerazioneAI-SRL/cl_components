@@ -12,7 +12,6 @@ import 'package:cl_components/providers/theme_provider.dart';
 import '../router/go_router_modular/routes/modular_route.dart';
 import 'constants/sizes.constant.dart';
 import 'package:cl_components/router/go_router_modular/routes/child_route.dart';
-import 'package:cl_components/router/go_router_modular/routes/modular_route.dart';
 import 'package:cl_components/router/go_router_modular/routes/module_route.dart';
 import 'package:cl_components/router/go_router_modular/routes/shell_modular_route.dart';
 import 'package:cl_components/utils/providers/navigation.util.provider.dart';

@@ -9,7 +9,7 @@ class _OverlayBody extends StatefulWidget {
   final Function()? onTap;
   final AlertPosition alertPosition;
   final AlertType alertType;
-  BehaviorSubject<double>? downloadPercentageStream;
+  final BehaviorSubject<double>? downloadPercentageStream;
   final bool closeOnTap;
 
   _OverlayBody(
