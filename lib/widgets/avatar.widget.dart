@@ -119,7 +119,7 @@ class CLAvatarWidget extends StatelessWidget {
 
   String _buildInitials(String fullName) {
     const String fallbackInitial = 'N/A';
-    final nameParts = fullName.split(' ') ?? [];
+    final nameParts = fullName.split(' ');
     String initials = '';
     if (nameParts.isNotEmpty) {
       initials = nameParts.where((part) => part.isNotEmpty).map((part) => part[0]).take(2).join();

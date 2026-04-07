@@ -223,11 +223,6 @@ class _OverlayBodyState extends State<_OverlayBody> with SingleTickerProviderSta
             _close();
           },
         );
-      default:
-        return Text(
-          "${widget.title}: ${widget.message}",
-          style: TextStyle(color: widget.textColor),
-        );
     }
   }
 

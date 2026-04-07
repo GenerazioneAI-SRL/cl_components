@@ -29,7 +29,7 @@ class CLDropdown<T extends Object> extends StatefulWidget {
   });
 
   final TextEditingController controller;
-  List<T> items = [];
+  final List<T> items;
   final Widget Function(BuildContext, T) itemBuilder;
   final int length;
   final String Function(T) valueToShow;
