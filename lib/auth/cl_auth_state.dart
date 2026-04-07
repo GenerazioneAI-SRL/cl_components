@@ -7,7 +7,9 @@ import 'cl_tenant.dart';
 abstract class CLAuthState extends ChangeNotifier {
   // ── Stato ──
   bool get isAuthenticated;
+
   bool get isLoading;
+
   bool get isAuthenticating;
 
   // ── Utente ──
@@ -19,17 +21,18 @@ abstract class CLAuthState extends ChangeNotifier {
 
   // ── Tenant (multi-tenant opzionale) ──
   CLTenant? get currentTenant;
+
   List<CLTenant> get tenantList;
+
   void setCurrentTenant(CLTenant? tenant);
 
   // ── Azioni ──
   Future<void> signIn(BuildContext context);
+
   Future<void> signOut();
-
-
 
   // ── Permessi (opzionale — override nelle app che li usano) ──
   bool can(String action, String subject, {Map<String, dynamic>? resource}) => true;
+
   bool checkTenantContext(String tenantContext) => true;
 }
-

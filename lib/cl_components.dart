@@ -100,7 +100,7 @@ export 'router/go_router_modular/page_transition_enum.dart';
 export 'router/go_router_modular/route_registry.dart';
 export 'router/go_router_modular/routes/child_route.dart';
 export 'router/go_router_modular/routes/cl_route.dart';
-export 'router/go_router_modular/routes/i_modular_route.dart';
+export 'router/go_router_modular/routes/modular_route.dart';
 export 'router/go_router_modular/routes/module_route.dart';
 export 'router/go_router_modular/routes/shell_modular_route.dart';
 export 'router/resume_observer.dart';
@@ -129,3 +129,7 @@ export 'core_utils/navigation_observer.dart';
 // Core Models
 export 'core_models/upload_file.model.dart';
 export 'core_models/media.model.dart';
+
+// Models
+export 'models/pageaction.model.dart';
+

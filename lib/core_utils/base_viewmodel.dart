@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cl_components/utils/shared_manager.util.dart';
+import 'package:cl_components/models/pageaction.model.dart';
 import 'package:flutter/material.dart';
 import 'package:stacked/stacked.dart';
 
@@ -14,7 +15,7 @@ class CLBaseViewModel extends BaseViewModel {
 
   CLBaseViewModel({required this.viewContext, required this.viewModelType, this.extraParams});
 
-  Future initialize() async {}
+  Future initialize({List<PageAction>? pageActions}) async {}
 
   void logout() async {
     setBusy(true);

@@ -7,7 +7,8 @@ import 'package:hugeicons/hugeicons.dart';
 import '../cl_path_utils.dart';
 import '../page_transition_enum.dart';
 import 'cl_route.dart';
-import 'i_modular_route.dart';
+import 'modular_route.dart';
+
 
 class ChildRoute extends ModularRoute {
   late String path;

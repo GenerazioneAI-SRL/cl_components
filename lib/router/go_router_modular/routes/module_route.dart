@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:hugeicons/hugeicons.dart';
 
 import '../module.dart';
-import 'i_modular_route.dart';
+import 'modular_route.dart';
 
 class ModuleRoute extends ModularRoute {
   late final String path;

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/single_child_widget.dart';
 import '../auth/cl_auth_state.dart';
-import '../router/go_router_modular/routes/i_modular_route.dart';
+import '../router/go_router_modular/routes/modular_route.dart';
+import '../router/go_router_modular/routes/modular_route.dart';
 import '../widgets/cl_ai_assistant/flutter_ai_assistant.dart';
 
 /// Configurazione astratta dell'app.

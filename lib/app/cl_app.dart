@@ -21,7 +21,7 @@ import '../router/go_router_modular/module.dart';
 import '../router/go_router_modular/page_transition_enum.dart';
 import '../router/go_router_modular/routes/child_route.dart';
 import '../router/go_router_modular/routes/cl_route.dart';
-import '../router/go_router_modular/routes/i_modular_route.dart';
+import '../router/go_router_modular/routes/modular_route.dart';
 import '../router/go_router_modular/routes/shell_modular_route.dart';
 import '../router/resume_observer.dart';
 import '../utils/providers/module_theme.util.provider.dart';
