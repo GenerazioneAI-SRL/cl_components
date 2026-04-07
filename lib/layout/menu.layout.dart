@@ -286,10 +286,7 @@ class _MenuLayoutState extends State<MenuLayout> {
     if (visibleCount != 1) return null;
 
     // Caso A: ChildRoute diretta
-    final directChild = route.module.routes
-        .whereType<ChildRoute>()
-        .where((r) => r.isVisible)
-        .firstOrNull;
+    final directChild = route.module.routes.whereType<ChildRoute>().where((r) => r.isVisible).firstOrNull;
     if (directChild != null) {
       return directChild
         ..icon = route.icon
@@ -298,23 +295,16 @@ class _MenuLayoutState extends State<MenuLayout> {
     }
 
     // Caso B: singolo ModuleRoute annidato con una sola ChildRoute visibile
-    final nestedModule = route.module.routes
-        .whereType<ModuleRoute>()
-        .where((r) => r.isVisible)
-        .firstOrNull;
+    final nestedModule = route.module.routes.whereType<ModuleRoute>().where((r) => r.isVisible).firstOrNull;
     if (nestedModule != null) {
       final nestedVisible = _countVisibleRoutes(nestedModule.module.routes);
       if (nestedVisible == 1) {
-        final nestedChild = nestedModule.module.routes
-            .whereType<ChildRoute>()
-            .where((r) => r.isVisible)
-            .firstOrNull;
+        final nestedChild = nestedModule.module.routes.whereType<ChildRoute>().where((r) => r.isVisible).firstOrNull;
         if (nestedChild != null) {
           return nestedChild
             ..icon = route.icon
             ..hugeIcon = route.hugeIcon
-            ..path = "${route.module.moduleRoute.path}${nestedModule.module.moduleRoute.path}"
-                .replaceAll('//', '/');
+            ..path = "${route.module.moduleRoute.path}${nestedModule.module.moduleRoute.path}".replaceAll('//', '/');
         }
       }
     }
@@ -332,7 +322,6 @@ class _MenuLayoutState extends State<MenuLayout> {
     }
     return _buildGroupRoute(navigationState, route, depth: 0);
   }
-
 
   Widget _buildChildRoute(NavigationState navigationState, ChildRoute route) {
     final isMobile = !ResponsiveBreakpoints.of(context).isDesktop;
@@ -361,7 +350,7 @@ class _MenuLayoutState extends State<MenuLayout> {
     // Section label
     widgets.add(
       Padding(
-        padding: const EdgeInsets.only(left: 6, top: 14, bottom: 6),
+        padding: const EdgeInsets.only(left: 12, top: 14, bottom: 6),
         child: Text(
           parentRoute.name.toUpperCase(),
           style: theme.smallLabel.copyWith(
@@ -387,10 +376,7 @@ class _MenuLayoutState extends State<MenuLayout> {
         final visibleCount = _countVisibleRoutes(childRoute.module.routes);
         if (visibleCount == 1) {
           // Caso A: singola ChildRoute diretta
-          final directChild = childRoute.module.routes
-              .whereType<ChildRoute>()
-              .where((r) => r.isVisible)
-              .firstOrNull;
+          final directChild = childRoute.module.routes.whereType<ChildRoute>().where((r) => r.isVisible).firstOrNull;
           if (directChild != null) {
             directChild
               ..icon = childRoute.icon
@@ -404,21 +390,14 @@ class _MenuLayoutState extends State<MenuLayout> {
             continue;
           }
           // Caso B: singolo ModuleRoute annidato con una sola ChildRoute visibile
-          final nestedModule = childRoute.module.routes
-              .whereType<ModuleRoute>()
-              .where((r) => r.isVisible)
-              .firstOrNull;
+          final nestedModule = childRoute.module.routes.whereType<ModuleRoute>().where((r) => r.isVisible).firstOrNull;
           if (nestedModule != null && _countVisibleRoutes(nestedModule.module.routes) == 1) {
-            final nestedChild = nestedModule.module.routes
-                .whereType<ChildRoute>()
-                .where((r) => r.isVisible)
-                .firstOrNull;
+            final nestedChild = nestedModule.module.routes.whereType<ChildRoute>().where((r) => r.isVisible).firstOrNull;
             if (nestedChild != null) {
               nestedChild
                 ..icon = childRoute.icon
                 ..hugeIcon = childRoute.hugeIcon ?? HugeIcon(icon: defaultIcon)
-                ..path = "$basePath${childRoute.module.moduleRoute.path}${nestedModule.module.moduleRoute.path}"
-                    .replaceAll('//', '/');
+                ..path = "$basePath${childRoute.module.moduleRoute.path}${nestedModule.module.moduleRoute.path}".replaceAll('//', '/');
               widgets.add(_buildSectionChildRoute(
                 navigationState,
                 nestedChild,
@@ -458,6 +437,9 @@ class _MenuLayoutState extends State<MenuLayout> {
 
   // ── Gruppo espandibile ─────────────────────────────────────────────────────
   Widget _buildGroupRoute(NavigationState navigationState, ModuleRoute subRoute, {String basePath = '', int depth = 0}) {
+    // Se non ha icona, non mostrare il gruppo nel menu
+    if (!subRoute.hasIcon) return const SizedBox.shrink();
+
     final isMobile = !ResponsiveBreakpoints.of(context).isDesktop;
     final currentPath = "$basePath${subRoute.path}".replaceAll('//', '/');
     final isSelected = _isSelected(navigationState, currentPath, isParentRoute: true);
@@ -666,42 +648,45 @@ class _MenuTileState extends State<_MenuTile> {
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
         onTap: widget.onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 160),
+        child: SizedBox(
           height: h,
-          margin: const EdgeInsets.symmetric(vertical: 1.5),
-          decoration: BoxDecoration(
-            color: widget.selected
-                ? theme.primary.withValues(alpha: 0.12)
-                : _hovered
-                    ? theme.primary.withValues(alpha: 0.05)
-                    : Colors.transparent,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Row(
-            children: [
-              // Padding sinistro fisso
-              const SizedBox(width: 12),
-              // Icona in box a larghezza fissa — sempre presente per allineare il testo
-              SizedBox(
-                width: 20,
-                child: widget.icon != null ? Center(child: widget.icon!) : null,
+          child: Padding(
+            // 12px di gap fuori dal container — pill parte all'icona
+            padding: const EdgeInsets.only(left: 12, top: 1.5, bottom: 1.5),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 160),
+              decoration: BoxDecoration(
+                color: widget.selected
+                    ? theme.primary.withValues(alpha: 0.12)
+                    : _hovered
+                        ? theme.primary.withValues(alpha: 0.05)
+                        : Colors.transparent,
+                borderRadius: BorderRadius.circular(10),
               ),
-              const SizedBox(width: 10),
-              // Label
-              Expanded(
-                child: Text(
-                  widget.label,
-                  style: theme.bodyLabel.override(
-                    color: widget.selected ? theme.primary : theme.secondaryText,
-                    fontWeight: widget.selected ? FontWeight.w600 : FontWeight.w500,
-                    fontSize: widget.isMobile ? 13 : 13.5,
+              child: Row(
+                children: [
+                  // Icona flush con il bordo sinistro del container
+                  SizedBox(
+                    width: 20,
+                    child: widget.icon != null ? Center(child: widget.icon!) : null,
                   ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      widget.label,
+                      style: theme.bodyLabel.override(
+                        color: widget.selected ? theme.primary : theme.secondaryText,
+                        fontWeight: widget.selected ? FontWeight.w600 : FontWeight.w500,
+                        fontSize: widget.isMobile ? 13 : 13.5,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -773,12 +758,13 @@ class _MenuGroupState extends State<_MenuGroup> with SingleTickerProviderStateMi
     return _buildTopLevelGroup(theme);
   }
 
-  /// Gruppo di primo livello (depth == 0) — stile originale con pill
+  /// Gruppo di primo livello (depth == 0) — contenitore visivo raggruppato
   Widget _buildTopLevelGroup(CLTheme theme) {
     final h = widget.isMobile ? 42.0 : 40.0;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
       children: [
         MouseRegion(
           onEnter: (_) => _safeSetState(() => _hovered = true),
@@ -786,49 +772,49 @@ class _MenuGroupState extends State<_MenuGroup> with SingleTickerProviderStateMi
           cursor: SystemMouseCursors.click,
           child: GestureDetector(
             onTap: _toggle,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 160),
+            child: SizedBox(
               height: h,
-              margin: const EdgeInsets.symmetric(vertical: 1.5),
-              decoration: BoxDecoration(
-                color: widget.isSelected
-                    ? theme.primary.withValues(alpha: 0.08)
-                    : _hovered
+              child: Padding(
+                padding: const EdgeInsets.only(left: 12, top: 1.5, bottom: 1.5),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 160),
+                  decoration: BoxDecoration(
+                    // Nessun colore persistente se selezionato — solo hover
+                    color: _hovered
                         ? theme.primary.withValues(alpha: 0.05)
                         : Colors.transparent,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Row(
-                children: [
-                  // Padding sinistro fisso (uguale a _MenuTile)
-                  const SizedBox(width: 12),
-                  // Icona in box a larghezza fissa (uguale a _MenuTile)
-                  SizedBox(width: 20, child: Center(child: widget.icon)),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      widget.title,
-                      style: theme.bodyLabel.override(
-                        color: widget.isSelected ? theme.primary : theme.secondaryText,
-                        fontWeight: widget.isSelected ? FontWeight.w600 : FontWeight.w500,
-                        fontSize: widget.isMobile ? 13 : 13.5,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                    ),
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(right: 10),
-                    child: RotationTransition(
-                      turns: Tween(begin: 0.0, end: 0.25).animate(CurvedAnimation(parent: _rotationCtrl, curve: Curves.easeInOut)),
-                      child: HugeIcon(
-                        icon: HugeIcons.strokeRoundedArrowRight01,
-                        size: 15,
-                        color: widget.isSelected ? theme.primary : theme.secondaryText,
+                  child: Row(
+                    children: [
+                      SizedBox(width: 20, child: Center(child: widget.icon)),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          widget.title,
+                          style: theme.bodyLabel.override(
+                            color: widget.isSelected ? theme.primary : theme.secondaryText,
+                            fontWeight: widget.isSelected ? FontWeight.w600 : FontWeight.w500,
+                            fontSize: widget.isMobile ? 13 : 13.5,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
                       ),
-                    ),
+                      Padding(
+                        padding: const EdgeInsets.only(right: 10),
+                        child: RotationTransition(
+                          turns: Tween(begin: 0.0, end: 0.25).animate(CurvedAnimation(parent: _rotationCtrl, curve: Curves.easeInOut)),
+                          child: HugeIcon(
+                            icon: HugeIcons.strokeRoundedArrowRight01,
+                            size: 15,
+                            color: widget.isSelected ? theme.primary : theme.secondaryText,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
@@ -838,7 +824,7 @@ class _MenuGroupState extends State<_MenuGroup> with SingleTickerProviderStateMi
           curve: Curves.easeInOut,
           child: _expanded
               ? Padding(
-                  padding: const EdgeInsets.only(bottom: 2),
+                  padding: const EdgeInsets.only(bottom: 4),
                   child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: widget.children),
                 )
               : const SizedBox.shrink(),
@@ -847,90 +833,93 @@ class _MenuGroupState extends State<_MenuGroup> with SingleTickerProviderStateMi
     );
   }
 
-  /// Gruppo annidato (depth >= 1) — stile indentato senza linee
+  /// Gruppo annidato (depth >= 1) — stile indentato con contenitore visivo
   Widget _buildNestedGroup(CLTheme theme) {
     final h = widget.isMobile ? 42.0 : 40.0;
-    // Allineato al testo del parent: 42px + extra per depth
-    final leftMargin = 42.0 + (widget.depth - 1) * 16.0;
+    // Primo livello di nesting: 38px (allinea con sub-tile hover box a 32px + margine)
+    // Ogni livello successivo: +16px incrementali
+    final nestedPadding = widget.depth == 1 ? 38.0 : 16.0;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        MouseRegion(
-          onEnter: (_) { if (mounted) setState(() => _hovered = true); },
-          onExit: (_) { if (mounted) setState(() => _hovered = false); },
-          cursor: SystemMouseCursors.click,
-          child: GestureDetector(
-            onTap: _toggle,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 160),
-              height: h,
-              margin: const EdgeInsets.symmetric(vertical: 1.5),
-              decoration: BoxDecoration(
-                color: widget.isSelected
-                    ? theme.primary.withValues(alpha: 0.08)
-                    : _hovered
+    return Padding(
+      padding: EdgeInsets.only(left: nestedPadding),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          MouseRegion(
+            onEnter: (_) {
+              if (mounted) setState(() => _hovered = true);
+            },
+            onExit: (_) {
+              if (mounted) setState(() => _hovered = false);
+            },
+            cursor: SystemMouseCursors.click,
+            child: GestureDetector(
+              onTap: _toggle,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 160),
+                height: h,
+                  decoration: BoxDecoration(
+                    color: _hovered
                         ? theme.primary.withValues(alpha: 0.04)
                         : Colors.transparent,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Row(
-                children: [
-                  SizedBox(width: leftMargin),
-                  // Icona folder in box fisso
-                  SizedBox(
-                    width: 20,
-                    child: Center(
-                      child: HugeIcon(
-                        icon: HugeIcons.strokeRoundedFolder01,
-                        size: 16,
-                        color: widget.isSelected ? theme.primary : theme.secondaryText,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                child: Row(
+                  children: [
+                    // Spaziatura icona identica al top-level (12+20+10=42px per il testo)
+                    const SizedBox(width: 12),
+                    SizedBox(
+                      width: 20,
+                      child: Center(
+                        child: HugeIcon(
+                          icon: HugeIcons.strokeRoundedFolder01,
+                          size: 16,
+                          color: widget.isSelected ? theme.primary : theme.secondaryText,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 10),
-                  // Label
-                  Expanded(
-                    child: Text(
-                      widget.title,
-                      style: theme.bodyLabel.override(
-                        color: widget.isSelected ? theme.primary : theme.secondaryText,
-                        fontWeight: widget.isSelected ? FontWeight.w600 : FontWeight.w500,
-                        fontSize: widget.isMobile ? 13 : 13.5,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                    ),
-                  ),
-                  // Freccia rotante
-                  Padding(
-                    padding: const EdgeInsets.only(right: 10),
-                    child: RotationTransition(
-                      turns: Tween(begin: 0.0, end: 0.25).animate(CurvedAnimation(parent: _rotationCtrl, curve: Curves.easeInOut)),
-                      child: HugeIcon(
-                        icon: HugeIcons.strokeRoundedArrowRight01,
-                        size: 14,
-                        color: widget.isSelected ? theme.primary : theme.secondaryText,
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        widget.title,
+                        style: theme.bodyLabel.override(
+                          color: widget.isSelected ? theme.primary : theme.secondaryText,
+                          fontWeight: widget.isSelected ? FontWeight.w600 : FontWeight.w500,
+                          fontSize: widget.isMobile ? 13 : 13.5,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
                     ),
-                  ),
-                ],
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: RotationTransition(
+                        turns: Tween(begin: 0.0, end: 0.25).animate(CurvedAnimation(parent: _rotationCtrl, curve: Curves.easeInOut)),
+                        child: HugeIcon(
+                          icon: HugeIcons.strokeRoundedArrowRight01,
+                          size: 14,
+                          color: widget.isSelected ? theme.primary : theme.secondaryText,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-        // Figli
-        AnimatedSize(
-          duration: const Duration(milliseconds: 220),
-          curve: Curves.easeInOut,
-          child: _expanded
-              ? Padding(
-                  padding: const EdgeInsets.only(bottom: 2),
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: widget.children),
-                )
-              : const SizedBox.shrink(),
-        ),
-      ],
+          AnimatedSize(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeInOut,
+            child: _expanded
+                ? Padding(
+                    padding: const EdgeInsets.only(bottom: 3),
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: widget.children),
+                  )
+                : const SizedBox.shrink(),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -956,13 +945,17 @@ class _MenuSubTileState extends State<_MenuSubTile> {
   Widget build(BuildContext context) {
     final theme = CLTheme.of(context);
     final h = widget.isMobile ? 38.0 : 36.0;
-    // Testo del parent parte a: 12 (spacer) + 20 (icon) + 10 (gap) = 42px
-    // Box colorato parte a 32px, con 10px di padding → testo a 42px
-    final boxLeftMargin = 32.0 + widget.depth * 16.0;
+    // Allineamento testo: 32 (area icona) + 10 (padding) = 42px
+    // Identico a _MenuTile e _MenuGroup header (12 + 20 + 10 = 42px)
+    const double boxLeftMargin = 32.0;
 
     return MouseRegion(
-      onEnter: (_) { if (mounted) setState(() => _hovered = true); },
-      onExit: (_) { if (mounted) setState(() => _hovered = false); },
+      onEnter: (_) {
+        if (mounted) setState(() => _hovered = true);
+      },
+      onExit: (_) {
+        if (mounted) setState(() => _hovered = false);
+      },
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
