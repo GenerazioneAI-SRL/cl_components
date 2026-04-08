@@ -197,8 +197,8 @@ class PagedDataTable<TKey extends Comparable, TResultId extends Comparable, TRes
       configuration: PagedDataTableConfiguration(
         filterBarVisibile: isFilterBarVisible,
         footer: PagedDataTableFooterConfiguration(footerVisible: isFooterVisible),
-        pageSizes: pageSizes ?? pageSizes ?? [5, 25, 50, 100],
-        initialPageSize: initialPageSize != null ? initialPageSize! : pageSizes?.first ?? [5, 10, 25, 50, 100].first,
+        pageSizes: pageSizes ?? [5, 25, 50, 100],
+        initialPageSize: initialPageSize ?? pageSizes?.first ?? 5,
       ),
     );
 
