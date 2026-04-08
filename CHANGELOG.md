@@ -1,5 +1,12 @@
 # Changelog
 
+## 4.0.7
+
+- **Widgets:** Updated Paged Datatable, Paged Datatable Menu
+- **Core:** Updated Changelog Md
+- **Package:** Updated Pubspec Yaml
+
+
 ## 4.0.6
 
 - **Widgets:** Updated 9 components
