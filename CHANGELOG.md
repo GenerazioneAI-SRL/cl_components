@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.2.0
+
+- **Core:** Updated Changelog Md
+- **Package:** Updated Pubspec Yaml
+
+
 ## 4.1.0
 
 - **Widgets:** Updated 12 components
