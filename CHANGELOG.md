@@ -1,5 +1,51 @@
 # Changelog
 
+## 3.0.1
+
+- refactor: remove unnecessary blank line in breadcrumbs.layout.dart
+- update package name and version in pubspec.yaml
+- refactor: update imports to use genai_components instead of cl_components
+- update package name and version in pubspec.yaml
+- commit
+- commit
+- commit
+- commit
+- commit
+- commit
+- commit
+- commit
+- commit
+- commit
+- commit
+- commit
+- commit
+- commit
+- commit
+- commit
+- commit
+- commit
+- commit
+- commit
+- commit
+- commit
+- commit
+- try edit
+- feat: add CLApp and CLAppConfig for app bootstrapping
+- feat: add app core - router, layout, api, providers, auth interfaces, models, utils
+- fix: resolve duplicate_definition errors in AI assistant code
+- feat: replace all widgets with current project widgets v2.0
+- feat: add CLFilePicker, CLFileList, CLDataTable to package
+- feat: add CLDateField, CLTimeField, CLColorField, CLDropdown to package
+- feat: add CLLifecycleProgress, CLConfirmRejectButtons, CLResponsiveGrid, CLInfoBanner, CLAlert
+- feat: add CLPageHeader, CLTabView, CLPagination, CLViewToggle, CLPopupMenu, CLBottomNav
+- feat: add CLAvatar, CLStatusBadge, CLPill, CLRoleBadge, CLCodeText, CLClipboard
+- feat: add CLTextField, CLPasswordField, CLCheckbox, CLFormMode to package
+- feat: add CLContainer, CLCard, CLSectionCard to package
+- feat: add unified CLButton with 5 variants (solid, ghost, outline, soft, text)
+- feat: add text styles to CLThemeData + CLDivider + CLShimmer + CLEmptyState
+- feat: initial cl_components package — theme system + structure
+
+
 ## 2.0.0
 
 - **Breaking:** Refactored as standalone library for pub.dev publication
@@ -18,4 +64,3 @@
 ## 1.0.0
 
 - Initial release — internal package via GitHub
-
