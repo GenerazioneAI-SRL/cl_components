@@ -544,9 +544,7 @@ class _MenuHeader extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Logo SVG
-          Expanded(child: LogoWidget(height: isMobile ? 22 : 24, dark: false, color: theme.primary)),
-          // Toggle tema + Close (solo mobile)
+          // Toggle tema (solo mobile) — a sinistra del logo
           if (isMobile) ...[
             Consumer<ThemeProvider>(
               builder: (context, themeProvider, _) {
@@ -578,6 +576,12 @@ class _MenuHeader extends StatelessWidget {
                 );
               },
             ),
+            const SizedBox(width: 8),
+          ],
+          // Logo SVG — al centro
+          Expanded(child: LogoWidget(height: isMobile ? 22 : 24, dark: false, color: theme.primary)),
+          // Close button (solo mobile) — a destra del logo
+          if (isMobile) ...[
             const SizedBox(width: 8),
             GestureDetector(
               onTap: onClose,

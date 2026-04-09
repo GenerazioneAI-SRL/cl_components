@@ -135,26 +135,18 @@ class _HeaderLayoutState extends State<HeaderLayout> {
 
     final popupHeader = Padding(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          CLAvatarWidget(medias: const [], name: displayName, iconSize: 36, fontSize: 14),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  fullName.isNotEmpty ? fullName : (email.isNotEmpty ? email : 'Utente'),
-                  style: theme.bodyLabel.copyWith(fontWeight: FontWeight.w600, fontSize: 13),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                if (email.isNotEmpty)
-                  Text(email, style: theme.smallLabel.copyWith(color: theme.secondaryText, fontSize: 11), maxLines: 1, overflow: TextOverflow.ellipsis),
-              ],
-            ),
+          Text(
+            fullName.isNotEmpty ? fullName : (email.isNotEmpty ? email : 'Utente'),
+            style: theme.bodyLabel.copyWith(fontWeight: FontWeight.w600, fontSize: 13),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
+          if (email.isNotEmpty)
+            Text(email, style: theme.smallLabel.copyWith(color: theme.secondaryText, fontSize: 11), maxLines: 1, overflow: TextOverflow.ellipsis),
         ],
       ),
     );
@@ -188,14 +180,12 @@ class _HeaderLayoutState extends State<HeaderLayout> {
           child: InkWell(
             borderRadius: BorderRadius.circular(10),
             onTap: open,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+              child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), border: Border.all(color: theme.borderColor)),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  CLAvatarWidget(medias: const [], name: displayName, iconSize: 26, fontSize: 10),
-                  const SizedBox(width: 8),
                   ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 130),
                     child: Text(
