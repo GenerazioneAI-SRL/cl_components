@@ -93,7 +93,7 @@ abstract class Module {
 
     return GoRoute(
       path: fullPath,
-      name: fullPath,
+      name: absolutePath, // path assoluto per unicità globale
       builder: (context, state) => childRoute.child(context, state),
       pageBuilder: childRoute.pageBuilder != null
           ? (context, state) => childRoute.pageBuilder!(context, state)
@@ -185,7 +185,7 @@ abstract class Module {
 
     return GoRoute(
       path: fullPath,
-      name: fullPath,
+      name: absolutePathForRegistry, // path assoluto per unicità globale
       builder: (context, state) =>
           childRoute?.child(context, state) ?? Container(),
       pageBuilder: childRoute != null

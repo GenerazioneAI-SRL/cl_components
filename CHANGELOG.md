@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.2.3
+
+- **Layout:** Updated Menu Layout
+- **Router:** Updated Module, Module Route
+
+
 ## 4.2.2
 
 - **Widgets:** Updated 7 components
