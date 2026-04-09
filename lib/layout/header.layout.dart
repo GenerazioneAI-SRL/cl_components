@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_breadcrumb/flutter_breadcrumb.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_framework/responsive_framework.dart';
@@ -7,7 +9,6 @@ import 'package:genai_components/utils/providers/navigation.util.provider.dart';
 import 'package:genai_components/auth/cl_auth_state.dart';
 import '../widgets/avatar.widget.dart';
 import '../widgets/cl_popup_menu.widget.dart';
-import 'breadcrumbs.layout.dart';
 import 'constants/sizes.constant.dart';
 import '../cl_theme.dart';
 
@@ -24,13 +25,14 @@ class HeaderLayout extends StatefulWidget {
 }
 
 class _HeaderLayoutState extends State<HeaderLayout> {
-  GlobalKey profileKey = GlobalKey();
+  // ── Helpers ────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
     final authState = context.watch<CLAuthState>();
     final navigationState = context.watch<NavigationState>();
     final isMobile = !ResponsiveBreakpoints.of(context).isDesktop;
+    final theme = CLTheme.of(context);
 
     return Container(
       height: widget.headerHeight,
@@ -42,10 +44,10 @@ class _HeaderLayoutState extends State<HeaderLayout> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // ── Hamburger (mobile) ─────────────────────────
+          // ── Hamburger (mobile) ─────────────────────────────
           if (isMobile) ...[
             IconButton(
-              icon: HugeIcon(icon: HugeIcons.strokeRoundedMenu01, color: CLTheme.of(context).primaryText, size: 20),
+              icon: HugeIcon(icon: HugeIcons.strokeRoundedMenu01, color: theme.primaryText, size: 20),
               onPressed: () => Scaffold.of(context).openDrawer(),
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
@@ -53,25 +55,54 @@ class _HeaderLayoutState extends State<HeaderLayout> {
             SizedBox(width: Sizes.padding * 0.5),
           ],
 
-          // ── Breadcrumbs (desktop) / Titolo fade (mobile) ──
-          Expanded(child: isMobile ? _buildMobileTitle(context, navigationState) : BreadcrumbsLayout()),
+          // ── Titolo / Breadcrumbs ────────────────────────────
+          Expanded(
+            child: isMobile ? _buildMobileTitle(context, navigationState, theme) : _buildDesktopBreadcrumbs(context, navigationState, theme),
+          ),
 
-          SizedBox(width: isMobile ? Sizes.padding * 0.5 : Sizes.padding),
+          SizedBox(width: isMobile ? Sizes.padding * 0.5 : Sizes.padding * 0.75),
 
-          // ── Assistente AI ──────────────────────────────
-          /*_buildAiButton(context),
-
-          SizedBox(width: isMobile ? Sizes.padding * 0.5 : Sizes.padding * 0.75),*/
-
-          // ── Profilo utente ─────────────────────────────
-          _buildUserProfile(context, authState, isMobile),
+          // ── Profilo utente ─────────────────────────────────
+          isMobile ? _buildMobileProfile(context, authState, theme) : _buildDesktopProfile(context, authState, theme),
         ],
       ),
     );
   }
 
+  /// Desktop: breadcrumb navigabili; se vuoti, cade back sul nome pagina
+  Widget _buildDesktopBreadcrumbs(BuildContext context, NavigationState navigationState, CLTheme theme) {
+    if (navigationState.breadcrumbs.isEmpty) {
+      return Text(
+        navigationState.pageName,
+        style: theme.heading6.copyWith(fontWeight: FontWeight.w700, fontSize: 15, letterSpacing: -0.3),
+        overflow: TextOverflow.ellipsis,
+        maxLines: 1,
+      );
+    }
+    return BreadCrumb(
+      items: navigationState.breadcrumbs.asMap().entries.map((entry) {
+        final segment = entry.value;
+        final isLast = navigationState.breadcrumbs.last.name == segment.name;
+        Widget content;
+        if (isLast) {
+          content = Text(segment.name, style: theme.bodyText.copyWith(color: theme.primary, fontWeight: FontWeight.w600));
+        } else {
+          content = Text(segment.name, style: theme.bodyLabel.copyWith(color: theme.secondaryText));
+        }
+        return BreadCrumbItem(
+          content: content,
+          onTap: segment.isClickable && !isLast ? () => context.go(segment.path) : null,
+        );
+      }).toList(),
+      divider: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 5.0),
+        child: HugeIcon(icon: HugeIcons.strokeRoundedArrowRight01, size: Sizes.small, color: theme.secondaryText.withValues(alpha: 0.5)),
+      ),
+    );
+  }
+
   /// Titolo mobile con fade-in quando CLPageHeader è scrollata via
-  Widget _buildMobileTitle(BuildContext context, NavigationState navigationState) {
+  Widget _buildMobileTitle(BuildContext context, NavigationState navigationState, CLTheme theme) {
     return ValueListenableBuilder<bool>(
       valueListenable: navigationState.headerTitleVisible,
       builder: (context, visible, _) {
@@ -84,9 +115,7 @@ class _HeaderLayoutState extends State<HeaderLayout> {
             offset: visible ? Offset.zero : const Offset(0, 0.3),
             child: Text(
               navigationState.pageName,
-              style: CLTheme.of(
-                context,
-              ).heading6.copyWith(fontWeight: FontWeight.w700, fontSize: 15, letterSpacing: -0.2, color: CLTheme.of(context).primary),
+              style: theme.heading6.copyWith(fontWeight: FontWeight.w700, fontSize: 15, letterSpacing: -0.2, color: theme.primary),
               overflow: TextOverflow.ellipsis,
               maxLines: 1,
             ),
@@ -96,101 +125,105 @@ class _HeaderLayoutState extends State<HeaderLayout> {
     );
   }
 
-  /// Pulsante Assistente AI
-  /*Widget _buildAiButton(BuildContext context) {
-    final theme = CLTheme.of(context);
-    return Tooltip(
-      message: 'Assistente AI',
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(Sizes.borderRadius),
-          onTap: () => Scaffold.of(context).openEndDrawer(),
-          child: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: theme.primary.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(Sizes.borderRadius),
-              border: Border.all(color: theme.primary.withValues(alpha: 0.2)),
-            ),
-            child: HugeIcon(icon: HugeIcons.strokeRoundedAiChat02, color: theme.primary, size: 20),
-          ),
-        ),
-      ),
-    );
-  }*/
-
-  /// Profilo utente
-  Widget _buildUserProfile(BuildContext context, CLAuthState authState, bool isMobile) {
+  /// Profilo utente — CLAvatarWidget pill con nome+email (desktop) e CLAvatarWidget che apre un bottom sheet (mobile)
+  Widget _buildDesktopProfile(BuildContext context, CLAuthState authState, CLTheme theme) {
     final firstName = authState.currentUserInfo?.firstName ?? '';
     final lastName = authState.currentUserInfo?.lastName ?? '';
+    final email = authState.currentUserInfo?.email ?? '';
     final fullName = authState.currentUserInfo?.fullName ?? '';
+    final displayName = '$firstName $lastName'.trim().isNotEmpty ? '$firstName $lastName'.trim() : email;
 
-    if (isMobile) {
-      return InkWell(
-        borderRadius: BorderRadius.circular(Sizes.borderRadius),
-        onTap: () => _showProfileBottomSheet(context, authState),
-        child: SizedBox(height: 36, width: 36, child: CLAvatarWidget(medias: [], elementToPreview: 1, name: fullName)),
-      );
-    }
+    final popupHeader = Padding(
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            fullName.isNotEmpty ? fullName : (email.isNotEmpty ? email : 'Utente'),
+            style: theme.bodyLabel.copyWith(fontWeight: FontWeight.w600, fontSize: 13),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          if (email.isNotEmpty)
+            Text(email, style: theme.smallLabel.copyWith(color: theme.secondaryText, fontSize: 11), maxLines: 1, overflow: TextOverflow.ellipsis),
+        ],
+      ),
+    );
 
     return CLPopupMenu(
-      title: 'Account',
+      titleWidget: popupHeader,
       alignment: CLPopupAlignment.end,
-      minWidth: 220,
-      maxWidth: 260,
+      minWidth: 230,
+      maxWidth: 270,
       items: [
         CLPopupMenuItem(
-          content: Row(
-            children: [
-              HugeIcon(icon: HugeIcons.strokeRoundedUser, color: CLTheme.of(context).primaryText, size: Sizes.medium),
-              const SizedBox(width: 12),
-              Text('Profilo', style: CLTheme.of(context).bodyText),
-            ],
-          ),
+          content: Row(children: [
+            HugeIcon(icon: HugeIcons.strokeRoundedUser, color: theme.primaryText, size: Sizes.medium),
+            const SizedBox(width: 12),
+            Text('Profilo', style: theme.bodyText)
+          ]),
           onTap: () => context.customGoNamed('Profilo Utente'),
         ),
         CLPopupMenuItem(
-          content: Row(
-            children: [
-              HugeIcon(icon: HugeIcons.strokeRoundedLogout01, color: CLTheme.of(context).danger, size: Sizes.medium),
-              const SizedBox(width: 12),
-              Text('Logout', style: CLTheme.of(context).bodyText.override(color: CLTheme.of(context).danger)),
-            ],
-          ),
+          content: Row(children: [
+            HugeIcon(icon: HugeIcons.strokeRoundedLogout01, color: theme.danger, size: Sizes.medium),
+            const SizedBox(width: 12),
+            Text('Logout', style: theme.bodyText.override(color: theme.danger))
+          ]),
           onTap: () async => await authState.signOut(),
         ),
       ],
       builder: (context, open) {
-        return InkWell(
-          borderRadius: BorderRadius.circular(Sizes.borderRadius),
-          onTap: open,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              SizedBox(height: 36, width: 36, child: CLAvatarWidget(medias: [], elementToPreview: 1, name: fullName)),
-              SizedBox(width: Sizes.padding / 2),
-              Column(
+        return Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(10),
+            onTap: open,
+              child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), border: Border.all(color: theme.borderColor)),
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("$firstName $lastName", style: CLTheme.of(context).bodyText),
-                  Text(authState.currentUserInfo?.email ?? '', style: CLTheme.of(context).smallLabel),
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 130),
+                    child: Text(
+                      fullName.isNotEmpty ? fullName : displayName,
+                      style: theme.bodyText.copyWith(fontWeight: FontWeight.w600, fontSize: 13),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  HugeIcon(icon: HugeIcons.strokeRoundedArrowDown01, size: 11, color: theme.secondaryText),
                 ],
               ),
-            ],
+            ),
           ),
         );
       },
     );
   }
 
-  /// Bottom sheet profilo mobile
-  void _showProfileBottomSheet(BuildContext context, CLAuthState authState) {
+  Widget _buildMobileProfile(BuildContext context, CLAuthState authState, CLTheme theme) {
+    final firstName = authState.currentUserInfo?.firstName ?? '';
+    final lastName = authState.currentUserInfo?.lastName ?? '';
     final email = authState.currentUserInfo?.email ?? '';
     final fullName = authState.currentUserInfo?.fullName ?? '';
+    final displayName = '$firstName $lastName'.trim().isNotEmpty ? '$firstName $lastName'.trim() : email;
 
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(50),
+        onTap: () => _showProfileBottomSheet(context, authState, displayName, fullName, email),
+        child: CLAvatarWidget(medias: const [], name: displayName, iconSize: 34, fontSize: 13),
+      ),
+    );
+  }
+
+  void _showProfileBottomSheet(BuildContext context, CLAuthState authState, String displayName, String fullName, String email) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -207,49 +240,40 @@ class _HeaderLayoutState extends State<HeaderLayout> {
                 children: [
                   const SizedBox(height: 10),
                   Container(width: 36, height: 4, decoration: BoxDecoration(color: t.borderColor, borderRadius: BorderRadius.circular(2))),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 8),
                   // Hero profilo
                   Container(
-                    margin: const EdgeInsets.fromLTRB(Sizes.padding, Sizes.padding * 0.75, Sizes.padding, 0),
+                    margin: const EdgeInsets.fromLTRB(Sizes.padding, Sizes.padding * 0.5, Sizes.padding, 0),
                     padding: const EdgeInsets.all(Sizes.padding),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [t.primary.withValues(alpha: 0.12), t.secondary.withValues(alpha: 0.06)],
-                      ),
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [t.primary.withValues(alpha: 0.1), t.secondary.withValues(alpha: 0.05)]),
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: t.primary.withValues(alpha: 0.15)),
+                      border: Border.all(color: t.primary.withValues(alpha: 0.12)),
                     ),
                     child: Row(
                       children: [
-                        SizedBox(width: 52, height: 52, child: CLAvatarWidget(medias: [], elementToPreview: 1, name: fullName)),
+                        CLAvatarWidget(medias: const [], name: displayName, iconSize: 48, fontSize: 18),
                         const SizedBox(width: Sizes.padding),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(
-                                fullName,
-                                style: t.heading6.copyWith(fontWeight: FontWeight.w700, letterSpacing: -0.2),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 3),
-                              Row(
-                                children: [
+                              Text(fullName.isNotEmpty ? fullName : 'Utente',
+                                  style: t.heading6.copyWith(fontWeight: FontWeight.w700, letterSpacing: -0.2), maxLines: 1, overflow: TextOverflow.ellipsis),
+                              if (email.isNotEmpty) ...[
+                                const SizedBox(height: 3),
+                                Row(children: [
                                   HugeIcon(icon: HugeIcons.strokeRoundedMail01, size: 12, color: t.secondaryText),
                                   const SizedBox(width: 4),
                                   Expanded(
-                                    child: Text(
-                                      email,
-                                      style: t.smallLabel.copyWith(color: t.secondaryText, fontSize: 11),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                                      child: Text(email,
+                                          style: t.smallLabel.copyWith(color: t.secondaryText, fontSize: 11), maxLines: 1, overflow: TextOverflow.ellipsis)),
+                                ]),
+                              ],
                             ],
                           ),
                         ),
@@ -258,7 +282,7 @@ class _HeaderLayoutState extends State<HeaderLayout> {
                   ),
                   // Azioni
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(Sizes.padding, Sizes.padding * 0.75, Sizes.padding, 0),
+                    padding: const EdgeInsets.fromLTRB(Sizes.padding, Sizes.padding * 0.75, Sizes.padding, Sizes.padding),
                     child: Column(
                       children: [
                         _ProfileAction(
@@ -285,7 +309,6 @@ class _HeaderLayoutState extends State<HeaderLayout> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: Sizes.padding),
                 ],
               ),
             ),
@@ -296,7 +319,7 @@ class _HeaderLayoutState extends State<HeaderLayout> {
   }
 }
 
-/// Voce azione nel bottom sheet del profilo
+/// Voce azione nel bottom sheet del profilo mobile
 class _ProfileAction extends StatefulWidget {
   const _ProfileAction({required this.icon, required this.label, required this.subtitle, required this.color, required this.onTap});
 

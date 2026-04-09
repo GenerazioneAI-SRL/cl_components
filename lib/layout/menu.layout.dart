@@ -1,4 +1,3 @@
-import 'package:genai_components/widgets/avatar.widget.dart';
 import 'package:genai_components/widgets/logo.widget.dart';
 import 'package:genai_components/core_utils/extension.util.dart';
 import 'package:flutter/material.dart';
@@ -88,7 +87,6 @@ class _MenuLayoutState extends State<MenuLayout> {
                     else if (route is ModuleRoute && route.isVisible && route.showInSideMenu && !route.onlyShowLabel)
                       _buildVisibleModuleRoute(navigationState, route)
                     else if (route is ModuleRoute && route.isVisible && (route.onlyShowLabel || !route.showInSideMenu))
-                      // Modulo mostrato come sezione con label + children strutturati
                       ..._buildSectionModule(navigationState, route)
                     else if (route is ShellModularRoute)
                       for (var subRoute in route.routes)
@@ -98,6 +96,27 @@ class _MenuLayoutState extends State<MenuLayout> {
                           _buildVisibleModuleRoute(navigationState, subRoute)
                         else if (subRoute is ModuleRoute && subRoute.isVisible && (subRoute.onlyShowLabel || !subRoute.showInSideMenu))
                           ..._buildSectionModule(navigationState, subRoute),
+
+                  // ── Mobile: Profilo + Logout + Versione ──────────
+                  if (isMobile) ...[
+                    const SizedBox(height: 12),
+                    // Versione (scorre con il menu su mobile)
+                    FutureBuilder<PackageInfo>(
+                      future: PackageInfo.fromPlatform(),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) return const SizedBox.shrink();
+                        final info = snapshot.data!;
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 4.0),
+                          child: Text(
+                            'v${info.version} (${info.buildNumber})',
+                            textAlign: TextAlign.center,
+                            style: theme.smallLabel.copyWith(color: theme.secondaryText, fontSize: 10),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -187,81 +206,77 @@ class _MenuLayoutState extends State<MenuLayout> {
             ),
           ),*/
 
-          // ── Footer: Toggle tema ──────────────────────────────
-          Padding(
-            padding: EdgeInsets.fromLTRB(Sizes.padding * 0.6, 0, Sizes.padding * 0.6, isMobile ? Sizes.padding * 1.2 : Sizes.padding * 0.75),
-            child: Consumer<ThemeProvider>(
-              builder: (context, themeProvider, _) {
-                final isDarkNow = themeProvider.isDarkMode;
-                return GestureDetector(
-                  onTap: () async => await themeProvider.toggleTheme(),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: Sizes.padding * 0.75, vertical: Sizes.padding * 0.6),
-                    decoration: BoxDecoration(
-                      color: isMobile
-                          ? (isDark ? theme.secondaryBackground : Colors.white)
-                          : (isDark ? theme.secondaryBackground.withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.6)),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: isDark ? theme.borderColor.withValues(alpha: isMobile ? 1.0 : 0.5) : Colors.white.withValues(alpha: isMobile ? 0.0 : 0.8),
+          // ── Footer: Toggle tema (solo desktop — su mobile è nell'intestazione drawer) ──
+          if (!isMobile)
+            Padding(
+              padding: EdgeInsets.fromLTRB(Sizes.padding * 0.6, 0, Sizes.padding * 0.6, Sizes.padding * 0.75),
+              child: Consumer<ThemeProvider>(
+                builder: (context, themeProvider, _) {
+                  final isDarkNow = themeProvider.isDarkMode;
+                  return GestureDetector(
+                    onTap: () async => await themeProvider.toggleTheme(),
+                    child: MouseRegion(
+                      cursor: SystemMouseCursors.click,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: Sizes.padding * 0.75, vertical: Sizes.padding * 0.5),
+                        decoration: BoxDecoration(
+                          color: isDark ? theme.secondaryBackground.withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.6),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: isDark ? theme.borderColor.withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.8),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 28,
+                              height: 28,
+                              decoration: BoxDecoration(
+                                color: isDarkNow ? const Color(0xFF1E293B) : const Color(0xFFFEF3C7),
+                                borderRadius: BorderRadius.circular(7),
+                              ),
+                              child: Center(
+                                child: HugeIcon(
+                                  icon: isDarkNow ? HugeIcons.strokeRoundedMoon02 : HugeIcons.strokeRoundedSun03,
+                                  color: isDarkNow ? const Color(0xFF94A3B8) : const Color(0xFFF59E0B),
+                                  size: 15,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                isDarkNow ? 'Modalità scura' : 'Modalità chiara',
+                                style: theme.bodyLabel.copyWith(fontWeight: FontWeight.w500, fontSize: 13),
+                              ),
+                            ),
+                            _ThemeToggleSwitch(isDark: isDarkNow),
+                          ],
+                        ),
                       ),
                     ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 30,
-                          height: 30,
-                          decoration: BoxDecoration(
-                            color: isDarkNow ? const Color(0xFF1E293B) : const Color(0xFFFEF3C7),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Center(
-                            child: HugeIcon(
-                              icon: isDarkNow ? HugeIcons.strokeRoundedMoon02 : HugeIcons.strokeRoundedSun03,
-                              color: isDarkNow ? const Color(0xFF94A3B8) : const Color(0xFFF59E0B),
-                              size: 16,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                isDarkNow ? 'Modalità scura' : 'Modalità chiara',
-                                style: theme.bodyLabel.copyWith(fontWeight: FontWeight.w500, fontSize: isMobile ? 12.5 : 13),
-                              ),
-                              Text('Tocca per cambiare', style: theme.smallLabel.copyWith(color: theme.secondaryText, fontSize: 10)),
-                            ],
-                          ),
-                        ),
-                        // Switch toggle visivo
-                        _ThemeToggleSwitch(isDark: isDarkNow),
-                      ],
-                    ),
+                  );
+                },
+              ),
+            ),
+
+          // ── Versione app (solo desktop — su mobile scorre con le voci) ──
+          if (!isMobile)
+            FutureBuilder<PackageInfo>(
+              future: PackageInfo.fromPlatform(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) return const SizedBox.shrink();
+                final info = snapshot.data!;
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: Text(
+                    'v${info.version} (${info.buildNumber})',
+                    textAlign: TextAlign.center,
+                    style: theme.smallLabel.copyWith(color: theme.secondaryText, fontSize: 10),
                   ),
                 );
               },
             ),
-          ),
-
-          // ── Versione app ─────────────────────────────────────
-          FutureBuilder<PackageInfo>(
-            future: PackageInfo.fromPlatform(),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) return const SizedBox.shrink();
-              final info = snapshot.data!;
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: Text(
-                  'v${info.version} (${info.buildNumber})',
-                  textAlign: TextAlign.center,
-                  style: theme.smallLabel.copyWith(color: theme.secondaryText, fontSize: 10),
-                ),
-              );
-            },
-          ),
 
           // ── Header ──────────────────────────────────────────
         ],
@@ -508,7 +523,7 @@ class _MenuLayoutState extends State<MenuLayout> {
 // Sotto-widget interni
 // ═══════════════════════════════════════════════════════════════════════════
 
-/// Header del menu: logo + titolo + close button
+/// Header del menu: logo + (mobile only: tema toggle + close button)
 class _MenuHeader extends StatelessWidget {
   const _MenuHeader({required this.authState, required this.isMobile, required this.onClose});
 
@@ -519,6 +534,7 @@ class _MenuHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = CLTheme.of(context);
+
     return Padding(
       padding: EdgeInsets.fromLTRB(
         Sizes.padding,
@@ -528,25 +544,66 @@ class _MenuHeader extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Logo SVG
+          // Toggle tema (solo mobile) — a sinistra del logo
+          if (isMobile) ...[
+            Consumer<ThemeProvider>(
+              builder: (context, themeProvider, _) {
+                final isDarkNow = themeProvider.isDarkMode;
+                return Tooltip(
+                  message: isDarkNow ? 'Modalità chiara' : 'Modalità scura',
+                  child: GestureDetector(
+                    onTap: () async => await themeProvider.toggleTheme(),
+                    child: MouseRegion(
+                      cursor: SystemMouseCursors.click,
+                      child: Container(
+                        width: 34,
+                        height: 34,
+                        decoration: BoxDecoration(
+                          color: isDarkNow ? const Color(0xFF1E293B) : const Color(0xFFFEF3C7),
+                          borderRadius: BorderRadius.circular(9),
+                          border: Border.all(color: theme.borderColor),
+                        ),
+                        child: Center(
+                          child: HugeIcon(
+                            icon: isDarkNow ? HugeIcons.strokeRoundedMoon02 : HugeIcons.strokeRoundedSun03,
+                            color: isDarkNow ? const Color(0xFF94A3B8) : const Color(0xFFF59E0B),
+                            size: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(width: 8),
+          ],
+          // Logo SVG — al centro
           Expanded(child: LogoWidget(height: isMobile ? 22 : 24, dark: false, color: theme.primary)),
-          if (isMobile)
+          // Close button (solo mobile) — a destra del logo
+          if (isMobile) ...[
+            const SizedBox(width: 8),
             GestureDetector(
               onTap: onClose,
               child: Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(color: theme.borderColor.withValues(alpha: 0.6), borderRadius: BorderRadius.circular(8)),
-                child: Center(child: HugeIcon(icon: HugeIcons.strokeRoundedCancel01, color: theme.secondaryText, size: 18)),
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: Colors.transparent,
+                  borderRadius: BorderRadius.circular(9),
+                  border: Border.all(color: theme.borderColor),
+                ),
+                child: Center(child: HugeIcon(icon: HugeIcons.strokeRoundedCancel01, color: theme.secondaryText, size: 17)),
               ),
             ),
+          ],
         ],
       ),
     );
   }
 }
 
-/// Card tenant compatta con avatar, nome e pulsante switch
+/// Card tenant — mostra workspace corrente con due azioni esplicite
 class _TenantCard extends StatelessWidget {
   const _TenantCard({required this.authState, required this.isMobile, required this.onTap, this.onSwitch});
 
@@ -559,52 +616,155 @@ class _TenantCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = CLTheme.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: EdgeInsets.symmetric(horizontal: Sizes.padding * 0.6, vertical: isMobile ? 2 : 4),
-        padding: EdgeInsets.symmetric(horizontal: Sizes.padding * 0.75, vertical: isMobile ? 8 : 10),
-        decoration: BoxDecoration(
-          color: isMobile
-              ? (isDark ? theme.secondaryBackground : Colors.white)
-              : (isDark ? theme.secondaryBackground.withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.6)),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: theme.borderColor),
-        ),
-        child: Row(
-          children: [
-            CLAvatarWidget(name: authState.currentTenant!.name, medias: [], iconSize: isMobile ? 34 : 38),
-            SizedBox(width: isMobile ? 8 : 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    authState.currentTenant!.name,
-                    style: theme.bodyLabel.copyWith(fontWeight: FontWeight.w600, fontSize: isMobile ? 12 : 13),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  if (authState.currentTenant!.rawData['vatNumber'] != null) ...[
-                    const SizedBox(height: 1),
-                    Text('P.IVA ${authState.currentTenant!.rawData['vatNumber']}', style: theme.smallLabel.copyWith(color: theme.secondaryText, fontSize: 10)),
-                  ],
-                ],
+    final companyName = authState.currentTenant!.name;
+    final vatNumber = authState.currentTenant!.rawData['vatNumber'];
+    final subtitle = vatNumber != null ? 'P.IVA $vatNumber' : 'Workspace attivo';
+
+    final cardBg = isDark ? theme.secondaryBackground.withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.55);
+
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: Sizes.padding * 0.6, vertical: isMobile ? 2 : 4),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: theme.borderColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // ── Info azienda ──────────────────────────────────
+          Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: theme.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: theme.primary.withValues(alpha: 0.15)),
+                ),
+                child: Center(child: HugeIcon(icon: HugeIcons.strokeRoundedBuilding04, color: theme.primary, size: 15)),
               ),
-            ),
-            if (onSwitch != null) ...[
-              const SizedBox(width: 4),
-              GestureDetector(
-                onTap: onSwitch,
-                child: Container(
-                  width: 28,
-                  height: 28,
-                  decoration: BoxDecoration(color: theme.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(7)),
-                  child: Center(child: HugeIcon(icon: HugeIcons.strokeRoundedRepeat, color: theme.primary, size: 15)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      companyName,
+                      style: theme.bodyLabel.copyWith(fontWeight: FontWeight.w600, fontSize: 12.5),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 1),
+                    Text(subtitle, style: theme.smallLabel.copyWith(color: theme.secondaryText, fontSize: 10)),
+                  ],
                 ),
               ),
             ],
-          ],
+          ),
+          const SizedBox(height: 8),
+
+          // ── Bottoni azione ────────────────────────────────
+          Row(
+            children: [
+              // Vai all'azienda
+              Expanded(
+                child: _TenantActionButton(
+                  label: 'La mia azienda',
+                  icon: HugeIcons.strokeRoundedArrowRight01,
+                  isPrimary: true,
+                  onTap: onTap,
+                  theme: theme,
+                ),
+              ),
+              // Cambia azienda (solo multi-tenant)
+              if (onSwitch != null) ...[
+                const SizedBox(width: 6),
+                _TenantActionButton(
+                  label: 'Cambia',
+                  icon: HugeIcons.strokeRoundedRepeat,
+                  isPrimary: false,
+                  onTap: onSwitch!,
+                  theme: theme,
+                ),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Bottone azione compatto usato dentro _TenantCard
+class _TenantActionButton extends StatefulWidget {
+  const _TenantActionButton({
+    required this.label,
+    required this.icon,
+    required this.isPrimary,
+    required this.onTap,
+    required this.theme,
+  });
+
+  final String label;
+  final dynamic icon;
+  final bool isPrimary;
+  final VoidCallback onTap;
+  final CLTheme theme;
+
+  @override
+  State<_TenantActionButton> createState() => _TenantActionButtonState();
+}
+
+class _TenantActionButtonState extends State<_TenantActionButton> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = widget.theme;
+    final color = widget.isPrimary ? t.primary : t.secondaryText;
+    final bg = widget.isPrimary ? (_hovered ? t.primary.withValues(alpha: 0.14) : t.primary.withValues(alpha: 0.08)) : Colors.transparent;
+    final border =
+        widget.isPrimary ? Border.all(color: Colors.transparent) : Border.all(color: _hovered ? t.borderColor.withValues(alpha: 0.8) : t.borderColor);
+
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        behavior: HitTestBehavior.opaque,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+          decoration: BoxDecoration(
+            color: bg,
+            borderRadius: BorderRadius.circular(7),
+            border: border,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (widget.isPrimary) ...[
+                Flexible(
+                  child: Text(
+                    widget.label,
+                    style: TextStyle(color: color, fontWeight: FontWeight.w600, fontSize: 11, fontFamily: 'Inter'),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                HugeIcon(icon: widget.icon, size: 11, color: color),
+              ] else ...[
+                Text(widget.label, style: TextStyle(color: color, fontWeight: FontWeight.w500, fontSize: 11, fontFamily: 'Inter')),
+              ],
+            ],
+          ),
         ),
       ),
     );
@@ -1012,6 +1172,75 @@ class _MenuSubTileState extends State<_MenuSubTile> {
                 maxLines: 1,
               ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Voce logout per il menu mobile — con colore danger
+class _MobileLogoutTile extends StatefulWidget {
+  const _MobileLogoutTile({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  State<_MobileLogoutTile> createState() => _MobileLogoutTileState();
+}
+
+class _MobileLogoutTileState extends State<_MobileLogoutTile> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = CLTheme.of(context);
+    const h = 42.0;
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: SizedBox(
+          height: h,
+          child: Stack(
+            children: [
+              Positioned.fill(
+                top: 1.5,
+                bottom: 1.5,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 160),
+                  decoration: BoxDecoration(
+                    color: _hovered ? theme.danger.withValues(alpha: 0.08) : Colors.transparent,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 12),
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: 20,
+                      child: Center(
+                        child: HugeIcon(icon: HugeIcons.strokeRoundedLogout01, color: theme.danger, size: 19),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      'Logout',
+                      style: theme.bodyLabel.copyWith(
+                        color: theme.danger,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),
