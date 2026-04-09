@@ -22,6 +22,11 @@ class ModuleRoute extends ModularRoute {
   /// Se false, cambia solo il menu laterale senza navigare.
   final bool navigateOnTabTap;
 
+  /// Se true, nel menu laterale il modulo viene mostrato come label grigia
+  /// con le voci figlie esplose direttamente sotto (no dropdown collassabile).
+  /// Utile per i moduli "contenitore" grandi (HR, Cert, LMS, ecc.).
+  final bool onlyShowLabel;
+
   ModuleRoute({
     required this.module,
     this.icon,
@@ -30,6 +35,7 @@ class ModuleRoute extends ModularRoute {
     this.showInTopBar = true,
     this.showInSideMenu = true,
     this.navigateOnTabTap = false,
+    this.onlyShowLabel = false,
   }) {
     name = module.moduleRoute.name;
     path = module.moduleRoute.path;

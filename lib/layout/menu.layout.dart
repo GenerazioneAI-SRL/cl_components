@@ -85,18 +85,18 @@ class _MenuLayoutState extends State<MenuLayout> {
                   for (var route in widget.routes)
                     if (route is ChildRoute && route.isVisible)
                       _buildChildRoute(navigationState, route)
-                    else if (route is ModuleRoute && route.isVisible && route.showInSideMenu)
+                    else if (route is ModuleRoute && route.isVisible && route.showInSideMenu && !route.onlyShowLabel)
                       _buildVisibleModuleRoute(navigationState, route)
-                    else if (route is ModuleRoute && route.isVisible && !route.showInSideMenu)
+                    else if (route is ModuleRoute && route.isVisible && (route.onlyShowLabel || !route.showInSideMenu))
                       // Modulo mostrato come sezione con label + children strutturati
                       ..._buildSectionModule(navigationState, route)
                     else if (route is ShellModularRoute)
                       for (var subRoute in route.routes)
                         if (subRoute is ChildRoute && subRoute.isVisible)
                           _buildChildRoute(navigationState, subRoute)
-                        else if (subRoute is ModuleRoute && subRoute.isVisible && subRoute.showInSideMenu)
+                        else if (subRoute is ModuleRoute && subRoute.isVisible && subRoute.showInSideMenu && !subRoute.onlyShowLabel)
                           _buildVisibleModuleRoute(navigationState, subRoute)
-                        else if (subRoute is ModuleRoute && subRoute.isVisible && !subRoute.showInSideMenu)
+                        else if (subRoute is ModuleRoute && subRoute.isVisible && (subRoute.onlyShowLabel || !subRoute.showInSideMenu))
                           ..._buildSectionModule(navigationState, subRoute),
                 ],
               ),
