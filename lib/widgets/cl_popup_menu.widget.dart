@@ -253,11 +253,7 @@ enum CLPopupAlignment { start, end }
 class _CLPopupMenuItemWidget extends StatefulWidget {
   final CLPopupMenuItem item;
 
-  const _CLPopupMenuItemWidget({required this.item, this.isLast = false});
-
-  // isLast mantenuto per compatibilità ma non più usato visivamente
-  // ignore: unused_element
-  final bool isLast;
+  const _CLPopupMenuItemWidget({required this.item});
 
   @override
   State<_CLPopupMenuItemWidget> createState() => _CLPopupMenuItemWidgetState();
