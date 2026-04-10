@@ -1,5 +1,13 @@
 # Changelog
 
+## 4.2.7
+
+- **Widgets:** Updated CLPopup_menu
+- **Layout:** Updated Header Layout
+- **Core:** Updated Changelog Md
+- **Package:** Updated Pubspec Yaml
+
+
 ## 4.2.6
 
 - **Widgets:** Updated CLPopup_menu
