@@ -12,8 +12,8 @@ import '../widgets/cl_popup_menu.widget.dart';
 import 'constants/sizes.constant.dart';
 import '../cl_theme.dart';
 
-class HeaderLayout extends StatefulWidget {
-  const HeaderLayout({super.key, this.headerColor, this.headerHeight, this.iconColor, this.iconSize});
+class CLHeaderLayout extends StatefulWidget {
+  const CLHeaderLayout({super.key, this.headerColor, this.headerHeight, this.iconColor, this.iconSize});
 
   final Color? headerColor;
   final double? headerHeight;
@@ -21,10 +21,10 @@ class HeaderLayout extends StatefulWidget {
   final double? iconSize;
 
   @override
-  State<HeaderLayout> createState() => _HeaderLayoutState();
+  State<CLHeaderLayout> createState() => _CLHeaderLayoutState();
 }
 
-class _HeaderLayoutState extends State<HeaderLayout> {
+class _CLHeaderLayoutState extends State<CLHeaderLayout> {
   // ── Helpers ────────────────────────────────────────────────────────────────
 
   @override
@@ -386,3 +386,7 @@ class _ProfileActionState extends State<_ProfileAction> {
     );
   }
 }
+
+/// Retrocompatibilità: il vecchio nome [HeaderLayout] resta disponibile come alias.
+typedef HeaderLayout = CLHeaderLayout;
+

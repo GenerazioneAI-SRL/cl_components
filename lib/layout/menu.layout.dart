@@ -16,18 +16,18 @@ import '../router/go_router_modular/routes/shell_modular_route.dart';
 import '../utils/providers/navigation.util.provider.dart';
 import '../cl_theme.dart';
 
-class MenuLayout extends StatefulWidget {
+class CLMenuLayout extends StatefulWidget {
   final List<ModularRoute> routes;
   final String? logoImagePath;
   final String? logoImagePathMini;
 
-  const MenuLayout({super.key, required this.routes, this.logoImagePath, this.logoImagePathMini});
+  const CLMenuLayout({super.key, required this.routes, this.logoImagePath, this.logoImagePathMini});
 
   @override
-  createState() => _MenuLayoutState();
+  createState() => _CLMenuLayoutState();
 }
 
-class _MenuLayoutState extends State<MenuLayout> {
+class _CLMenuLayoutState extends State<CLMenuLayout> {
   @override
   Widget build(BuildContext context) {
     final authState = context.watch<CLAuthState>();
@@ -1284,3 +1284,7 @@ class _ThemeToggleSwitch extends StatelessWidget {
     );
   }
 }
+
+/// Retrocompatibilità: il vecchio nome [MenuLayout] resta disponibile come alias.
+typedef MenuLayout = CLMenuLayout;
+
