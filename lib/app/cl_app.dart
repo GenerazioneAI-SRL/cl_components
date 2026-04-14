@@ -144,11 +144,16 @@ class _CLAppModule extends Module {
         ),
         if (config.shellRoutes.isNotEmpty)
           ShellModularRoute(
-            builder: (context, state, child) => AppLayout(
-              shellChild: child,
-              shellRoutes: config.shellRoutes,
-              moduleTabsEnabled: config.moduleTabsEnabled,
-            ),
+            builder: (context, state, child) {
+              if (config.shellBuilder != null) {
+                return config.shellBuilder!(child, config.shellRoutes, config.moduleTabsEnabled);
+              }
+              return CLAppLayout(
+                shellChild: child,
+                shellRoutes: config.shellRoutes,
+                moduleTabsEnabled: config.moduleTabsEnabled,
+              );
+            },
             observers: [
               GoRouterBreadcrumbObserver(),
               CLResumeObserver.instance,

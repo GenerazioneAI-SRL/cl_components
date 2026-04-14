@@ -4,6 +4,17 @@ import '../auth/cl_auth_state.dart';
 import '../router/go_router_modular/routes/modular_route.dart';
 import '../widgets/cl_ai_assistant/flutter_ai_assistant.dart';
 
+/// Signature per il builder custom della shell (layout principale dell'app).
+///
+/// [child] è il contenuto della pagina corrente (outlet del router).
+/// [shellRoutes] è la lista di route visibili nel menu.
+/// [moduleTabsEnabled] indica se le tab dei moduli sono abilitate.
+typedef ShellLayoutBuilder = Widget Function(
+  Widget child,
+  List<dynamic> shellRoutes,
+  bool moduleTabsEnabled,
+);
+
 /// Configurazione astratta dell'app.
 /// Ogni progetto crea la propria implementazione con i moduli business.
 abstract class CLAppConfig {
@@ -62,6 +73,17 @@ abstract class CLAppConfig {
 
   /// Callback chiamato dopo l'inizializzazione (before runApp)
   Future<void> onInit() async {}
+
+  /// Builder custom per la shell (layout principale: menu + header + contenuto).
+  /// Se null, viene usato il default [CLAppLayout] di genai_components.
+  ///
+  /// Esempio:
+  /// ```dart
+  /// @override
+  /// ShellLayoutBuilder? get shellBuilder => (child, routes, tabsEnabled) =>
+  ///     MyCustomLayout(shellChild: child, shellRoutes: routes);
+  /// ```
+  ShellLayoutBuilder? get shellBuilder => null;
 
   /// Callback per costruire la configurazione AI a runtime
   /// (dopo che il router e' configurato e le route sono registrate)

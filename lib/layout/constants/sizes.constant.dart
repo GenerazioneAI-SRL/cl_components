@@ -1,4 +1,4 @@
-class Sizes {
+class CLSizes {
   static const sm = 8.0;
   static const small = 16.0;
   static const md = 16.0;
@@ -16,3 +16,7 @@ class Sizes {
   static const verticalPadding = 16.0;
   static const headerOffset = 80.0; // Offset per il padding top delle pagine (header superiore + page name container = 135px totale)
 }
+
+/// Retrocompatibilità: il vecchio nome [Sizes] resta disponibile come alias.
+typedef Sizes = CLSizes;
+

@@ -15,18 +15,18 @@ import 'notifications_panel.layout.dart';
 import 'ai_chat_drawer.widget.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-class AppLayout extends StatefulWidget {
-  const AppLayout({super.key, required this.shellChild, this.shellRoutes = const [], this.moduleTabsEnabled = false});
+class CLAppLayout extends StatefulWidget {
+  const CLAppLayout({super.key, required this.shellChild, this.shellRoutes = const [], this.moduleTabsEnabled = false});
 
   final Widget shellChild;
   final List<dynamic> shellRoutes;
   final bool moduleTabsEnabled;
 
   @override
-  State<AppLayout> createState() => _AppLayoutState();
+  State<CLAppLayout> createState() => _CLAppLayoutState();
 }
 
-class _AppLayoutState extends State<AppLayout> with WidgetsBindingObserver, TickerProviderStateMixin {
+class _CLAppLayoutState extends State<CLAppLayout> with WidgetsBindingObserver, TickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -91,7 +91,7 @@ class _AppLayoutState extends State<AppLayout> with WidgetsBindingObserver, Tick
       width: MediaQuery.of(context).size.width * 0.85,
       backgroundColor: CLTheme.of(context).secondaryBackground,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.only(topRight: Radius.circular(0), bottomRight: Radius.circular(0))),
-      child: SafeArea(child: MenuLayout(routes: widget.shellRoutes.cast())),
+      child: SafeArea(child: CLMenuLayout(routes: widget.shellRoutes.cast())),
     );
   }
 
@@ -127,7 +127,7 @@ class _AppLayoutState extends State<AppLayout> with WidgetsBindingObserver, Tick
                       border: Border.all(color: theme.borderColor),
                       boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04), blurRadius: 12, offset: const Offset(0, 2))],
                     ),
-                    child: MenuLayout(routes: widget.shellRoutes.cast()),
+                    child: CLMenuLayout(routes: widget.shellRoutes.cast()),
                   ),
                 ),
               ),
@@ -214,3 +214,7 @@ class _AppLayoutState extends State<AppLayout> with WidgetsBindingObserver, Tick
     );
   }
 }
+
+/// Retrocompatibilità: il vecchio nome [AppLayout] resta disponibile come alias.
+typedef AppLayout = CLAppLayout;
+
