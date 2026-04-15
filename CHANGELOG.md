@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.2.11
+
+- **Widgets:** Updated CLMedia_attach, CLText_field, CLUniversal_repeatable
+- **Core:** Updated Genai Components
+
+
 ## 4.2.10
 
 - **Layout:** Updated 4 components
