@@ -72,6 +72,10 @@ ensure_dart() {
   have_cmd dart || die "dart not found in PATH."
 }
 
+ensure_flutter() {
+  have_cmd flutter || die "flutter not found in PATH."
+}
+
 package_version() {
   grep -E '^version:' "$PACKAGE_DIR/pubspec.yaml" | sed 's/version:[[:space:]]*//'
 }
@@ -676,7 +680,7 @@ cmd_publish() {
   done
 
   package_exists || die "Package repo not found at $PACKAGE_DIR. Run './cl dev' first."
-  ensure_dart
+  ensure_flutter
 
   if package_is_dirty; then
     die "Package repo has uncommitted changes. Commit or stash them before publishing."
@@ -695,7 +699,7 @@ cmd_publish() {
   say ""
 
   info "Running dry-run..."
-  if ! (cd "$PACKAGE_DIR" && dart pub publish --dry-run); then
+  if ! (cd "$PACKAGE_DIR" && flutter pub publish --dry-run); then
     die "Dry-run failed. Fix the issues above before publishing."
   fi
 
@@ -710,7 +714,7 @@ cmd_publish() {
   fi
 
   info "Publishing to pub.dev..."
-  (cd "$PACKAGE_DIR" && dart pub publish --force)
+  (cd "$PACKAGE_DIR" && flutter pub publish --force)
 
   # Tag and push
   local tag="v$version"
