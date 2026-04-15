@@ -11,6 +11,7 @@ import '../layout/constants/sizes.constant.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'buttons/cl_soft_button.widget.dart';
 import 'formatters/date_mask_formatter.dart';
+import 'textfield_validator.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // CLTextField
@@ -47,6 +48,7 @@ class CLTextField extends StatefulWidget {
   final List<TextInputFormatter>? inputFormatters;
   final Color? fillColor;
   final CLDateFieldType? dateFieldType;
+  final bool capitalize;
 
   const CLTextField({
     super.key,
@@ -80,6 +82,7 @@ class CLTextField extends StatefulWidget {
     this.onlyTime = false,
     this.fillColor,
     this.dateFieldType,
+    this.capitalize = false,
   });
 
   @override
@@ -178,6 +181,7 @@ class CLTextField extends StatefulWidget {
     bool isRequired = false,
     bool isRounded = false,
     bool isEnabled = true,
+    bool withTime = false,
     DateTime? initialSelectedDateTime,
     required Function(DateTime?) onDateTimeSelected,
     List<FormFieldValidator<String>>? validators,
@@ -192,10 +196,11 @@ class CLTextField extends StatefulWidget {
       isRequired: isRequired,
       isRounded: isRounded,
       isEnabled: isEnabled,
+      withTime: withTime,
       initialSelectedDateTime: initialSelectedDateTime,
       onDateTimeSelected: onDateTimeSelected,
       validators: validators,
-      dateFieldType: CLDateFieldType.date,
+      dateFieldType: withTime ? CLDateFieldType.dateTime : CLDateFieldType.date,
     );
   }
 
@@ -567,6 +572,18 @@ class CLTextFieldState extends State<CLTextField> {
   static const _kBorderWidthFocused = 1.5;
   static const _kIconSize = 16.0;
 
+  /// Mostra l'asterisco se [isRequired] è true oppure se [Validators.required]
+  /// è presente nella lista dei validators.
+  bool get _shouldShowRequired {
+    if (widget.isRequired) return true;
+    if (widget.validators != null) {
+      for (final v in widget.validators!) {
+        if (v == Validators.required) return true;
+      }
+    }
+    return false;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -872,6 +889,7 @@ class CLTextFieldState extends State<CLTextField> {
           absorbing: shouldAbsorbPointer,
           child: TextFormField(
             textAlignVertical: TextAlignVertical.center,
+            textCapitalization: widget.capitalize ? TextCapitalization.sentences : TextCapitalization.none,
             cursorColor: theme.primary,
             cursorWidth: 1.5,
             cursorRadius: const Radius.circular(1),
@@ -905,7 +923,7 @@ class CLTextFieldState extends State<CLTextField> {
               alignLabelWithHint: widget.isTextArea,
               errorMaxLines: 200,
               contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: vPadding),
-              labelText: widget.isRequired ? '${widget.labelText}*' : widget.labelText,
+              labelText: _shouldShowRequired ? '${widget.labelText}*' : widget.labelText,
               hintText: widget.dateFieldType?.hint,
               hintStyle: widget.dateFieldType != null ? theme.bodyLabel.copyWith(fontSize: 14, height: 1.4) : null,
 
