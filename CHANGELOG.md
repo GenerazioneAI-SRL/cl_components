@@ -1,5 +1,13 @@
 # Changelog
 
+## 4.2.16
+
+- **Widgets:** Updated CLMonth_calendar
+- **Layout:** Updated App Layout, Menu Layout
+- **API:** Updated Api Manager
+- **Core:** Updated Cl App, Cl App Config
+
+
 ## 4.2.15
 
 - **Widgets:** Updated CLMedia_attach, CLText_field, CLUniversal_repeatable
