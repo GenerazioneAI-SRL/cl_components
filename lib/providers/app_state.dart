@@ -3,6 +3,8 @@ import 'package:rxdart/rxdart.dart';
 import '../cl_theme.dart';
 import '../utils/shared_manager.util.dart';
 
+import '../app/cl_app_config.dart';
+
 class AppState extends ChangeNotifier {
   late BehaviorSubject<bool> refreshList = BehaviorSubject<bool>.seeded(false);
   bool _hasError = false;
@@ -10,6 +12,17 @@ class AppState extends ChangeNotifier {
   bool fromNotification = false;
   bool isInitialized = false;
   bool maintenanceMode = false;
+  bool showAiButton = false;
+  AiButtonPosition aiButtonPosition = AiButtonPosition.header;
+  Widget Function(BuildContext context, VoidCallback onPressed)? aiButtonBuilder;
+  bool _aiChatOpen = false;
+
+  bool get aiChatOpen => _aiChatOpen;
+
+  void toggleAiChat() {
+    _aiChatOpen = !_aiChatOpen;
+    notifyListeners();
+  }
 
   void completeInitialization() {
     if (!isInitialized) {

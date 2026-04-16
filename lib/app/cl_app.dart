@@ -56,6 +56,9 @@ class CLApp {
 
     // Core providers
     final appState = AppState();
+    appState.showAiButton = config.showAiButton;
+    appState.aiButtonPosition = config.aiButtonPosition;
+    appState.aiButtonBuilder = config.aiButtonBuilder;
     final authState = config.authState;
     final navigationState = NavigationState();
     final errorState = ErrorState();
