@@ -6,6 +6,8 @@ import 'package:provider/provider.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import '../core_utils/extension.util.dart';
 import '../utils/providers/navigation.util.provider.dart';
+import '../providers/app_state.dart';
+import '../app/cl_app_config.dart';
 import '../auth/cl_auth_state.dart';
 import '../widgets/avatar.widget.dart';
 import '../widgets/cl_popup_menu.widget.dart';
@@ -31,6 +33,7 @@ class _CLHeaderLayoutState extends State<CLHeaderLayout> {
   Widget build(BuildContext context) {
     final authState = context.watch<CLAuthState>();
     final navigationState = context.watch<NavigationState>();
+    final appState = context.watch<AppState>();
     final isMobile = !ResponsiveBreakpoints.of(context).isDesktop;
     final theme = CLTheme.of(context);
 
@@ -61,6 +64,30 @@ class _CLHeaderLayoutState extends State<CLHeaderLayout> {
           ),
 
           SizedBox(width: isMobile ? Sizes.padding * 0.5 : Sizes.padding * 0.75),
+
+          // ── Pulsante AI Assistant (solo se posizione = header) ──
+          if (appState.showAiButton && appState.aiButtonPosition == AiButtonPosition.header) ...[
+            Builder(builder: (ctx) {
+              onPressed() {
+                if (isMobile) {
+                  Scaffold.of(ctx).openEndDrawer();
+                } else {
+                  appState.toggleAiChat();
+                }
+              }
+              if (appState.aiButtonBuilder != null) {
+                return appState.aiButtonBuilder!(ctx, onPressed);
+              }
+              return IconButton(
+                icon: HugeIcon(icon: HugeIcons.strokeRoundedAiChat02, color: theme.primary, size: 20),
+                onPressed: onPressed,
+                tooltip: 'Assistente AI',
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+              );
+            }),
+            SizedBox(width: Sizes.padding * 0.25),
+          ],
 
           // ── Profilo utente ─────────────────────────────────
           isMobile ? _buildMobileProfile(context, authState, theme) : _buildDesktopProfile(context, authState, theme),
@@ -188,7 +215,7 @@ class _CLHeaderLayoutState extends State<CLHeaderLayout> {
           child: InkWell(
             borderRadius: BorderRadius.circular(10),
             onTap: open,
-              child: Container(
+            child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), border: Border.all(color: theme.borderColor)),
               child: Row(
@@ -389,4 +416,3 @@ class _ProfileActionState extends State<_ProfileAction> {
 
 /// Retrocompatibilità: il vecchio nome [HeaderLayout] resta disponibile come alias.
 typedef HeaderLayout = CLHeaderLayout;
-

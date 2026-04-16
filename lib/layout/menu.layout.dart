@@ -7,7 +7,9 @@ import 'package:hugeicons/hugeicons.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import '../auth/cl_auth_state.dart';
+import '../providers/app_state.dart';
 import '../providers/theme_provider.dart';
+import '../app/cl_app_config.dart';
 import '../router/go_router_modular/routes/modular_route.dart';
 import 'constants/sizes.constant.dart';
 import '../router/go_router_modular/routes/child_route.dart';
@@ -224,6 +226,60 @@ class _CLMenuLayoutState extends State<CLMenuLayout> {
           // ── Footer custom (es. card utente con logout) ──────
           if (widget.menuFooterBuilder != null)
             widget.menuFooterBuilder!(context),
+
+          // ── Pulsante AI (se posizione = menu) ──────────────
+          Builder(builder: (ctx) {
+            final appState = ctx.watch<AppState>();
+            if (!appState.showAiButton || appState.aiButtonPosition != AiButtonPosition.menu) {
+              return const SizedBox.shrink();
+            }
+            onPressed() => appState.toggleAiChat();
+            if (appState.aiButtonBuilder != null) {
+              return Padding(
+                padding: EdgeInsets.fromLTRB(Sizes.padding * 0.6, 0, Sizes.padding * 0.6, 8),
+                child: appState.aiButtonBuilder!(ctx, onPressed),
+              );
+            }
+            return Padding(
+              padding: EdgeInsets.fromLTRB(Sizes.padding * 0.6, 0, Sizes.padding * 0.6, 8),
+              child: GestureDetector(
+                onTap: onPressed,
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: Sizes.padding * 0.75, vertical: Sizes.padding * 0.5),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [theme.primary.withValues(alpha: 0.12), theme.secondary.withValues(alpha: 0.08)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: theme.primary.withValues(alpha: 0.25)),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 28,
+                          height: 28,
+                          decoration: BoxDecoration(color: theme.primary.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(7)),
+                          child: Center(child: HugeIcon(icon: HugeIcons.strokeRoundedAiChat02, color: theme.primary, size: 15)),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'Assistente AI',
+                            style: theme.bodyLabel.copyWith(fontWeight: FontWeight.w600, fontSize: 13, color: theme.primary),
+                          ),
+                        ),
+                        HugeIcon(icon: HugeIcons.strokeRoundedArrowRight01, color: theme.primary, size: 14),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }),
 
           // ── Footer: Toggle tema (solo desktop — su mobile è nell'intestazione drawer) ──
           if (!isMobile)

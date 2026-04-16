@@ -87,8 +87,8 @@ class _CLAppLayoutState extends State<CLAppLayout> with WidgetsBindingObserver, 
           drawer: isMobile ? _buildMobileDrawer(context) : null,
           drawerEnableOpenDragGesture: isMobile,
           drawerEdgeDragWidth: isMobile ? 40 : 0,
-          // EndDrawer per Assistente AI
-          endDrawer: const AiChatDrawer(),
+          // EndDrawer solo per mobile
+          endDrawer: isMobile && appState.showAiButton ? const AiChatDrawer() : null,
           endDrawerEnableOpenDragGesture: false,
           body: GradientBackgroundWidget(showDecorativeCircles: false, child: _buildResponsiveLayout(context, appState)),
         );
@@ -118,6 +118,8 @@ class _CLAppLayoutState extends State<CLAppLayout> with WidgetsBindingObserver, 
     final theme = CLTheme.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final p = Sizes.padding;
+    final showAiPanel = appState.showAiButton && appState.aiChatOpen;
+
     return Padding(
       padding: EdgeInsets.only(left: p, top: p, bottom: 0),
       child: Row(
@@ -178,6 +180,37 @@ class _CLAppLayoutState extends State<CLAppLayout> with WidgetsBindingObserver, 
               ],
             ),
           ),
+
+          // AI Chat panel (desktop) — stile glass come il menu
+          AnimatedSize(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeInOut,
+            alignment: Alignment.centerRight,
+            child: showAiPanel
+                ? Padding(
+                    padding: EdgeInsets.only(left: 0, bottom: p, right: p),
+                    child: RepaintBoundary(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(Sizes.borderRadius * 1.5),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                          child: Container(
+                            width: 360,
+                            decoration: BoxDecoration(
+                              color: isDark ? theme.primaryBackground.withValues(alpha: 0.85) : theme.secondaryBackground.withValues(alpha: 0.85),
+                              borderRadius: BorderRadius.circular(Sizes.borderRadius * 1.5),
+                              border: Border.all(color: theme.borderColor),
+                              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04), blurRadius: 12, offset: const Offset(0, 2))],
+                            ),
+                            child: const AiChatPanel(),
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
+                : const SizedBox.shrink(),
+          ),
+
           // Notifications panel (se presente)
           const NotificationsPanel(),
         ],
