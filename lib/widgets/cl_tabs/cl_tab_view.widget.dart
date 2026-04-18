@@ -95,7 +95,7 @@ class _CLTabViewState extends State<CLTabView> with SingleTickerProviderStateMix
         ),
 
         // ── Divider opzionale ──
-        if (widget.showDivider) ...[const SizedBox(height: Sizes.borderRadius), Divider(color: theme.borderColor, height: 1)],
+        if (widget.showDivider) ...[const SizedBox(height: Sizes.borderRadius), Divider(color: theme.cardBorder, height: 1)],
 
         const SizedBox(height: Sizes.borderRadius),
 

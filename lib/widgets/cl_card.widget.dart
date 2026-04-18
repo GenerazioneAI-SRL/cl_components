@@ -107,6 +107,6 @@ class _CLCardState extends State<CLCard> {
                   ),
                 ],
               ),
-            ));
+            );
   }
 }

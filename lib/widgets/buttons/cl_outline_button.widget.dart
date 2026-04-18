@@ -268,7 +268,7 @@ class _CLOutlineButtonState extends State<CLOutlineButton> {
                           : null),
               onPressed: _handleTap,
               style: OutlinedButton.styleFrom(
-                side: BorderSide(color: CLTheme.of(context).borderColor, width: 1.0),
+                side: BorderSide(color: CLTheme.of(context).cardBorder, width: 1.0),
                 foregroundColor: widget.color,
                 overlayColor: CLTheme.of(context).accent,
                 padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
@@ -294,7 +294,7 @@ class _CLOutlineButtonState extends State<CLOutlineButton> {
                 overlayColor: WidgetStateProperty.all(widget.color.withValues(alpha: 0.08)),
                 shape: WidgetStateProperty.all(RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(Sizes.borderRadius),
-                  side: BorderSide(color: CLTheme.of(context).borderColor, width: 1.0),
+                  side: BorderSide(color: CLTheme.of(context).cardBorder, width: 1.0),
                 )),
                 minimumSize: WidgetStateProperty.all(Size(isMobile ? 36 : 36, isMobile ? 36 : 36)),
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,

@@ -23,7 +23,7 @@ class CLTooltipWrapper extends StatelessWidget {
       waitDuration: const Duration(milliseconds: 500),
       triggerMode: triggerMode,
       decoration: BoxDecoration(
-        color: isDark ? theme.secondaryBackground : const Color(0xFF18181B),
+        color: isDark ? theme.secondaryBackground : theme.accentForeground,
         borderRadius: BorderRadius.circular(4),
         border: Border.all(color: theme.cardBorder),
       ),

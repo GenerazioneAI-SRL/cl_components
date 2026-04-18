@@ -37,6 +37,7 @@ class CLCommandPalette extends StatefulWidget {
 class _CLCommandPaletteState extends State<CLCommandPalette> {
   final _search = TextEditingController();
   final _focus = FocusNode();
+  final _keyboardFocus = FocusNode();
   List<CLCommandItem> _filtered = [];
   int _selected = 0;
 
@@ -51,6 +52,7 @@ class _CLCommandPaletteState extends State<CLCommandPalette> {
   void dispose() {
     _search.dispose();
     _focus.dispose();
+    _keyboardFocus.dispose();
     super.dispose();
   }
 
@@ -79,7 +81,7 @@ class _CLCommandPaletteState extends State<CLCommandPalette> {
     final theme = CLTheme.of(context);
     return Center(
       child: KeyboardListener(
-        focusNode: FocusNode(),
+        focusNode: _keyboardFocus,
         onKeyEvent: (e) {
           if (e is KeyDownEvent) {
             if (e.logicalKey == LogicalKeyboardKey.arrowDown) {

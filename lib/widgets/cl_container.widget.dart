@@ -92,7 +92,7 @@ class _CLContainerState extends State<CLContainer> {
             Container(
               decoration: BoxDecoration(
                 color: theme.primaryBackground,
-                border: widget.customHeader == null ? Border(bottom: BorderSide(color: theme.borderColor, width: 1)) : null,
+                border: widget.customHeader == null ? Border(bottom: BorderSide(color: theme.cardBorder, width: 1)) : null,
               ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: Sizes.padding, vertical: Sizes.verticalPadding),
