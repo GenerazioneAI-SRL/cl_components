@@ -57,6 +57,7 @@ export 'widgets/cl_tabs/cl_tab_item.model.dart';
 // Feedback
 export 'widgets/cl_alert.widget.dart';
 export 'widgets/cl_info_banner.widget.dart';
+export 'widgets/cl_toast.widget.dart';
 export 'widgets/alertmanager/alert_manager.dart';
 
 // Progress
