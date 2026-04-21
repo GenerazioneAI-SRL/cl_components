@@ -1,9 +1,18 @@
 # Changelog
 
-## Unreleased
-
 - **Widgets:** `CLTextField` now supports optional `fillColor` in `time`, `date`, `dateTime`,
   `month`, and `year` factory constructors (retrocompatible).
+
+## 4.2.22
+
+- **Widgets:** Updated 9 components
+- **Layout:** Updated Header Layout, Menu Layout
+- **Router:** Updated Child Route
+- **Providers:** Updated App State
+- **Core:** Updated 31 components
+- **Package:** Updated Pubspec Yaml
+- **Example:** Updated 4 components
+
 
 ## 4.2.21
 
