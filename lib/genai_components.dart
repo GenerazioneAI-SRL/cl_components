@@ -113,7 +113,7 @@ export 'auth/cl_tenant.dart';
 
 // App
 export 'app/cl_app.dart';
-export 'app/cl_app_config.dart' show CLAppConfig, ShellLayoutBuilder, AiButtonPosition;
+export 'app/cl_app_config.dart' show CLAppConfig, ShellLayoutBuilder, AiButtonPosition, ProfilePosition;
 
 // Router
 export 'router/go_router_modular/module.dart';

@@ -59,6 +59,7 @@ class CLApp {
     appState.showAiButton = config.showAiButton;
     appState.aiButtonPosition = config.aiButtonPosition;
     appState.aiButtonBuilder = config.aiButtonBuilder;
+    appState.profilePosition = config.profilePosition;
     final authState = config.authState;
     final navigationState = NavigationState();
     final errorState = ErrorState();

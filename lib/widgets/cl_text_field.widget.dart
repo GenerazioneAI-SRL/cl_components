@@ -152,6 +152,7 @@ class CLTextField extends StatefulWidget {
     TimeOfDay? initialSelectedTime,
     required Function(TimeOfDay?) onTimeSelected,
     Function(DateTime?)? onDateTimeSelected,
+    Color? fillColor,
     List<FormFieldValidator<String>>? validators,
   }) {
     return CLTextField(
@@ -167,6 +168,7 @@ class CLTextField extends StatefulWidget {
       initialSelectedTime: initialSelectedTime,
       onTimeSelected: onTimeSelected,
       onDateTimeSelected: onDateTimeSelected,
+      fillColor: fillColor,
       validators: validators,
       dateFieldType: CLDateFieldType.time,
     );
@@ -184,6 +186,7 @@ class CLTextField extends StatefulWidget {
     bool withTime = false,
     DateTime? initialSelectedDateTime,
     required Function(DateTime?) onDateTimeSelected,
+    Color? fillColor,
     List<FormFieldValidator<String>>? validators,
   }) {
     return CLTextField(
@@ -199,6 +202,7 @@ class CLTextField extends StatefulWidget {
       withTime: withTime,
       initialSelectedDateTime: initialSelectedDateTime,
       onDateTimeSelected: onDateTimeSelected,
+      fillColor: fillColor,
       validators: validators,
       dateFieldType: withTime ? CLDateFieldType.dateTime : CLDateFieldType.date,
     );
@@ -215,6 +219,7 @@ class CLTextField extends StatefulWidget {
     bool isEnabled = true,
     DateTime? initialSelectedDateTime,
     required Function(DateTime?) onDateTimeSelected,
+    Color? fillColor,
     List<FormFieldValidator<String>>? validators,
   }) {
     return CLTextField(
@@ -229,6 +234,7 @@ class CLTextField extends StatefulWidget {
       isEnabled: isEnabled,
       initialSelectedDateTime: initialSelectedDateTime,
       onDateTimeSelected: onDateTimeSelected,
+      fillColor: fillColor,
       validators: validators,
       dateFieldType: CLDateFieldType.dateTime,
     );
@@ -245,6 +251,7 @@ class CLTextField extends StatefulWidget {
     bool isEnabled = true,
     DateTime? initialSelectedDateTime,
     required Function(DateTime?) onDateTimeSelected,
+    Color? fillColor,
     List<FormFieldValidator<String>>? validators,
   }) {
     return CLTextField(
@@ -259,6 +266,7 @@ class CLTextField extends StatefulWidget {
       isEnabled: isEnabled,
       initialSelectedDateTime: initialSelectedDateTime,
       onDateTimeSelected: onDateTimeSelected,
+      fillColor: fillColor,
       validators: validators,
       dateFieldType: CLDateFieldType.month,
     );
@@ -275,6 +283,7 @@ class CLTextField extends StatefulWidget {
     bool isEnabled = true,
     DateTime? initialSelectedDateTime,
     required Function(DateTime?) onDateTimeSelected,
+    Color? fillColor,
     List<FormFieldValidator<String>>? validators,
   }) {
     return CLTextField(
@@ -289,6 +298,7 @@ class CLTextField extends StatefulWidget {
       isEnabled: isEnabled,
       initialSelectedDateTime: initialSelectedDateTime,
       onDateTimeSelected: onDateTimeSelected,
+      fillColor: fillColor,
       validators: validators,
       dateFieldType: CLDateFieldType.year,
     );
