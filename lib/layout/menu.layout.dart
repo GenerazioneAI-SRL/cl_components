@@ -17,6 +17,8 @@ import '../router/go_router_modular/routes/module_route.dart';
 import '../router/go_router_modular/routes/shell_modular_route.dart';
 import '../utils/providers/navigation.util.provider.dart';
 import '../cl_theme.dart';
+import '../widgets/avatar.widget.dart';
+import '../widgets/cl_popup_menu.widget.dart';
 
 class CLMenuLayout extends StatefulWidget {
   final List<ModularRoute> routes;
@@ -81,8 +83,7 @@ class _CLMenuLayoutState extends State<CLMenuLayout> {
             ),
 
           // ── Extra builder (es. Company/Store selector) ──────
-          if (widget.menuExtraBuilder != null)
-            widget.menuExtraBuilder!(context),
+          if (widget.menuExtraBuilder != null) widget.menuExtraBuilder!(context),
 
           // ── Divider ──────────────────────────────────────────
           Padding(
@@ -224,8 +225,7 @@ class _CLMenuLayoutState extends State<CLMenuLayout> {
           ),*/
 
           // ── Footer custom (es. card utente con logout) ──────
-          if (widget.menuFooterBuilder != null)
-            widget.menuFooterBuilder!(context),
+          if (widget.menuFooterBuilder != null) widget.menuFooterBuilder!(context),
 
           // ── Pulsante AI (se posizione = menu) ──────────────
           Builder(builder: (ctx) {
@@ -273,6 +273,108 @@ class _CLMenuLayoutState extends State<CLMenuLayout> {
                           ),
                         ),
                         HugeIcon(icon: HugeIcons.strokeRoundedArrowRight01, color: theme.primary, size: 14),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }),
+
+          // ── Profilo utente (se posizione = menu) ───────────────
+          Builder(builder: (ctx) {
+            final appState = ctx.watch<AppState>();
+            final authState = ctx.watch<CLAuthState>();
+            if (appState.profilePosition != ProfilePosition.menu) {
+              return const SizedBox.shrink();
+            }
+            final firstName = authState.currentUserInfo?.firstName ?? '';
+            final lastName = authState.currentUserInfo?.lastName ?? '';
+            final email = authState.currentUserInfo?.email ?? '';
+            final fullName = authState.currentUserInfo?.fullName ?? '';
+            final displayName = '$firstName $lastName'.trim().isNotEmpty ? '$firstName $lastName'.trim() : email;
+
+            return Padding(
+              padding: EdgeInsets.fromLTRB(Sizes.padding * 0.6, 0, Sizes.padding * 0.6, 8),
+              child: CLPopupMenu(
+                titleWidget: Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+                  child: Row(
+                    children: [
+                      CLAvatarWidget(medias: const [], name: displayName, iconSize: 38, fontSize: 14),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              fullName.isNotEmpty ? fullName : (email.isNotEmpty ? email : 'Utente'),
+                              style: theme.bodyLabel.copyWith(fontWeight: FontWeight.w600, fontSize: 13),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            if (email.isNotEmpty)
+                              Text(email,
+                                  style: theme.smallLabel.copyWith(color: theme.secondaryText, fontSize: 11), maxLines: 1, overflow: TextOverflow.ellipsis),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                alignment: CLPopupAlignment.start,
+                minWidth: 230,
+                maxWidth: 270,
+                items: [
+                  CLPopupMenuItem(
+                    content: Row(children: [
+                      HugeIcon(icon: HugeIcons.strokeRoundedUser, color: theme.primaryText, size: Sizes.medium),
+                      const SizedBox(width: 12),
+                      Text('Profilo', style: theme.bodyText),
+                    ]),
+                    onTap: () {},
+                  ),
+                  CLPopupMenuItem(
+                    content: Row(children: [
+                      HugeIcon(icon: HugeIcons.strokeRoundedLogout01, color: theme.danger, size: Sizes.medium),
+                      const SizedBox(width: 12),
+                      Text('Esci', style: theme.bodyText.copyWith(color: theme.danger)),
+                    ]),
+                    onTap: () => authState.signOut(),
+                  ),
+                ],
+                builder: (context, open) => GestureDetector(
+                  onTap: open,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: Sizes.padding * 0.75, vertical: Sizes.padding * 0.5),
+                    decoration: BoxDecoration(
+                      color: isDark ? theme.secondaryBackground.withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.6),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: isDark ? theme.borderColor.withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.8)),
+                    ),
+                    child: Row(
+                      children: [
+                        CLAvatarWidget(medias: const [], name: displayName, iconSize: 28, fontSize: 12),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                fullName.isNotEmpty ? fullName : (email.isNotEmpty ? email : 'Utente'),
+                                style: theme.bodyLabel.copyWith(fontWeight: FontWeight.w600, fontSize: 13),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              if (email.isNotEmpty)
+                                Text(email,
+                                    style: theme.smallLabel.copyWith(color: theme.secondaryText, fontSize: 11), maxLines: 1, overflow: TextOverflow.ellipsis),
+                            ],
+                          ),
+                        ),
+                        HugeIcon(icon: HugeIcons.strokeRoundedMoreVertical, color: theme.secondaryText, size: 14),
                       ],
                     ),
                   ),
@@ -656,9 +758,7 @@ class _MenuHeader extends StatelessWidget {
           ],
           // Logo — custom o default
           Expanded(
-            child: logoBuilder != null
-                ? logoBuilder!(context)
-                : LogoWidget(height: isMobile ? 22 : 24, dark: false, color: theme.primary),
+            child: logoBuilder != null ? logoBuilder!(context) : LogoWidget(height: isMobile ? 22 : 24, dark: false, color: theme.primary),
           ),
           // Close button (solo mobile) — a destra del logo
           if (isMobile) ...[
@@ -1367,4 +1467,3 @@ class _ThemeToggleSwitch extends StatelessWidget {
 
 /// Retrocompatibilità: il vecchio nome [MenuLayout] resta disponibile come alias.
 typedef MenuLayout = CLMenuLayout;
-

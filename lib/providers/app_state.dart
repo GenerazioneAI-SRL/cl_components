@@ -15,6 +15,7 @@ class AppState extends ChangeNotifier {
   bool showAiButton = false;
   AiButtonPosition aiButtonPosition = AiButtonPosition.header;
   Widget Function(BuildContext context, VoidCallback onPressed)? aiButtonBuilder;
+  ProfilePosition profilePosition = ProfilePosition.header;
   bool _aiChatOpen = false;
 
   bool get aiChatOpen => _aiChatOpen;

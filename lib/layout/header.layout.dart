@@ -90,7 +90,8 @@ class _CLHeaderLayoutState extends State<CLHeaderLayout> {
           ],
 
           // ── Profilo utente ─────────────────────────────────
-          isMobile ? _buildMobileProfile(context, authState, theme) : _buildDesktopProfile(context, authState, theme),
+          if (appState.profilePosition == ProfilePosition.header)
+            isMobile ? _buildMobileProfile(context, authState, theme) : _buildDesktopProfile(context, authState, theme),
         ],
       ),
     );

@@ -1,12 +1,25 @@
 # Changelog
 
+- **Widgets:** `CLTextField` now supports optional `fillColor` in `time`, `date`, `dateTime`,
+  `month`, and `year` factory constructors (retrocompatible).
+
+## 4.2.22
+
+- **Widgets:** Updated 9 components
+- **Layout:** Updated Header Layout, Menu Layout
+- **Router:** Updated Child Route
+- **Providers:** Updated App State
+- **Core:** Updated 31 components
+- **Package:** Updated Pubspec Yaml
+- **Example:** Updated 4 components
+
+
 ## 4.2.21
 
 - **Widgets:** Updated 22 components
 - **Layout:** Updated Sizes Constant
 - **Theme:** Updated Cl Theme
 - **Core:** Updated Genai Components
-
 
 ## 4.2.20
 
@@ -15,11 +28,9 @@
 - **Providers:** Updated App State
 - **Core:** Updated Cl App, Cl App Config, Genai Components
 
-
 ## 4.2.19
 
 - **Layout:** Updated App Layout
-
 
 ## 4.2.18
 
@@ -27,11 +38,9 @@
 - **Core:** Updated Changelog Md
 - **Package:** Updated Pubspec Yaml
 
-
 ## 4.2.17
 
 - **Router:** Updated Module Route
-
 
 ## 4.2.16
 
@@ -40,13 +49,11 @@
 - **API:** Updated Api Manager
 - **Core:** Updated Cl App, Cl App Config
 
-
 ## 4.2.15
 
 - **Widgets:** Updated CLMedia_attach, CLText_field, CLUniversal_repeatable
 - **Core:** Updated Changelog Md, Cl, Genai Components
 - **Package:** Updated Pubspec Yaml
-
 
 ## 4.2.14
 
@@ -54,13 +61,11 @@
 - **Core:** Updated Changelog Md, Cl, Genai Components
 - **Package:** Updated Pubspec Yaml
 
-
 ## 4.2.13
 
 - **Widgets:** Updated CLMedia_attach, CLText_field, CLUniversal_repeatable
 - **Core:** Updated Changelog Md, Cl, Genai Components
 - **Package:** Updated Pubspec Yaml
-
 
 ## 4.2.12
 
@@ -68,25 +73,21 @@
 - **Core:** Updated Changelog Md, Genai Components
 - **Package:** Updated Pubspec Yaml
 
-
 ## 4.2.11
 
 - **Widgets:** Updated CLMedia_attach, CLText_field, CLUniversal_repeatable
 - **Core:** Updated Genai Components
-
 
 ## 4.2.10
 
 - **Layout:** Updated 4 components
 - **Core:** Updated Cl App, Cl App Config, Genai Components
 
-
 ## 4.2.9
 
 - **Widgets:** Updated Analogclock, Clockpainter, Digitalclock
 - **Layout:** Updated Footer Layout
 - **Core:** Updated Genai Components
-
 
 ## 4.2.8
 
@@ -99,7 +100,6 @@
 - **Core:** Updated 6 components
 - **Package:** Updated Pubspec Yaml
 
-
 ## 4.2.7
 
 - **Widgets:** Updated CLPopup_menu
@@ -107,12 +107,10 @@
 - **Core:** Updated Changelog Md
 - **Package:** Updated Pubspec Yaml
 
-
 ## 4.2.6
 
 - **Widgets:** Updated CLPopup_menu
 - **Layout:** Updated Header Layout
-
 
 ## 4.2.5
 
@@ -120,38 +118,31 @@
 - **Layout:** Updated App Layout, Header Layout, Menu Layout
 - **Theme:** Updated Cl Theme
 
-
 ## 4.2.4
 
 - **Widgets:** Updated Paged Datatable, Paged Datatable Rows, Paged Datatable State
 - **Layout:** Updated Menu Layout
-
 
 ## 4.2.3
 
 - **Layout:** Updated Menu Layout
 - **Router:** Updated Module, Module Route
 
-
 ## 4.2.2
 
 - **Widgets:** Updated 7 components
-
 
 ## 4.2.1
 
 - **Package:** Updated Pubspec Yaml
 
-
 ## 4.1.1
 
 - Maintenance and minor improvements
 
-
 ## 4.1.0
 
 - Maintenance and minor improvements
-
 
 ## 4.0.7
 
@@ -159,49 +150,40 @@
 - **Core:** Updated Changelog Md
 - **Package:** Updated Pubspec Yaml
 
-
 ## 4.0.6
 
 - **Widgets:** Updated 9 components
-
 
 ## 4.0.5
 
 - **Widgets:** Updated CLFile_picker, Flutter Responsive Flex Grid, Survey
 
-
 ## 4.0.4
 
 - **Widgets:** Updated Dropdown State, CLFile_picker
-
 
 ## 4.0.3
 
 - **Core:** Updated Changelog Md
 - **Package:** Updated Pubspec Yaml
 
-
 ## 4.0.2
 
 - **Core:** Updated Changelog Md
 - **Package:** Updated Pubspec Yaml
 
-
 ## 4.0.1
 
 - **Core:** Updated Readme Md, Cl
-
 
 ## 4.0.0
 
 - **Core:** Updated Changelog Md
 - **Package:** Updated Pubspec Yaml
 
-
 ## 3.0.2
 
 - **Core:** Updated Changelog Md
-
 
 ## 3.0.0
 
@@ -210,12 +192,15 @@
 - Refactored as standalone library for pub.dev publication
 - **CLApp:** Generic app bootstrap with `CLAppConfig` — OIDC, routing, providers out of the box
 - **CLTheme:** Light/dark mode with per-module color overrides via `ModuleThemeProvider`
-- **GoRouterModular:** Custom routing system wrapping GoRouter — `Module`, `CLRoute`, `ChildRoute`, `ModuleRoute`, `ShellModularRoute`
+- **GoRouterModular:** Custom routing system wrapping GoRouter — `Module`, `CLRoute`, `ChildRoute`,
+  `ModuleRoute`, `ShellModularRoute`
 - **ApiManager:** HTTP wrapper with auto Bearer token, tenant header, multipart upload
 - **CLBaseViewModel:** Stacked MVVM base class with page actions, breadcrumbs, lifecycle
 - **Layout:** `AppLayout`, `MenuLayout`, `HeaderLayout`, `FooterLayout`, `BreadcrumbsLayout`
-- **Charts:** Generic `CLBarChart<T>`, `CLPieChart<T>`, `CLSplineChart<T>`, `CLSplineAreaChart<T>`, `CLAreaChart<T>` with `CLChartSeries<T>`
-- **Widgets:** `CLButton`, `CLTextField`, `CLDropdown`, `CLPagination`, `PagedDataTable`, `CLOrgChart`, `CLSurvey`, `CLAiAssistant`, and 30+ reusable components
+- **Charts:** Generic `CLBarChart<T>`, `CLPieChart<T>`, `CLSplineChart<T>`, `CLSplineAreaChart<T>`,
+  `CLAreaChart<T>` with `CLChartSeries<T>`
+- **Widgets:** `CLButton`, `CLTextField`, `CLDropdown`, `CLPagination`, `PagedDataTable`,
+  `CLOrgChart`, `CLSurvey`, `CLAiAssistant`, and 30+ reusable components
 - **Auth:** Abstract `CLAuthState`, `CLUserInfo`, `CLTenant` interfaces
 - **Providers:** `AppState`, `ErrorState`, `ThemeProvider`, `NavigationState`
 - **Core models:** `BaseModel`, `Media`, `City`, `Country`, `Province`, `PageAction`

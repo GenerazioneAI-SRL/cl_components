@@ -7,6 +7,9 @@ import '../widgets/cl_ai_assistant/flutter_ai_assistant.dart';
 /// Posizione del pulsante AI nell'interfaccia.
 enum AiButtonPosition { header, menu }
 
+/// Posizione del widget profilo utente nell'interfaccia.
+enum ProfilePosition { header, menu }
+
 /// Signature per il builder custom della shell (layout principale dell'app).
 ///
 /// [child] è il contenuto della pagina corrente (outlet del router).
@@ -116,6 +119,9 @@ abstract class CLAppConfig {
   /// Riceve [onPressed] da chiamare per aprire/chiudere la chat.
   /// Se null, viene usata l'icona di default.
   Widget Function(BuildContext context, VoidCallback onPressed)? get aiButtonBuilder => null;
+
+  /// Posizione del widget profilo utente: header (default) o menu.
+  ProfilePosition get profilePosition => ProfilePosition.header;
 
   /// Callback per costruire la configurazione AI a runtime
   /// (dopo che il router e' configurato e le route sono registrate)
