@@ -438,8 +438,23 @@ class ReactAgent {
           (a) => _builtInToolNames.contains(a.toolName),
         );
 
+        // Skip verification for pure form-fill flows: the fields are filled,
+        // there is nothing to re-verify. Verification is needed for navigation
+        // and action flows, not data entry.
+        const _formFillOnlyToolNames = {
+          'set_text',
+          'select_dropdown_item',
+          'get_screen_content',
+          'ask_user',
+        };
+        final isFormFillOnly = executedActions.isNotEmpty &&
+            executedActions.every(
+              (a) => _formFillOnlyToolNames.contains(a.toolName),
+            );
+
         if (executedActions.isNotEmpty &&
             usedAnyBuiltInTool &&
+            !isFormFillOnly &&
             verificationAttempts < maxVerificationAttempts) {
           verificationAttempts++;
           AiLogger.log(
@@ -630,11 +645,14 @@ class ReactAgent {
         // Safety timeout on tool execution — prevents the agent from hanging
         // forever if a tool handler blocks (e.g. awaiting a Future that never
         // completes). 30 seconds is generous; most tools complete in <2s.
+        // Exception: ask_user and hand_off_to_user wait for user input — no timeout.
+        const _noTimeoutTools = {'ask_user', 'hand_off_to_user'};
         ToolResult result;
         try {
-          result = await toolRegistry
-              .executeTool(toolCall)
-              .timeout(const Duration(seconds: 30));
+          final execFuture = toolRegistry.executeTool(toolCall);
+          result = _noTimeoutTools.contains(toolCall.name)
+              ? await execFuture
+              : await execFuture.timeout(const Duration(seconds: 30));
         } on TimeoutException {
           AiLogger.warn(
             'Tool ${toolCall.name} timed out after 30s',
@@ -1056,7 +1074,7 @@ class ReactAgent {
     bool Function() shouldCancel,
   ) async {
     while (true) {
-      await Future.delayed(const Duration(milliseconds: 500));
+      await Future.delayed(const Duration(milliseconds: 100));
       if (shouldCancel()) return null;
     }
   }
@@ -1226,6 +1244,19 @@ class ReactAgent {
       'Your screen view auto-refreshes after each action. '
       'Use navigate_to_route with the EXACT route name from the APP SCREENS / ALL ROUTES list.',
     );
+    buffer.writeln(
+      '7b. FORM FILLING — TWO TYPES OF FIELDS, TWO DIFFERENT TOOLS:\n'
+      '• Regular text inputs (Name, Price, Description, etc.) → use set_text.\n'
+      '• Dropdown/select fields → use select_dropdown_item. MANDATORY — NEVER use set_text or tap_element on dropdowns.\n'
+      'HOW TO IDENTIFY DROPDOWNS: A field is a dropdown if its label matches the "hint" parameter '
+      'accepted by select_dropdown_item (e.g. "Select a supplier", "Select categories"). '
+      'Dropdowns appear as read-only labeled fields in the form — they cannot be typed into.\n'
+      'HOW TO USE select_dropdown_item:\n'
+      '  hint → the EXACT placeholder/label text of the dropdown field as shown on screen\n'
+      '  item_name → the name of the item to select (partial match is supported)\n'
+      'The tool fetches data from the backend automatically — call it directly without opening the dropdown first.\n'
+      'If the tool returns "not found", it will list all available dropdown hints — use those exact strings.',
+    );
     if (confirmDestructiveActions) {
       buffer.writeln(
         '8. FINAL ACTIONS (hand_off_to_user): When you reach the FINAL irreversible action button '
@@ -1360,6 +1391,10 @@ class ReactAgent {
 
     // ── Failure recovery guidance ──
     buffer.writeln('WHEN THINGS GO WRONG:');
+    buffer.writeln(
+      '- tap_element or set_text fails on a field → the field may be a dropdown. '
+      'Try select_dropdown_item instead, using the field label as "hint".',
+    );
     buffer.writeln(
       '- tap_element fails → call get_screen_content to see what is ACTUALLY on screen. '
       'The element name may differ from what you expect. Use the exact label from the screen.',
