@@ -42,6 +42,8 @@ class _ChatOverlayState extends State<ChatOverlay>
   late final AnimationController _pulseCtrl;
   late final AnimationController _actionModeCtrl;
 
+  bool _prevWaitingForUserResponse = false;
+
   AiAssistantController get _ctrl => widget.controller;
 
   @override
@@ -89,6 +91,18 @@ class _ChatOverlayState extends State<ChatOverlay>
     } else {
       _actionModeCtrl.reverse();
     }
+
+    // Auto-focus the input when the agent transitions INTO waiting-for-user
+    // state. Only fires on the leading edge (false → true) so it doesn't
+    // steal focus back while the user is mid-typing on subsequent notifies.
+    final nowWaiting = _ctrl.isWaitingForUserResponse;
+    if (nowWaiting && !_prevWaitingForUserResponse) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _focus.requestFocus();
+      });
+    }
+    _prevWaitingForUserResponse = nowWaiting;
   }
 
   @override
@@ -352,19 +366,10 @@ class _ChatOverlayState extends State<ChatOverlay>
   }
 
   Widget _headerActions() {
-    if (_ctrl.isProcessing && !_ctrl.isWaitingForUserResponse) {
-      return Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _hdrBtn(Icons.stop_rounded, _red, _ctrl.requestStop),
-          _hdrBtn(Icons.keyboard_arrow_down_rounded, _textB, _close),
-        ],
-      );
-    }
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (_ctrl.messages.isNotEmpty)
+        if (!_ctrl.isProcessing && _ctrl.messages.isNotEmpty)
           _hdrBtn(Icons.delete_outline, _textB, _ctrl.clearConversation),
         _hdrBtn(Icons.keyboard_arrow_down_rounded, _textB, _close),
       ],
@@ -589,7 +594,7 @@ class _ChatOverlayState extends State<ChatOverlay>
                 listenable: _ctrl,
                 builder: (_, __) {
                   if (_ctrl.isProcessing && !_ctrl.isWaitingForUserResponse) {
-                    return _stopButton();
+                    return _stopButtonInline();
                   }
                   return _sendButton();
                 },
@@ -661,8 +666,8 @@ class _ChatOverlayState extends State<ChatOverlay>
             decoration: InputDecoration(
               hintText:
                   waiting
-                      ? 'Type your response...'
-                      : 'Ask me to do something...',
+                      ? 'Rispondi...'
+                      : 'Chiedi qualcosa...',
               hintStyle: TextStyle(
                 color:
                     waiting
@@ -713,7 +718,7 @@ class _ChatOverlayState extends State<ChatOverlay>
     );
   }
 
-  Widget _stopButton() {
+  Widget _stopButtonInline() {
     return GestureDetector(
       onTap: _ctrl.requestStop,
       child: Container(
@@ -721,17 +726,25 @@ class _ChatOverlayState extends State<ChatOverlay>
         height: 42,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: _red.withValues(alpha: 0.15),
-          border: Border.all(color: _red.withValues(alpha: 0.3)),
+          color: _bgMid,
+          border: Border.all(color: _red.withValues(alpha: 0.5), width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: _red.withValues(alpha: 0.2),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
-        child: Icon(
+        child: const Icon(
           Icons.stop_rounded,
           size: 20,
-          color: _red.withValues(alpha: 0.8),
+          color: _red,
         ),
       ),
     );
   }
+
 
   Widget _circleBtn(IconData ic, Color c, VoidCallback? onTap) =>
       GestureDetector(

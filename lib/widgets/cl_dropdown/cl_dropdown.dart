@@ -195,19 +195,23 @@ class CLDropdown<T extends Object> extends StatefulWidget {
 }
 
 class _CLDropdownState<T extends Object> extends State<CLDropdown<T>> {
+  // Tracks whether the parent widget explicitly changed selectedValues.
+  // We only call syncExternalSelectedItems on actual parent-driven changes,
+  // NOT on every notifyListeners() rebuild — otherwise AI-driven selections
+  // get immediately overwritten by the empty selectedValues of a new form.
+  bool _externalSelectionChanged = false;
+
   @override
   void initState() {
     super.initState();
   }
 
-  bool _isExternalSelectionAligned(DropdownState<T> state) {
-    if (widget.isMultiple) {
-      return listEquals(state.selectedItems, widget.selectedValues);
+  @override
+  void didUpdateWidget(CLDropdown<T> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!listEquals(oldWidget.selectedValues, widget.selectedValues)) {
+      _externalSelectionChanged = true;
     }
-
-    final T? externalSelected =
-        widget.selectedValues.isNotEmpty ? widget.selectedValues.first : null;
-    return state.selectedItem == externalSelected;
   }
 
   @override
@@ -229,11 +233,15 @@ class _CLDropdownState<T extends Object> extends State<CLDropdown<T>> {
         previousSelectedItems: widget.selectedValues,
         perPage: widget.length,
         searchColumn: widget.searchColumn,
+        hint: widget.hint,
       ),
       builder: (context, child) {
         var state = context.watch<DropdownState<T>>();
 
-        if (!_isExternalSelectionAligned(state)) {
+        // Sync only when the parent explicitly changes selectedValues,
+        // not on internal state rebuilds (which would wipe AI selections).
+        if (_externalSelectionChanged) {
+          _externalSelectionChanged = false;
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (!mounted) return;
             state.syncExternalSelectedItems(widget.selectedValues);
