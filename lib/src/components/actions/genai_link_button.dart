@@ -40,6 +40,7 @@ class _GenaiLinkButtonState extends State<GenaiLinkButton> {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final ty = context.typography;
+    final spacing = context.spacing;
     final disabled = widget.onPressed == null;
 
     final base = widget.size == GenaiSize.xs ? ty.labelSm : ty.bodyMd;
@@ -50,21 +51,24 @@ class _GenaiLinkButtonState extends State<GenaiLinkButton> {
     );
 
     final iconSize = (widget.size ?? GenaiSize.sm).iconSize;
+    final gap = SizedBox(width: spacing.s1);
     final children = <Widget>[];
     if (widget.icon != null) {
       children.add(Icon(widget.icon, size: iconSize, color: colors.textLink));
-      children.add(const SizedBox(width: 4));
+      children.add(gap);
     }
     children.add(Text(widget.label, style: style));
     if (widget.isExternal) {
-      children.add(const SizedBox(width: 4));
-      children.add(Icon(LucideIcons.externalLink, size: iconSize, color: colors.textLink));
+      children.add(gap);
+      children.add(Icon(LucideIcons.externalLink,
+          size: iconSize, color: colors.textLink));
     }
 
     Widget result = Row(mainAxisSize: MainAxisSize.min, children: children);
 
     result = MouseRegion(
-      cursor: disabled ? SystemMouseCursors.forbidden : SystemMouseCursors.click,
+      cursor:
+          disabled ? SystemMouseCursors.forbidden : SystemMouseCursors.click,
       onEnter: (_) => setState(() => _hovered = true),
       onExit: (_) => setState(() => _hovered = false),
       child: GestureDetector(

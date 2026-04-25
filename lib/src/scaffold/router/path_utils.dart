@@ -35,4 +35,3 @@ class GenaiPathUtils {
     return path == '/' || path.startsWith('/:');
   }
 }
-

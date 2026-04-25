@@ -47,7 +47,8 @@ class GenaiBarChart<T> extends StatelessWidget {
   final double? leftAxisInterval;
   final Widget Function(double value, TitleMeta meta)? leftTitleBuilder;
   final Widget Function(double value, TitleMeta meta)? bottomTitleBuilder;
-  final BarTooltipItem? Function(T item, int index, BarChartRodData rod)? tooltipBuilder;
+  final BarTooltipItem? Function(T item, int index, BarChartRodData rod)?
+      tooltipBuilder;
   final BorderRadius? borderRadius;
   final bool rotateLabels;
   final double rotateThreshold;
@@ -56,6 +57,8 @@ class GenaiBarChart<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final ty = context.typography;
+    final spacing = context.spacing;
+    final radius = context.radius;
     final color = barColor ?? colors.colorPrimary;
 
     final values = List<double>.generate(
@@ -91,105 +94,123 @@ class GenaiBarChart<T> extends StatelessWidget {
       computedMaxY = computedMinY + 1;
     }
 
-    final effectiveLeftAxisInterval = (leftAxisInterval != null && leftAxisInterval!.isFinite && leftAxisInterval! > 0) ? leftAxisInterval : null;
+    final effectiveLeftAxisInterval = (leftAxisInterval != null &&
+            leftAxisInterval!.isFinite &&
+            leftAxisInterval! > 0)
+        ? leftAxisInterval
+        : null;
 
     final smallLabel = ty.caption.copyWith(color: colors.textSecondary);
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final chartWidth = constraints.maxWidth.isFinite ? constraints.maxWidth : 320.0;
-        final chartHeight = constraints.maxHeight.isFinite ? constraints.maxHeight : 200.0;
+        final chartWidth =
+            constraints.maxWidth.isFinite ? constraints.maxWidth : 320.0;
+        final chartHeight =
+            constraints.maxHeight.isFinite ? constraints.maxHeight : 200.0;
         final narrow = chartWidth < rotateThreshold;
 
-        return SizedBox(
-          width: chartWidth,
-          height: chartHeight,
-          child: BarChart(
-            BarChartData(
-              minY: computedMinY,
-              maxY: computedMaxY,
-              gridData: FlGridData(
-                drawVerticalLine: false,
-                drawHorizontalLine: showGrid,
-                horizontalInterval: effectiveLeftAxisInterval,
-                getDrawingHorizontalLine: (_) => FlLine(
-                  color: colors.borderDefault.withValues(alpha: 0.5),
-                  strokeWidth: 0.8,
-                ),
-              ),
-              borderData: FlBorderData(show: false),
-              barTouchData: BarTouchData(
-                touchTooltipData: BarTouchTooltipData(
-                  maxContentWidth: 240,
-                  getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                    if (tooltipBuilder != null) {
-                      return tooltipBuilder!(data[groupIndex], groupIndex, rod);
-                    }
-                    final label = xValueMapper(data[groupIndex], groupIndex);
-                    return BarTooltipItem(
-                      '$label\n${rod.toY.toStringAsFixed(rod.toY.truncateToDouble() == rod.toY ? 0 : 1)}',
-                      ty.label.copyWith(color: colors.textPrimary, fontWeight: FontWeight.w600),
-                    );
-                  },
-                  getTooltipColor: (_) => colors.surfaceCard,
-                ),
-              ),
-              barGroups: List.generate(data.length, (i) {
-                final value = values[i];
-                return BarChartGroupData(
-                  x: i,
-                  barRods: [
-                    BarChartRodData(
-                      toY: value,
-                      color: color,
-                      width: barWidth,
-                      borderRadius: borderRadius ?? BorderRadius.circular(4),
-                    ),
-                  ],
-                );
-              }),
-              titlesData: FlTitlesData(
-                topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                leftTitles: AxisTitles(
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    reservedSize: 42,
-                    interval: effectiveLeftAxisInterval,
-                    getTitlesWidget: leftTitleBuilder ??
-                        (value, meta) => Padding(
-                              padding: const EdgeInsets.only(right: 6),
-                              child: Text(
-                                _formatNumber(value),
-                                style: smallLabel,
-                                textAlign: TextAlign.right,
-                              ),
-                            ),
+        return Semantics(
+          container: true,
+          label: 'Grafico a barre con ${data.length} valori',
+          child: SizedBox(
+            width: chartWidth,
+            height: chartHeight,
+            child: BarChart(
+              BarChartData(
+                minY: computedMinY,
+                maxY: computedMaxY,
+                gridData: FlGridData(
+                  drawVerticalLine: false,
+                  drawHorizontalLine: showGrid,
+                  horizontalInterval: effectiveLeftAxisInterval,
+                  getDrawingHorizontalLine: (_) => FlLine(
+                    color: colors.borderDefault.withValues(alpha: 0.5),
+                    strokeWidth: 0.8,
                   ),
                 ),
-                bottomTitles: AxisTitles(
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    interval: 1,
-                    reservedSize: 32,
-                    getTitlesWidget: bottomTitleBuilder ??
-                        (value, meta) {
-                          if (!value.isFinite) {
-                            return const SizedBox.shrink();
-                          }
-                          final idx = value.toInt();
-                          if (idx < 0 || idx >= data.length) {
-                            return const SizedBox.shrink();
-                          }
-                          final label = xValueMapper(data[idx], idx);
-                          return Padding(
-                            padding: const EdgeInsets.only(top: 8),
-                            child: Transform.rotate(
-                              angle: (rotateLabels && narrow) ? (-45 * (pi / 180)) : 0,
-                              child: Text(label, style: smallLabel),
-                            ),
-                          );
-                        },
+                borderData: FlBorderData(show: false),
+                barTouchData: BarTouchData(
+                  touchTooltipData: BarTouchTooltipData(
+                    maxContentWidth: 240,
+                    getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                      if (tooltipBuilder != null) {
+                        return tooltipBuilder!(
+                            data[groupIndex], groupIndex, rod);
+                      }
+                      final label = xValueMapper(data[groupIndex], groupIndex);
+                      return BarTooltipItem(
+                        '$label\n${rod.toY.toStringAsFixed(rod.toY.truncateToDouble() == rod.toY ? 0 : 1)}',
+                        ty.label.copyWith(
+                            color: colors.textPrimary,
+                            fontWeight: FontWeight.w600),
+                      );
+                    },
+                    getTooltipColor: (_) => colors.surfaceCard,
+                  ),
+                ),
+                barGroups: List.generate(data.length, (i) {
+                  final value = values[i];
+                  return BarChartGroupData(
+                    x: i,
+                    barRods: [
+                      BarChartRodData(
+                        toY: value,
+                        color: color,
+                        width: barWidth,
+                        borderRadius:
+                            borderRadius ?? BorderRadius.circular(radius.xs),
+                      ),
+                    ],
+                  );
+                }),
+                titlesData: FlTitlesData(
+                  topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false)),
+                  rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false)),
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 42,
+                      interval: effectiveLeftAxisInterval,
+                      getTitlesWidget: leftTitleBuilder ??
+                          (value, meta) => Padding(
+                                padding: EdgeInsets.only(right: spacing.s1 + 2),
+                                child: Text(
+                                  _formatNumber(value),
+                                  style: smallLabel,
+                                  textAlign: TextAlign.right,
+                                ),
+                              ),
+                    ),
+                  ),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      interval: 1,
+                      reservedSize: 32,
+                      getTitlesWidget: bottomTitleBuilder ??
+                          (value, meta) {
+                            if (!value.isFinite) {
+                              return const SizedBox.shrink();
+                            }
+                            final idx = value.toInt();
+                            if (idx < 0 || idx >= data.length) {
+                              return const SizedBox.shrink();
+                            }
+                            final label = xValueMapper(data[idx], idx);
+                            return Padding(
+                              padding: EdgeInsets.only(top: spacing.s2),
+                              child: Transform.rotate(
+                                angle: (rotateLabels && narrow)
+                                    ? (-45 * (pi / 180))
+                                    : 0,
+                                child: Text(label, style: smallLabel),
+                              ),
+                            );
+                          },
+                    ),
                   ),
                 ),
               ),

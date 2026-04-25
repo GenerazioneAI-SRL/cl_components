@@ -2,17 +2,22 @@ import 'package:flutter/material.dart';
 
 import '../../theme/context_extensions.dart';
 
+/// Single entry inside a [GenaiNavigationRail].
 class GenaiNavigationRailItem {
   final IconData icon;
   final IconData? selectedIcon;
   final String label;
   final int? badgeCount;
 
+  /// Accessibility override — defaults to [label].
+  final String? semanticLabel;
+
   const GenaiNavigationRailItem({
     required this.icon,
     this.selectedIcon,
     required this.label,
     this.badgeCount,
+    this.semanticLabel,
   });
 }
 
@@ -37,51 +42,93 @@ class GenaiNavigationRail extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final ty = context.typography;
-    return Container(
-      width: 72,
-      decoration: BoxDecoration(
-        color: colors.surfaceSidebar,
-        border: Border(right: BorderSide(color: colors.borderDefault)),
-      ),
-      child: Column(
-        children: [
-          if (leading != null) Padding(padding: const EdgeInsets.all(12), child: leading!),
-          for (var i = 0; i < items.length; i++)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(8),
-                onTap: () => onChanged?.call(i),
-                child: Container(
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: i == selectedIndex ? colors.colorPrimarySubtle : Colors.transparent,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        i == selectedIndex ? (items[i].selectedIcon ?? items[i].icon) : items[i].icon,
-                        size: 22,
-                        color: i == selectedIndex ? colors.colorPrimary : colors.textSecondary,
+    final spacing = context.spacing;
+    final sizing = context.sizing;
+    final radius = context.radius;
+
+    final railWidth = sizing.minTouchTarget + spacing.s6;
+    final tileHeight = sizing.minTouchTarget + spacing.s1;
+
+    return Semantics(
+      container: true,
+      label: 'Navigazione laterale',
+      explicitChildNodes: true,
+      child: Container(
+        width: railWidth,
+        decoration: BoxDecoration(
+          color: colors.surfaceSidebar,
+          border: Border(
+            right: BorderSide(
+              color: colors.borderDefault,
+              width: sizing.dividerThickness,
+            ),
+          ),
+        ),
+        child: Column(
+          children: [
+            if (leading != null)
+              Padding(
+                padding: EdgeInsets.all(spacing.s3),
+                child: leading!,
+              ),
+            for (var i = 0; i < items.length; i++)
+              Padding(
+                padding: EdgeInsets.symmetric(
+                    vertical: spacing.s1, horizontal: spacing.s2),
+                child: Semantics(
+                  button: true,
+                  selected: i == selectedIndex,
+                  label: items[i].semanticLabel ?? items[i].label,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(radius.md),
+                    onTap: () => onChanged?.call(i),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(minHeight: tileHeight),
+                      child: Container(
+                        height: tileHeight,
+                        decoration: BoxDecoration(
+                          color: i == selectedIndex
+                              ? colors.colorPrimarySubtle
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(radius.md),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              i == selectedIndex
+                                  ? (items[i].selectedIcon ?? items[i].icon)
+                                  : items[i].icon,
+                              size: sizing.iconSidebar,
+                              color: i == selectedIndex
+                                  ? colors.colorPrimary
+                                  : colors.textSecondary,
+                            ),
+                            SizedBox(height: spacing.s1 / 2),
+                            Text(items[i].label,
+                                textAlign: TextAlign.center,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: ty.caption.copyWith(
+                                  color: i == selectedIndex
+                                      ? colors.colorPrimary
+                                      : colors.textSecondary,
+                                )),
+                          ],
+                        ),
                       ),
-                      const SizedBox(height: 2),
-                      Text(items[i].label,
-                          textAlign: TextAlign.center,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: ty.caption.copyWith(
-                            color: i == selectedIndex ? colors.colorPrimary : colors.textSecondary,
-                          )),
-                    ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          const Spacer(),
-          if (trailing != null) Padding(padding: const EdgeInsets.all(12), child: trailing!),
-        ],
+            const Spacer(),
+            if (trailing != null)
+              Padding(
+                padding: EdgeInsets.all(spacing.s3),
+                child: trailing!,
+              ),
+          ],
+        ),
       ),
     );
   }

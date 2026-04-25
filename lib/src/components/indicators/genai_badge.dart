@@ -2,9 +2,30 @@ import 'package:flutter/material.dart';
 
 import '../../theme/context_extensions.dart';
 
-enum GenaiBadgeVariant { filled, subtle, outlined }
+/// Visual style of a [GenaiBadge].
+enum GenaiBadgeVariant {
+  /// Solid fill with high-contrast foreground.
+  filled,
 
-enum GenaiBadgeKind { dot, count, text }
+  /// Tinted fill at low alpha with color-matched foreground.
+  subtle,
+
+  /// Transparent fill with a 1px border and color-matched foreground.
+  outlined,
+}
+
+/// Shape/content type of a [GenaiBadge]. Prefer the named constructors
+/// (`.dot`, `.count`, `.text`) over setting this directly.
+enum GenaiBadgeKind {
+  /// Small colored circle, no label.
+  dot,
+
+  /// Numeric count with `N+` overflow.
+  count,
+
+  /// Short string.
+  text,
+}
 
 /// Compact label/indicator (§6.7.1).
 ///
@@ -59,13 +80,19 @@ class GenaiBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final ty = context.typography;
+    final radius = context.radius;
+    final spacing = context.spacing;
+    final sizing = context.sizing;
     final base = color ?? colors.colorError;
 
     if (kind == GenaiBadgeKind.dot) {
-      return Container(
-        width: 8,
-        height: 8,
-        decoration: BoxDecoration(color: base, shape: BoxShape.circle),
+      return Semantics(
+        label: 'Indicatore',
+        child: Container(
+          width: spacing.s2,
+          height: spacing.s2,
+          decoration: BoxDecoration(color: base, shape: BoxShape.circle),
+        ),
       );
     }
 
@@ -76,21 +103,27 @@ class GenaiBadge extends StatelessWidget {
     };
 
     final colorset = _resolveStyle(base, colors);
+    // Small 16px target minimum for the pill body.
+    final minDim = spacing.s4;
 
-    return Container(
-      constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: colorset.bg,
-        borderRadius: BorderRadius.circular(999),
-        border: colorset.border != null ? Border.all(color: colorset.border!, width: 1) : null,
-      ),
-      child: Center(
+    return Semantics(
+      label: kind == GenaiBadgeKind.count ? '$label notifiche' : label,
+      child: Container(
+        constraints: BoxConstraints(minWidth: minDim, minHeight: minDim),
+        padding: EdgeInsets.symmetric(
+            horizontal: spacing.s1 + 2, vertical: spacing.s1 / 2),
+        decoration: BoxDecoration(
+          color: colorset.bg,
+          borderRadius: BorderRadius.circular(radius.pill),
+          border: colorset.border != null
+              ? Border.all(
+                  color: colorset.border!, width: sizing.dividerThickness)
+              : null,
+        ),
         child: Text(
           label,
           style: ty.labelSm.copyWith(
             color: colorset.fg,
-            fontSize: 10,
             height: 1,
           ),
           textAlign: TextAlign.center,
@@ -99,10 +132,11 @@ class GenaiBadge extends StatelessWidget {
     );
   }
 
-  ({Color bg, Color fg, Color? border}) _resolveStyle(Color base, dynamic colors) {
+  ({Color bg, Color fg, Color? border}) _resolveStyle(
+      Color base, dynamic colors) {
     switch (variant) {
       case GenaiBadgeVariant.filled:
-        return (bg: base, fg: Colors.white, border: null);
+        return (bg: base, fg: colors.textOnPrimary as Color, border: null);
       case GenaiBadgeVariant.subtle:
         return (
           bg: base.withValues(alpha: 0.15),

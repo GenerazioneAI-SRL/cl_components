@@ -11,7 +11,8 @@ import 'models/genai_survey_result.dart';
 /// Inline survey form widget. Used by [GenaiSurveyViewer].
 class GenaiSurvey extends StatefulWidget {
   final List<GenaiSurveyQuestion> initialData;
-  final Widget Function(BuildContext context, GenaiSurveyQuestion question, void Function(List<String>) update)? builder;
+  final Widget Function(BuildContext context, GenaiSurveyQuestion question,
+      void Function(List<String>) update)? builder;
   final void Function(List<GenaiSurveyResult> questionResults)? onSave;
   final String? defaultErrorText;
   final String? saveText;
@@ -62,7 +63,9 @@ class _GenaiSurveyState extends State<GenaiSurvey> {
 
     return SingleChildScrollView(
       controller: _scroll,
-      padding: EdgeInsets.only(bottom: widget.onSave != null ? (kBottomNavigationBarHeight + 50) : 0),
+      padding: EdgeInsets.only(
+        bottom: widget.onSave != null ? spacing.pageSectionGap : 0,
+      ),
       physics: const ClampingScrollPhysics(),
       child: Column(
         children: [
@@ -72,8 +75,10 @@ class _GenaiSurveyState extends State<GenaiSurvey> {
             slivers: [
               DiffUtilSliverList.fromKeyedWidgetList(
                 children: _buildChildren(_state),
-                insertAnimationBuilder: (context, animation, child) => FadeTransition(opacity: animation, child: child),
-                removeAnimationBuilder: (context, animation, child) => FadeTransition(
+                insertAnimationBuilder: (context, animation, child) =>
+                    FadeTransition(opacity: animation, child: child),
+                removeAnimationBuilder: (context, animation, child) =>
+                    FadeTransition(
                   opacity: animation,
                   child: SizeTransition(
                     sizeFactor: animation,
@@ -84,7 +89,7 @@ class _GenaiSurveyState extends State<GenaiSurvey> {
               ),
             ],
           ),
-          if (widget.onSave != null) SizedBox(height: spacing.s4),
+          if (widget.onSave != null) SizedBox(height: spacing.formFieldGap),
           if (widget.onSave != null)
             GenaiButton.primary(
               label: widget.saveText ?? 'Salva',
@@ -105,7 +110,9 @@ class _GenaiSurveyState extends State<GenaiSurvey> {
         );
         list.add(child);
         for (final answer in nodes[i].answers) {
-          final option = nodes[i].options.firstWhereOrNull((o) => o.id == answer.keys.first);
+          final option = nodes[i]
+              .options
+              .firstWhereOrNull((o) => o.id == answer.keys.first);
           if (option?.nested != null && option!.nested!.isNotEmpty) {
             child.children.addAll(_mapResults(option.nested!));
           }
@@ -127,12 +134,15 @@ class _GenaiSurveyState extends State<GenaiSurvey> {
             ..addAll(value);
           setState(() {});
         },
-        defaultErrorText: nodes[i].errorText ?? widget.defaultErrorText ?? 'Campo obbligatorio*',
+        defaultErrorText: nodes[i].errorText ??
+            widget.defaultErrorText ??
+            'Campo obbligatorio*',
         autovalidateMode: AutovalidateMode.onUserInteraction,
         isNumeric: nodes[i].isNumeric,
       ));
       for (final answer in nodes[i].answers) {
-        final option = nodes[i].options.firstWhereOrNull((o) => o.id == answer.keys.first);
+        final option =
+            nodes[i].options.firstWhereOrNull((o) => o.id == answer.keys.first);
         if (option?.nested != null && option!.nested!.isNotEmpty) {
           list.addAll(_buildChildren(option.nested!));
         }

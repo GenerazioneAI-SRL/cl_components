@@ -7,15 +7,20 @@ import '../page_transition.dart';
 import 'genai_route.dart';
 import 'modular_route.dart';
 
+/// A leaf route inside a [Module] — rendered as a single page with its own
+/// builder, transition and optional guards.
 class ChildRoute extends ModularRoute {
   late String path;
   final Widget Function(BuildContext context, GoRouterState state) child;
   final String name;
   String? routeName;
-  final Page<dynamic> Function(BuildContext context, GoRouterState state)? pageBuilder;
+  final Page<dynamic> Function(BuildContext context, GoRouterState state)?
+      pageBuilder;
   final GlobalKey<NavigatorState>? parentNavigatorKey;
-  final FutureOr<String?> Function(BuildContext context, GoRouterState state)? redirect;
-  final FutureOr<bool> Function(BuildContext context, GoRouterState state)? onExit;
+  final FutureOr<String?> Function(BuildContext context, GoRouterState state)?
+      redirect;
+  final FutureOr<bool> Function(BuildContext context, GoRouterState state)?
+      onExit;
   final PageTransition? pageTransition;
   IconData? icon;
   final bool isVisible;
@@ -47,7 +52,8 @@ class ChildRoute extends ModularRoute {
     required GenaiRoute route,
     List<String> params = const [],
     PageTransition pageTransition = PageTransition.fade,
-    required Widget Function(BuildContext context, GoRouterState state) childBuilder,
+    required Widget Function(BuildContext context, GoRouterState state)
+        childBuilder,
     bool isModuleRoute = false,
     bool isVisible = true,
     IconData? icon,

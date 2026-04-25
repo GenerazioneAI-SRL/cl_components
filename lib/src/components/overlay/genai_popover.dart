@@ -1,9 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-import '../../foundations/animations.dart';
+import '../../foundations/responsive.dart';
 import '../../theme/context_extensions.dart';
+import '../../tokens/z_index.dart';
 
-enum GenaiPopoverPlacement { top, bottom, left, right }
+/// Side of the anchor the popover opens toward.
+enum GenaiPopoverPlacement {
+  /// Above the anchor.
+  top,
+
+  /// Below the anchor (default).
+  bottom,
+
+  /// To the left of the anchor.
+  left,
+
+  /// To the right of the anchor.
+  right,
+}
 
 /// Anchored popover (§6.5.3).
 ///
@@ -14,7 +29,12 @@ class GenaiPopover extends StatefulWidget {
   final WidgetBuilder content;
   final GenaiPopoverPlacement placement;
   final double width;
-  final EdgeInsets padding;
+
+  /// Interior padding of the popover card. If null, uses `context.spacing.s3`.
+  final EdgeInsets? padding;
+
+  /// Accessible label announced when the popover opens.
+  final String? semanticLabel;
 
   const GenaiPopover({
     super.key,
@@ -22,17 +42,23 @@ class GenaiPopover extends StatefulWidget {
     required this.content,
     this.placement = GenaiPopoverPlacement.bottom,
     this.width = 240,
-    this.padding = const EdgeInsets.all(12),
+    this.padding,
+    this.semanticLabel,
   });
 
   @override
   State<GenaiPopover> createState() => GenaiPopoverState();
 }
 
+/// State of a [GenaiPopover].
+///
+/// Exposes [show]/[hide]/[toggle] so callers holding a `GlobalKey` to the
+/// popover can drive it imperatively.
 class GenaiPopoverState extends State<GenaiPopover> {
   final LayerLink _link = LayerLink();
   final GlobalKey _anchorKey = GlobalKey();
   OverlayEntry? _entry;
+  final FocusNode _overlayFocus = FocusNode(debugLabel: 'GenaiPopover');
 
   void show() {
     if (_entry != null) return;
@@ -40,27 +66,33 @@ class GenaiPopoverState extends State<GenaiPopover> {
     final box = _anchorKey.currentContext?.findRenderObject() as RenderBox?;
     if (box == null) return;
 
+    final spacing = context.spacing;
+    final radius = context.radius;
+    final motion = context.motion;
+    final reduced = GenaiResponsive.reducedMotion(context);
+    final effectivePadding = widget.padding ?? EdgeInsets.all(spacing.s3);
+
     Offset offset;
     Alignment target;
     Alignment follower;
     switch (widget.placement) {
       case GenaiPopoverPlacement.bottom:
-        offset = const Offset(0, 8);
+        offset = Offset(0, spacing.s2);
         target = Alignment.bottomCenter;
         follower = Alignment.topCenter;
         break;
       case GenaiPopoverPlacement.top:
-        offset = const Offset(0, -8);
+        offset = Offset(0, -spacing.s2);
         target = Alignment.topCenter;
         follower = Alignment.bottomCenter;
         break;
       case GenaiPopoverPlacement.right:
-        offset = const Offset(8, 0);
+        offset = Offset(spacing.s2, 0);
         target = Alignment.centerRight;
         follower = Alignment.centerLeft;
         break;
       case GenaiPopoverPlacement.left:
-        offset = const Offset(-8, 0);
+        offset = Offset(-spacing.s2, 0);
         target = Alignment.centerLeft;
         follower = Alignment.centerRight;
         break;
@@ -84,20 +116,40 @@ class GenaiPopoverState extends State<GenaiPopover> {
             showWhenUnlinked: false,
             child: Material(
               color: Colors.transparent,
-              child: TweenAnimationBuilder<double>(
-                duration: GenaiDurations.dropdownOpen,
-                tween: Tween(begin: 0, end: 1),
-                builder: (_, t, c) => Opacity(opacity: t, child: c),
-                child: Container(
-                  width: widget.width,
-                  padding: widget.padding,
-                  decoration: BoxDecoration(
-                    color: colors.surfaceCard,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: colors.borderDefault),
-                    boxShadow: ctx.elevation.shadow(3),
+              child: Focus(
+                focusNode: _overlayFocus,
+                autofocus: true,
+                onKeyEvent: (node, event) {
+                  if (event is KeyDownEvent &&
+                      event.logicalKey == LogicalKeyboardKey.escape) {
+                    hide();
+                    return KeyEventResult.handled;
+                  }
+                  return KeyEventResult.ignored;
+                },
+                child: Semantics(
+                  container: true,
+                  label: widget.semanticLabel,
+                  scopesRoute: true,
+                  explicitChildNodes: true,
+                  child: TweenAnimationBuilder<double>(
+                    duration:
+                        reduced ? Duration.zero : motion.dropdownOpen.duration,
+                    curve: motion.dropdownOpen.curve,
+                    tween: Tween(begin: 0, end: 1),
+                    builder: (_, t, c) => Opacity(opacity: t, child: c),
+                    child: Container(
+                      width: widget.width,
+                      padding: effectivePadding,
+                      decoration: BoxDecoration(
+                        color: colors.surfaceOverlay,
+                        borderRadius: BorderRadius.circular(radius.sm),
+                        border: Border.all(color: colors.borderDefault),
+                        boxShadow: ctx.elevation.shadow(3),
+                      ),
+                      child: widget.content(ctx),
+                    ),
                   ),
-                  child: widget.content(ctx),
                 ),
               ),
             ),
@@ -107,6 +159,9 @@ class GenaiPopoverState extends State<GenaiPopover> {
     });
     overlay.insert(_entry!);
     setState(() {});
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_entry != null) _overlayFocus.requestFocus();
+    });
   }
 
   void hide() {
@@ -120,6 +175,7 @@ class GenaiPopoverState extends State<GenaiPopover> {
   @override
   void dispose() {
     _entry?.remove();
+    _overlayFocus.dispose();
     super.dispose();
   }
 
@@ -135,3 +191,7 @@ class GenaiPopoverState extends State<GenaiPopover> {
     );
   }
 }
+
+// Popovers render on the overlay z-index layer.
+// ignore: unused_element
+const int _popoverZ = GenaiZIndex.overlay;

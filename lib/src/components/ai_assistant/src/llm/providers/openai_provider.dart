@@ -40,8 +40,8 @@ class OpenAiProvider implements LlmProvider {
     this.requestTimeout = const Duration(seconds: 60),
     this.maxCompletionTokens = 16384,
     http.Client? httpClient,
-  }) : _client = httpClient ?? http.Client(),
-       _ownsClient = httpClient == null;
+  })  : _client = httpClient ?? http.Client(),
+        _ownsClient = httpClient == null;
 
   @override
   void dispose() {
@@ -53,10 +53,11 @@ class OpenAiProvider implements LlmProvider {
     required List<LlmMessage> messages,
     required List<ToolDefinition> tools,
     String? systemPrompt,
-  }) => retryOnRateLimit(
-    () => _sendMessageInner(messages, tools, systemPrompt),
-    tag: 'OpenAI',
-  );
+  }) =>
+      retryOnRateLimit(
+        () => _sendMessageInner(messages, tools, systemPrompt),
+        tag: 'OpenAI',
+      );
 
   Future<LlmResponse> _sendMessageInner(
     List<LlmMessage> messages,
@@ -165,19 +166,18 @@ class OpenAiProvider implements LlmProvider {
           if (msg.toolCalls != null && msg.toolCalls!.isNotEmpty) {
             result.add({
               'role': 'assistant',
-              'tool_calls':
-                  msg.toolCalls!
-                      .map(
-                        (tc) => {
-                          'id': tc.id,
-                          'type': 'function',
-                          'function': {
-                            'name': tc.name,
-                            'arguments': jsonEncode(tc.arguments),
-                          },
-                        },
-                      )
-                      .toList(),
+              'tool_calls': msg.toolCalls!
+                  .map(
+                    (tc) => {
+                      'id': tc.id,
+                      'type': 'function',
+                      'function': {
+                        'name': tc.name,
+                        'arguments': jsonEncode(tc.arguments),
+                      },
+                    },
+                  )
+                  .toList(),
             });
           } else {
             result.add({'role': 'assistant', 'content': msg.content ?? ''});
@@ -271,10 +271,9 @@ class OpenAiProvider implements LlmProvider {
         if (toolName == null || toolName.isEmpty) continue;
 
         final rawId = tc['id']?.toString();
-        final toolId =
-            (rawId != null && rawId.isNotEmpty)
-                ? rawId
-                : 'openai_$toolName#${i + 1}';
+        final toolId = (rawId != null && rawId.isNotEmpty)
+            ? rawId
+            : 'openai_$toolName#${i + 1}';
         parsedCalls.add(
           ToolCall(
             id: toolId,
@@ -363,10 +362,9 @@ class OpenAiProvider implements LlmProvider {
               ToolCall(
                 id: 'inline_${_extractedCallCounter++}',
                 name: name,
-                arguments:
-                    args is Map<String, dynamic>
-                        ? args
-                        : args is Map
+                arguments: args is Map<String, dynamic>
+                    ? args
+                    : args is Map
                         ? Map<String, dynamic>.from(args)
                         : const {},
               ),
@@ -411,26 +409,26 @@ class OpenAiProvider implements LlmProvider {
 
     return switch (toolName) {
       'tap_element' => {
-        'label': args[0],
-        if (args.length > 1) 'parentContext': args[1],
-      },
+          'label': args[0],
+          if (args.length > 1) 'parentContext': args[1],
+        },
       'set_text' => {
-        'label': args.isNotEmpty ? args[0] : '',
-        'text': args.length > 1 ? args[1] : '',
-        if (args.length > 2) 'parentContext': args[2],
-      },
+          'label': args.isNotEmpty ? args[0] : '',
+          'text': args.length > 1 ? args[1] : '',
+          if (args.length > 2) 'parentContext': args[2],
+        },
       'scroll' => {'direction': args[0]},
       'navigate_to_route' => {'routeName': args[0]},
       'long_press_element' => {
-        'label': args[0],
-        if (args.length > 1) 'parentContext': args[1],
-      },
+          'label': args[0],
+          if (args.length > 1) 'parentContext': args[1],
+        },
       'increase_value' || 'decrease_value' => {'label': args[0]},
       'ask_user' => {'question': args[0]},
       'hand_off_to_user' => {
-        'buttonLabel': args[0],
-        'summary': args.length > 1 ? args[1] : '',
-      },
+          'buttonLabel': args[0],
+          'summary': args.length > 1 ? args[1] : '',
+        },
       // Custom tools — pass as json if single arg looks like JSON,
       // otherwise first arg as 'input'.
       _ => args.length == 1 ? _tryParseJsonArg(args[0]) : {'args': args},

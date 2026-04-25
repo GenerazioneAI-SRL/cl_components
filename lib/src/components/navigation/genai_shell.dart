@@ -15,7 +15,7 @@ import 'genai_sidebar.dart';
 /// Composes sidebar (or rail or bottom-nav) + app bar + body, switching
 /// layout automatically based on the window size.
 ///
-/// Cmd/Ctrl+K opens an optional [commandPalette].
+/// Cmd/Ctrl+K opens an optional command palette driven by [commands].
 class GenaiShell extends StatefulWidget {
   /// Sidebar configuration (always provided; collapses/transforms on small
   /// breakpoints).
@@ -106,18 +106,20 @@ class _GenaiShellState extends State<GenaiShell> {
       backgroundColor: colors.surfacePage,
       appBar: widget.appBar,
       body: _buildBody(size),
-      bottomNavigationBar: size == GenaiWindowSize.compact && widget.bottomNavItems != null
-          ? GenaiBottomNav(
-              items: widget.bottomNavItems!,
-              selectedIndex: widget.bottomNavIndex ?? 0,
-              onChanged: widget.onBottomNavChanged,
-            )
-          : null,
+      bottomNavigationBar:
+          size == GenaiWindowSize.compact && widget.bottomNavItems != null
+              ? GenaiBottomNav(
+                  items: widget.bottomNavItems!,
+                  selectedIndex: widget.bottomNavIndex ?? 0,
+                  onChanged: widget.onBottomNavChanged,
+                )
+              : null,
     );
 
     if (widget.commands != null) {
       content = _CommandShortcutHost(
-        onOpen: () => showGenaiCommandPalette(context, commands: widget.commands!),
+        onOpen: () =>
+            showGenaiCommandPalette(context, commands: widget.commands!),
         child: content,
       );
     }
@@ -131,6 +133,7 @@ class _GenaiShellState extends State<GenaiShell> {
   }
 
   Widget _buildBody(GenaiWindowSize size) {
+    // Layout decisions based on window width, not platform (§10.2).
     if (size == GenaiWindowSize.compact) {
       // Mobile: just the body; sidebar replaced by bottom nav (above).
       return widget.body;
@@ -173,8 +176,10 @@ class _CommandShortcutHost extends StatelessWidget {
   Widget build(BuildContext context) {
     return Shortcuts(
       shortcuts: <ShortcutActivator, Intent>{
-        const SingleActivator(LogicalKeyboardKey.keyK, meta: true): const _OpenCommandIntent(),
-        const SingleActivator(LogicalKeyboardKey.keyK, control: true): const _OpenCommandIntent(),
+        const SingleActivator(LogicalKeyboardKey.keyK, meta: true):
+            const _OpenCommandIntent(),
+        const SingleActivator(LogicalKeyboardKey.keyK, control: true):
+            const _OpenCommandIntent(),
       },
       child: Actions(
         actions: <Type, Action<Intent>>{

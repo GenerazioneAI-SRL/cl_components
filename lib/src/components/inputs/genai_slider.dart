@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/context_extensions.dart';
-import '../../tokens/colors.dart';
 
 /// Continuous-value slider (§6.1.7).
 class GenaiSlider extends StatelessWidget {
@@ -15,6 +14,9 @@ class GenaiSlider extends StatelessWidget {
   final bool showLabels;
   final bool isDisabled;
 
+  /// Screen-reader label for the slider.
+  final String? semanticLabel;
+
   const GenaiSlider({
     super.key,
     required this.value,
@@ -26,23 +28,34 @@ class GenaiSlider extends StatelessWidget {
     this.tooltipBuilder,
     this.showLabels = false,
     this.isDisabled = false,
+    this.semanticLabel,
   });
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     final ty = context.typography;
+    final spacing = context.spacing;
+
+    // Value indicator on a neutral dark surface for contrast in either theme.
+    final indicatorBg =
+        context.isDark ? colors.surfaceCard : colors.textPrimary;
+    final indicatorFg =
+        context.isDark ? colors.textPrimary : colors.surfaceCard;
 
     final slider = SliderTheme(
       data: SliderThemeData(
-        trackHeight: 4,
+        trackHeight: spacing.s1,
         activeTrackColor: colors.colorPrimary,
         inactiveTrackColor: colors.borderDefault,
-        thumbColor: Colors.white,
-        thumbShape: _GenaiThumbShape(borderColor: colors.colorPrimary),
+        thumbColor: colors.surfaceCard,
+        thumbShape: _GenaiThumbShape(
+          borderColor: colors.colorPrimary,
+          fillColor: colors.surfaceCard,
+        ),
         overlayShape: SliderComponentShape.noOverlay,
-        valueIndicatorColor: GenaiColorsPrimitive.neutral900,
-        valueIndicatorTextStyle: ty.bodySm.copyWith(color: Colors.white),
+        valueIndicatorColor: indicatorBg,
+        valueIndicatorTextStyle: ty.bodySm.copyWith(color: indicatorFg),
         showValueIndicator: ShowValueIndicator.onlyForContinuous,
       ),
       child: Slider(
@@ -56,23 +69,43 @@ class GenaiSlider extends StatelessWidget {
       ),
     );
 
-    if (!showLabels) return slider;
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        slider,
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    final labeled = !showLabels
+        ? slider
+        : Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Text(min.toStringAsFixed(0), style: ty.caption.copyWith(color: colors.textSecondary)),
-              Text(max.toStringAsFixed(0), style: ty.caption.copyWith(color: colors.textSecondary)),
+              slider,
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: spacing.s2),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(min.toStringAsFixed(0),
+                        style:
+                            ty.caption.copyWith(color: colors.textSecondary)),
+                    Text(max.toStringAsFixed(0),
+                        style:
+                            ty.caption.copyWith(color: colors.textSecondary)),
+                  ],
+                ),
+              ),
             ],
-          ),
-        ),
-      ],
+          );
+
+    return Semantics(
+      label: semanticLabel ?? 'Cursore',
+      slider: true,
+      enabled: !isDisabled,
+      value: tooltipBuilder?.call(value) ?? value.toStringAsFixed(1),
+      increasedValue: divisions == null
+          ? null
+          : ((value + (max - min) / divisions!).clamp(min, max))
+              .toStringAsFixed(1),
+      decreasedValue: divisions == null
+          ? null
+          : ((value - (max - min) / divisions!).clamp(min, max))
+              .toStringAsFixed(1),
+      child: labeled,
     );
   }
 }
@@ -87,6 +120,9 @@ class GenaiRangeSlider extends StatelessWidget {
   final ValueChanged<RangeValues>? onChangeEnd;
   final bool isDisabled;
 
+  /// Screen-reader label for the range slider.
+  final String? semanticLabel;
+
   const GenaiRangeSlider({
     super.key,
     required this.values,
@@ -96,17 +132,22 @@ class GenaiRangeSlider extends StatelessWidget {
     this.onChanged,
     this.onChangeEnd,
     this.isDisabled = false,
+    this.semanticLabel,
   });
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    return SliderTheme(
+    final spacing = context.spacing;
+    final slider = SliderTheme(
       data: SliderThemeData(
-        trackHeight: 4,
+        trackHeight: spacing.s1,
         activeTrackColor: colors.colorPrimary,
         inactiveTrackColor: colors.borderDefault,
-        rangeThumbShape: _GenaiRangeThumbShape(borderColor: colors.colorPrimary),
+        rangeThumbShape: _GenaiRangeThumbShape(
+          borderColor: colors.colorPrimary,
+          fillColor: colors.surfaceCard,
+        ),
         overlayShape: SliderComponentShape.noOverlay,
       ),
       child: RangeSlider(
@@ -121,15 +162,28 @@ class GenaiRangeSlider extends StatelessWidget {
         onChangeEnd: isDisabled ? null : onChangeEnd,
       ),
     );
+    return Semantics(
+      label: semanticLabel ?? 'Intervallo',
+      slider: true,
+      enabled: !isDisabled,
+      value:
+          '${values.start.toStringAsFixed(1)} - ${values.end.toStringAsFixed(1)}',
+      child: slider,
+    );
   }
 }
 
 class _GenaiThumbShape extends SliderComponentShape {
   final Color borderColor;
-  const _GenaiThumbShape({required this.borderColor});
+  final Color fillColor;
+  // 10px radius thumb matches the canonical §6.1.7 slider spec.
+  static const double _radius = 10;
+  static const double _strokeWidth = 2;
+  const _GenaiThumbShape({required this.borderColor, required this.fillColor});
 
   @override
-  Size getPreferredSize(bool isEnabled, bool isDiscrete) => const Size.fromRadius(10);
+  Size getPreferredSize(bool isEnabled, bool isDiscrete) =>
+      const Size.fromRadius(_radius);
 
   @override
   void paint(
@@ -150,15 +204,15 @@ class _GenaiThumbShape extends SliderComponentShape {
     final scale = 1 + 0.2 * activationAnimation.value;
     canvas.drawCircle(
       center,
-      10 * scale,
-      Paint()..color = Colors.white,
+      _radius * scale,
+      Paint()..color = fillColor,
     );
     canvas.drawCircle(
       center,
-      10 * scale,
+      _radius * scale,
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 2
+        ..strokeWidth = _strokeWidth
         ..color = borderColor,
     );
   }
@@ -166,10 +220,15 @@ class _GenaiThumbShape extends SliderComponentShape {
 
 class _GenaiRangeThumbShape extends RangeSliderThumbShape {
   final Color borderColor;
-  const _GenaiRangeThumbShape({required this.borderColor});
+  final Color fillColor;
+  static const double _radius = 10;
+  static const double _strokeWidth = 2;
+  const _GenaiRangeThumbShape(
+      {required this.borderColor, required this.fillColor});
 
   @override
-  Size getPreferredSize(bool isEnabled, bool isDiscrete) => const Size.fromRadius(10);
+  Size getPreferredSize(bool isEnabled, bool isDiscrete) =>
+      const Size.fromRadius(_radius);
 
   @override
   void paint(
@@ -186,13 +245,13 @@ class _GenaiRangeThumbShape extends RangeSliderThumbShape {
     Thumb? thumb,
   }) {
     final canvas = context.canvas;
-    canvas.drawCircle(center, 10, Paint()..color = Colors.white);
+    canvas.drawCircle(center, _radius, Paint()..color = fillColor);
     canvas.drawCircle(
       center,
-      10,
+      _radius,
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 2
+        ..strokeWidth = _strokeWidth
         ..color = borderColor,
     );
   }

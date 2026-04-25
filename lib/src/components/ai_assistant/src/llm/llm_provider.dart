@@ -51,7 +51,8 @@ class LlmMessage {
   factory LlmMessage.userMultimodal(
     String content,
     List<LlmImageContent> images,
-  ) => LlmMessage(role: LlmRole.user, content: content, images: images);
+  ) =>
+      LlmMessage(role: LlmRole.user, content: content, images: images);
 
   factory LlmMessage.assistant(String content) =>
       LlmMessage(role: LlmRole.assistant, content: content);
@@ -59,7 +60,8 @@ class LlmMessage {
   factory LlmMessage.assistantToolCalls(
     List<ToolCall> calls, {
     String? thought,
-  }) => LlmMessage(role: LlmRole.assistant, toolCalls: calls, content: thought);
+  }) =>
+      LlmMessage(role: LlmRole.assistant, toolCalls: calls, content: thought);
 
   factory LlmMessage.toolResult(String toolCallId, String content) =>
       LlmMessage(role: LlmRole.tool, toolCallId: toolCallId, content: content);

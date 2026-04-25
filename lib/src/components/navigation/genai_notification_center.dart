@@ -2,14 +2,28 @@ import 'package:flutter/material.dart';
 
 import '../../foundations/icons.dart';
 import '../../theme/context_extensions.dart';
+import '../../tokens/sizing.dart';
 import '../actions/genai_button.dart';
 import '../actions/genai_icon_button.dart';
 import '../feedback/genai_empty_state.dart';
 import '../indicators/genai_status_badge.dart';
-import '../../tokens/sizing.dart';
 
-enum GenaiNotificationLevel { info, success, warning, error }
+/// Severity level of a [GenaiNotificationItem]. Drives icon and color.
+enum GenaiNotificationLevel {
+  /// Informational.
+  info,
 
+  /// Positive confirmation.
+  success,
+
+  /// Attention required.
+  warning,
+
+  /// Failure / error.
+  error,
+}
+
+/// Single entry in a [GenaiNotificationCenter] list.
 class GenaiNotificationItem {
   final String id;
   final String title;
@@ -67,97 +81,131 @@ class GenaiNotificationCenter extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final ty = context.typography;
+    final spacing = context.spacing;
+    final radius = context.radius;
     final unread = notifications.where((n) => !n.isRead).length;
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-          child: Row(
-            children: [
-              Text('Notifiche', style: ty.headingSm.copyWith(color: colors.textPrimary)),
-              const SizedBox(width: 8),
-              if (unread > 0)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: colors.colorPrimary,
-                    borderRadius: BorderRadius.circular(999),
+    return Semantics(
+      container: true,
+      label: 'Notifiche',
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: EdgeInsets.symmetric(
+                horizontal: spacing.s1, vertical: spacing.s2),
+            child: Row(
+              children: [
+                Text('Notifiche',
+                    style: ty.headingSm.copyWith(color: colors.textPrimary)),
+                SizedBox(width: spacing.s2),
+                if (unread > 0)
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: spacing.s1 + 2, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: colors.colorPrimary,
+                      borderRadius: BorderRadius.circular(radius.pill),
+                    ),
+                    child: Text('$unread',
+                        style: ty.caption.copyWith(
+                            color: colors.textOnPrimary,
+                            fontWeight: FontWeight.w600)),
                   ),
-                  child: Text('$unread', style: ty.caption.copyWith(color: colors.textOnPrimary, fontWeight: FontWeight.w600)),
-                ),
-              const Spacer(),
-              if (onMarkAllRead != null)
-                GenaiButton.ghost(
-                  label: 'Segna tutto come letto',
-                  size: GenaiSize.sm,
-                  onPressed: onMarkAllRead,
-                ),
-            ],
+                const Spacer(),
+                if (onMarkAllRead != null)
+                  GenaiButton.ghost(
+                    label: 'Segna tutto come letto',
+                    size: GenaiSize.sm,
+                    onPressed: onMarkAllRead,
+                  ),
+              ],
+            ),
           ),
-        ),
-        if (notifications.isEmpty)
-          const GenaiEmptyState(
-            icon: LucideIcons.bell,
-            title: 'Nessuna notifica',
-          )
-        else
-          for (final n in notifications) _buildItem(n, colors, ty),
-      ],
+          if (notifications.isEmpty)
+            const GenaiEmptyState(
+              icon: LucideIcons.bell,
+              title: 'Nessuna notifica',
+            )
+          else
+            for (final n in notifications) _buildItem(context, n),
+        ],
+      ),
     );
   }
 
-  Widget _buildItem(GenaiNotificationItem n, dynamic colors, dynamic ty) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: () {
-          n.onTap?.call();
-          if (!n.isRead) onMarkRead?.call(n.id);
-        },
-        child: Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: n.isRead ? null : colors.colorPrimarySubtle,
-            border: Border(bottom: BorderSide(color: colors.borderDefault)),
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              GenaiStatusBadge(label: '', status: _statusFor(n.level)),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(n.title,
-                              style: ty.label.copyWith(color: colors.textPrimary, fontWeight: n.isRead ? FontWeight.w500 : FontWeight.w600)),
-                        ),
-                        Text(_format(n.timestamp), style: ty.caption.copyWith(color: colors.textSecondary)),
-                      ],
-                    ),
-                    if (n.body != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 2),
-                        child: Text(n.body!, style: ty.bodySm.copyWith(color: colors.textSecondary)),
-                      ),
-                  ],
+  Widget _buildItem(BuildContext context, GenaiNotificationItem n) {
+    final colors = context.colors;
+    final ty = context.typography;
+    final spacing = context.spacing;
+    return Semantics(
+      button: n.onTap != null,
+      selected: !n.isRead,
+      label: '${n.title} - ${_format(n.timestamp)}',
+      hint: n.isRead ? 'Letta' : 'Non letta',
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: () {
+            n.onTap?.call();
+            if (!n.isRead) onMarkRead?.call(n.id);
+          },
+          child: Container(
+            padding: EdgeInsets.all(spacing.s3),
+            decoration: BoxDecoration(
+              color: n.isRead ? null : colors.colorPrimarySubtle,
+              border: Border(
+                bottom: BorderSide(
+                  color: colors.borderDefault,
+                  width: context.sizing.dividerThickness,
                 ),
               ),
-              if (onDismiss != null)
-                GenaiIconButton(
-                  icon: LucideIcons.x,
-                  size: GenaiSize.xs,
-                  semanticLabel: 'Chiudi notifica',
-                  onPressed: () => onDismiss!(n.id),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                GenaiStatusBadge(label: '', status: _statusFor(n.level)),
+                SizedBox(width: spacing.s2),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(n.title,
+                                style: ty.label.copyWith(
+                                    color: colors.textPrimary,
+                                    fontWeight: n.isRead
+                                        ? FontWeight.w500
+                                        : FontWeight.w600)),
+                          ),
+                          Text(_format(n.timestamp),
+                              style: ty.caption
+                                  .copyWith(color: colors.textSecondary)),
+                        ],
+                      ),
+                      if (n.body != null)
+                        Padding(
+                          padding: EdgeInsets.only(top: spacing.s1 / 2),
+                          child: Text(n.body!,
+                              style: ty.bodySm
+                                  .copyWith(color: colors.textSecondary)),
+                        ),
+                    ],
+                  ),
                 ),
-            ],
+                if (onDismiss != null)
+                  GenaiIconButton(
+                    icon: LucideIcons.x,
+                    size: GenaiSize.xs,
+                    semanticLabel: 'Chiudi notifica',
+                    onPressed: () => onDismiss!(n.id),
+                  ),
+              ],
+            ),
           ),
         ),
       ),

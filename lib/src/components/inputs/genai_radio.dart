@@ -4,6 +4,7 @@ import '../../foundations/animations.dart';
 import '../../theme/context_extensions.dart';
 import '../../tokens/sizing.dart';
 
+/// Single option inside a [GenaiRadioGroup].
 class GenaiRadioOption<T> {
   final T value;
   final String label;
@@ -39,6 +40,7 @@ class GenaiRadioGroup<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final spacing = context.spacing;
     final children = options
         .map((o) => _GenaiRadioTile<T>(
               option: o,
@@ -48,18 +50,26 @@ class GenaiRadioGroup<T> extends StatelessWidget {
             ))
         .toList();
 
+    Widget layout;
     if (direction == Axis.horizontal) {
-      return Wrap(spacing: 16, runSpacing: 8, children: children);
-    }
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        for (var i = 0; i < children.length; i++) ...[
-          if (i > 0) const SizedBox(height: 8),
-          children[i],
+      layout =
+          Wrap(spacing: spacing.s4, runSpacing: spacing.s2, children: children);
+    } else {
+      layout = Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (var i = 0; i < children.length; i++) ...[
+            if (i > 0) SizedBox(height: spacing.s2),
+            children[i],
+          ],
         ],
-      ],
+      );
+    }
+    return FocusTraversalGroup(
+      policy: OrderedTraversalPolicy(),
+      child:
+          Semantics(container: true, explicitChildNodes: true, child: layout),
     );
   }
 }
@@ -88,22 +98,33 @@ class _GenaiRadioTileState<T> extends State<_GenaiRadioTile<T>> {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final ty = context.typography;
+    final spacing = context.spacing;
+    final sizing = context.sizing;
+    final motion = context.motion;
     final disabled = widget.isGroupDisabled || widget.option.isDisabled;
-    final ringColor = widget.selected ? colors.colorPrimary : colors.borderStrong;
+    final ringColor =
+        widget.selected ? colors.colorPrimary : colors.borderStrong;
+
+    // Outer ring 16px for sm, scaled slightly for md+.
+    const outer = 16.0;
+    const inner = 8.0;
 
     Widget radio = AnimatedContainer(
-      duration: GenaiDurations.checkboxCheck,
-      width: 16,
-      height: 16,
+      duration: motion.checkboxCheck.duration,
+      curve: motion.checkboxCheck.curve,
+      width: outer,
+      height: outer,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: ringColor, width: 1.5),
+        border: Border.all(
+            color: ringColor, width: sizing.focusOutlineOffset - 0.5),
       ),
       alignment: Alignment.center,
       child: AnimatedContainer(
-        duration: GenaiDurations.checkboxCheck,
-        width: widget.selected ? 8 : 0,
-        height: widget.selected ? 8 : 0,
+        duration: motion.checkboxCheck.duration,
+        curve: motion.checkboxCheck.curve,
+        width: widget.selected ? inner : 0,
+        height: widget.selected ? inner : 0,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: colors.colorPrimary,
@@ -113,10 +134,11 @@ class _GenaiRadioTileState<T> extends State<_GenaiRadioTile<T>> {
 
     if (_focused && !disabled) {
       radio = Container(
-        padding: const EdgeInsets.all(2),
+        padding: EdgeInsets.all(sizing.focusOutlineOffset),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          border: Border.all(color: colors.borderFocus, width: 2),
+          border: Border.all(
+              color: colors.borderFocus, width: sizing.focusOutlineWidth),
         ),
         child: radio,
       );
@@ -127,7 +149,9 @@ class _GenaiRadioTileState<T> extends State<_GenaiRadioTile<T>> {
       child: Focus(
         onFocusChange: (f) => setState(() => _focused = f),
         child: MouseRegion(
-          cursor: disabled ? SystemMouseCursors.forbidden : SystemMouseCursors.click,
+          cursor: disabled
+              ? SystemMouseCursors.forbidden
+              : SystemMouseCursors.click,
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: disabled ? null : widget.onTap,
@@ -135,28 +159,37 @@ class _GenaiRadioTileState<T> extends State<_GenaiRadioTile<T>> {
               checked: widget.selected,
               inMutuallyExclusiveGroup: true,
               label: widget.option.label,
+              hint: widget.option.description,
               enabled: !disabled,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  radio,
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(widget.option.label, style: ty.label.copyWith(color: colors.textPrimary)),
-                        if (widget.option.description != null)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 2),
-                            child: Text(widget.option.description!, style: ty.bodySm.copyWith(color: colors.textSecondary)),
-                          ),
-                      ],
+              focused: _focused,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: sizing.minTouchTarget),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    radio,
+                    SizedBox(width: spacing.iconLabelGap),
+                    Flexible(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(widget.option.label,
+                              style:
+                                  ty.label.copyWith(color: colors.textPrimary)),
+                          if (widget.option.description != null)
+                            Padding(
+                              padding: EdgeInsets.only(top: spacing.s1 / 2),
+                              child: Text(widget.option.description!,
+                                  style: ty.bodySm
+                                      .copyWith(color: colors.textSecondary)),
+                            ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

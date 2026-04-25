@@ -1,14 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-import '../../foundations/animations.dart';
 import '../../foundations/icons.dart';
 import '../../foundations/responsive.dart';
 import '../../theme/context_extensions.dart';
 import '../../tokens/sizing.dart';
+import '../../tokens/z_index.dart';
 import '../actions/genai_button.dart';
 import '../actions/genai_icon_button.dart';
 
-enum GenaiModalSize { sm, md, lg, xl, fullscreen }
+/// Preset widths for [showGenaiModal] on desktop. `fullscreen` covers the
+/// whole viewport minus safe areas.
+enum GenaiModalSize {
+  /// Small — ~360px.
+  sm,
+
+  /// Medium — ~560px (default).
+  md,
+
+  /// Large — ~720px.
+  lg,
+
+  /// Extra large — ~960px.
+  xl,
+
+  /// Full viewport.
+  fullscreen,
+}
 
 /// Show a modal dialog (§6.5.1).
 ///
@@ -23,14 +41,18 @@ Future<T?> showGenaiModal<T>(
   GenaiModalSize size = GenaiModalSize.md,
   bool dismissible = true,
   bool showClose = true,
+  String dismissSemanticLabel = 'Chiudi',
+  String barrierSemanticLabel = 'Chiudi finestra',
 }) {
   final isCompact = GenaiResponsive.sizeOf(context) == GenaiWindowSize.compact;
+  final reduced = GenaiResponsive.reducedMotion(context);
+  final motion = context.motion;
   return showGeneralDialog<T>(
     context: context,
     barrierDismissible: dismissible,
-    barrierLabel: 'Chiudi finestra',
-    barrierColor: const Color(0x99000000),
-    transitionDuration: GenaiDurations.modalOpen,
+    barrierLabel: barrierSemanticLabel,
+    barrierColor: context.colors.scrimModal,
+    transitionDuration: reduced ? Duration.zero : motion.modalOpen.duration,
     pageBuilder: (ctx, _, __) => _GenaiModalShell(
       title: title,
       description: description,
@@ -38,13 +60,17 @@ Future<T?> showGenaiModal<T>(
       isCompact: isCompact,
       showClose: showClose,
       actions: actions,
+      dismissSemanticLabel: dismissSemanticLabel,
       child: child,
     ),
     transitionBuilder: (_, anim, __, modal) {
-      final curved = CurvedAnimation(parent: anim, curve: GenaiCurves.open);
+      if (reduced) return modal;
+      final curved =
+          CurvedAnimation(parent: anim, curve: motion.modalOpen.curve);
       if (isCompact) {
         return SlideTransition(
-          position: Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero).animate(curved),
+          position: Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero)
+              .animate(curved),
           child: modal,
         );
       }
@@ -117,13 +143,19 @@ Future<bool> showGenaiStrongConfirm(
     child: StatefulBuilder(builder: (ctx, setState) {
       final colors = ctx.colors;
       final ty = ctx.typography;
+      final spacing = ctx.spacing;
+      final radius = ctx.radius;
+      final sizing = ctx.sizing;
       final matches = controller.text == requiredText;
       return Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('Digita "$requiredText" per confermare:', style: ty.bodySm.copyWith(color: colors.textSecondary)),
-          const SizedBox(height: 8),
+          Text(
+            'Digita "$requiredText" per confermare:',
+            style: ty.bodySm.copyWith(color: colors.textSecondary),
+          ),
+          SizedBox(height: spacing.s2),
           TextField(
             controller: controller,
             autofocus: true,
@@ -131,20 +163,23 @@ Future<bool> showGenaiStrongConfirm(
             decoration: InputDecoration(
               isDense: true,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(radius.sm),
                 borderSide: BorderSide(color: colors.borderDefault),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(radius.sm),
                 borderSide: BorderSide(color: colors.borderDefault),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: colors.borderFocus, width: 2),
+                borderRadius: BorderRadius.circular(radius.sm),
+                borderSide: BorderSide(
+                  color: colors.borderFocus,
+                  width: sizing.focusOutlineWidth,
+                ),
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: spacing.s4),
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
@@ -152,7 +187,7 @@ Future<bool> showGenaiStrongConfirm(
                 label: cancelLabel,
                 onPressed: () => Navigator.of(ctx).pop(false),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: spacing.s2),
               GenaiButton.destructive(
                 label: confirmLabel,
                 onPressed: matches ? () => Navigator.of(ctx).pop(true) : null,
@@ -174,6 +209,7 @@ class _GenaiModalShell extends StatelessWidget {
   final GenaiModalSize size;
   final bool isCompact;
   final bool showClose;
+  final String dismissSemanticLabel;
 
   const _GenaiModalShell({
     this.title,
@@ -183,6 +219,7 @@ class _GenaiModalShell extends StatelessWidget {
     required this.size,
     required this.isCompact,
     required this.showClose,
+    required this.dismissSemanticLabel,
   });
 
   double _maxWidth() {
@@ -204,8 +241,12 @@ class _GenaiModalShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final ty = context.typography;
+    final spacing = context.spacing;
+    final radiusTokens = context.radius;
 
-    final radius = isCompact ? const BorderRadius.vertical(top: Radius.circular(16)) : BorderRadius.circular(12);
+    final radius = isCompact
+        ? BorderRadius.vertical(top: Radius.circular(radiusTokens.lg))
+        : BorderRadius.circular(radiusTokens.md);
     final align = isCompact ? Alignment.bottomCenter : Alignment.center;
 
     final content = ConstrainedBox(
@@ -223,7 +264,12 @@ class _GenaiModalShell extends StatelessWidget {
           children: [
             if (title != null || showClose)
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 12, 0),
+                padding: EdgeInsets.fromLTRB(
+                  spacing.s5,
+                  spacing.s4,
+                  spacing.s3,
+                  0,
+                ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -232,11 +278,24 @@ class _GenaiModalShell extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          if (title != null) Text(title!, style: ty.headingSm.copyWith(color: colors.textPrimary)),
+                          if (title != null)
+                            Semantics(
+                              header: true,
+                              child: Text(
+                                title!,
+                                style: ty.headingSm
+                                    .copyWith(color: colors.textPrimary),
+                              ),
+                            ),
                           if (description != null)
                             Padding(
-                              padding: const EdgeInsets.only(top: 4),
-                              child: Text(description!, style: ty.bodySm.copyWith(color: colors.textSecondary)),
+                              padding: EdgeInsets.only(top: spacing.s1),
+                              child: Text(
+                                description!,
+                                style: ty.bodySm.copyWith(
+                                  color: colors.textSecondary,
+                                ),
+                              ),
                             ),
                         ],
                       ),
@@ -245,7 +304,7 @@ class _GenaiModalShell extends StatelessWidget {
                       GenaiIconButton(
                         icon: LucideIcons.x,
                         size: GenaiSize.sm,
-                        semanticLabel: 'Chiudi',
+                        semanticLabel: dismissSemanticLabel,
                         onPressed: () => Navigator.of(context).pop(),
                       ),
                   ],
@@ -253,21 +312,33 @@ class _GenaiModalShell extends StatelessWidget {
               ),
             Flexible(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                padding: EdgeInsets.fromLTRB(
+                  spacing.s5,
+                  spacing.s4,
+                  spacing.s5,
+                  spacing.s4,
+                ),
                 child: child,
               ),
             ),
             if (actions.isNotEmpty)
               Container(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+                padding: EdgeInsets.fromLTRB(
+                  spacing.s5,
+                  spacing.s3,
+                  spacing.s5,
+                  spacing.s4,
+                ),
                 decoration: BoxDecoration(
-                  border: Border(top: BorderSide(color: colors.borderDefault)),
+                  border: Border(
+                    top: BorderSide(color: colors.borderDefault),
+                  ),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     for (var i = 0; i < actions.length; i++) ...[
-                      if (i > 0) const SizedBox(width: 8),
+                      if (i > 0) SizedBox(width: spacing.s2),
                       actions[i],
                     ],
                   ],
@@ -278,14 +349,49 @@ class _GenaiModalShell extends StatelessWidget {
       ),
     );
 
-    return SafeArea(
-      child: Align(
-        alignment: align,
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: isCompact ? 0 : 24, vertical: isCompact ? 0 : 24),
-          child: content,
+    return Semantics(
+      container: true,
+      scopesRoute: true,
+      namesRoute: true,
+      explicitChildNodes: true,
+      label: title,
+      value: description,
+      child: Shortcuts(
+        shortcuts: const <ShortcutActivator, Intent>{
+          SingleActivator(LogicalKeyboardKey.escape): DismissIntent(),
+        },
+        child: Actions(
+          actions: <Type, Action<Intent>>{
+            DismissIntent: CallbackAction<DismissIntent>(
+              onInvoke: (_) {
+                Navigator.of(context).maybePop();
+                return null;
+              },
+            ),
+          },
+          child: FocusScope(
+            autofocus: true,
+            child: SafeArea(
+              child: Align(
+                alignment: align,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isCompact ? 0 : spacing.s6,
+                    vertical: isCompact ? 0 : spacing.s6,
+                  ),
+                  child: content,
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );
   }
 }
+
+// Modal backdrop + content live on dedicated z-index layers (§13.2).
+// ignore: unused_element
+const int _modalBackdropZ = GenaiZIndex.modalBackdrop;
+// ignore: unused_element
+const int _modalContentZ = GenaiZIndex.modalContent;

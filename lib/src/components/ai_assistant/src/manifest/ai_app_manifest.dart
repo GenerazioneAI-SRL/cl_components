@@ -52,9 +52,8 @@ class AiAppManifest {
     // Global navigation.
     if (globalNavigation.isNotEmpty) {
       buffer.writeln('GLOBAL NAVIGATION:');
-      final navItems = globalNavigation
-          .map((n) => '${n.label} (${n.route})')
-          .join(', ');
+      final navItems =
+          globalNavigation.map((n) => '${n.label} (${n.route})').join(', ');
       buffer.writeln('  $navItems');
       buffer.writeln();
     }
@@ -81,9 +80,8 @@ class AiAppManifest {
       buffer.writeln('COMMON TASKS (multi-step flows):');
       for (int i = 0; i < flows.length; i++) {
         final flow = flows[i];
-        final steps = flow.steps
-            .map((s) => '${s.route}: ${s.instruction}')
-            .join(' -> ');
+        final steps =
+            flow.steps.map((s) => '${s.route}: ${s.instruction}').join(' -> ');
         buffer.writeln('  ${i + 1}. ${flow.name}: $steps');
       }
       buffer.writeln();

@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 
-enum GenaiPanelSection { notifications, chatbot }
+/// Section currently shown in the side panel hosted by `GenaiShell`.
+enum GenaiPanelSection {
+  /// Notifications list.
+  notifications,
+
+  /// AI assistant / chatbot.
+  chatbot,
+}
 
 /// Notifications / chatbot side panel state.
 class GenaiNotificationsPanelState extends ChangeNotifier {
@@ -10,7 +17,8 @@ class GenaiNotificationsPanelState extends ChangeNotifier {
   bool get isOpen => _isOpen;
   GenaiPanelSection get currentSection => _currentSection;
 
-  bool isCurrentSection(GenaiPanelSection section) => _isOpen && _currentSection == section;
+  bool isCurrentSection(GenaiPanelSection section) =>
+      _isOpen && _currentSection == section;
 
   void toggle(GenaiPanelSection section) {
     if (_isOpen && _currentSection == section) {

@@ -4,6 +4,15 @@
 /// thousands separator. Dates use `dd/MM/yyyy`.
 library;
 
+/// Static namespace for italian-locale formatting helpers.
+///
+/// Use via the `static` methods; do not instantiate.
+///
+/// ```dart
+/// GenaiFormatters.currency(1234.56);          // '1.234,56 €'
+/// GenaiFormatters.dateLong(DateTime.now());   // '20 aprile 2026'
+/// GenaiFormatters.initials('Mario Rossi');    // 'MR'
+/// ```
 class GenaiFormatters {
   GenaiFormatters._();
 
@@ -56,7 +65,8 @@ class GenaiFormatters {
   }
 
   /// `'1.234,56 €'` (default) or `'€ 1.234,56'` if [symbolBefore].
-  static String currency(num value, {int decimals = 2, String symbol = '€', bool symbolBefore = false}) {
+  static String currency(num value,
+      {int decimals = 2, String symbol = '€', bool symbolBefore = false}) {
     final n = number(value, decimals: decimals);
     return symbolBefore ? '$symbol $n' : '$n $symbol';
   }
@@ -98,16 +108,19 @@ class GenaiFormatters {
   static String date(DateTime d) => '${_pad(d.day)}/${_pad(d.month)}/${d.year}';
 
   /// `'05/03/2026 14:30'`.
-  static String dateTime(DateTime d) => '${date(d)} ${_pad(d.hour)}:${_pad(d.minute)}';
+  static String dateTime(DateTime d) =>
+      '${date(d)} ${_pad(d.hour)}:${_pad(d.minute)}';
 
   /// `'14:30'`.
   static String time(DateTime d) => '${_pad(d.hour)}:${_pad(d.minute)}';
 
   /// `'5 marzo 2026'`.
-  static String dateLong(DateTime d) => '${d.day} ${_months[d.month - 1]} ${d.year}';
+  static String dateLong(DateTime d) =>
+      '${d.day} ${_months[d.month - 1]} ${d.year}';
 
   /// `'5 mar 2026'`.
-  static String dateShort(DateTime d) => '${d.day} ${_monthsShort[d.month - 1]} ${d.year}';
+  static String dateShort(DateTime d) =>
+      '${d.day} ${_monthsShort[d.month - 1]} ${d.year}';
 
   /// `'gennaio 2026'`.
   static String monthYear(DateTime d) => '${_months[d.month - 1]} ${d.year}';
@@ -129,7 +142,11 @@ class GenaiFormatters {
   /// Initials: `'Mario Rossi'` → `'MR'`.
   static String initials(String fullName, {int max = 2}) {
     final parts = fullName.trim().split(RegExp(r'\s+'));
-    final letters = parts.where((p) => p.isNotEmpty).map((p) => p[0].toUpperCase()).take(max).join();
+    final letters = parts
+        .where((p) => p.isNotEmpty)
+        .map((p) => p[0].toUpperCase())
+        .take(max)
+        .join();
     return letters;
   }
 

@@ -1,3 +1,5 @@
+/// Recursive result tree produced by a [GenaiSurvey] — mirrors the
+/// question/answer hierarchy including nested follow-ups.
 class GenaiSurveyResult {
   final String question;
   late final List<GenaiSurveyResult> children;
@@ -10,10 +12,15 @@ class GenaiSurveyResult {
   })  : answers = answers ?? [],
         children = children ?? [];
 
-  factory GenaiSurveyResult.fromJson(Map<String, dynamic> json) => GenaiSurveyResult(
+  factory GenaiSurveyResult.fromJson(Map<String, dynamic> json) =>
+      GenaiSurveyResult(
         question: json['question'] as String,
-        answers: (json['answers'] as List<dynamic>?)?.map((e) => Map<String, dynamic>.from(e as Map)).toList(),
-        children: (json['children'] as List<dynamic>? ?? const []).map((e) => GenaiSurveyResult.fromJson(e as Map<String, dynamic>)).toList(),
+        answers: (json['answers'] as List<dynamic>?)
+            ?.map((e) => Map<String, dynamic>.from(e as Map))
+            .toList(),
+        children: (json['children'] as List<dynamic>? ?? const [])
+            .map((e) => GenaiSurveyResult.fromJson(e as Map<String, dynamic>))
+            .toList(),
       );
 
   Map<String, dynamic> toJson() => {

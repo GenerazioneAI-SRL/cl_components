@@ -8,3 +8,14 @@ pubspec.lock
 *.iml
 .idea/
 .DS_Store
+
+# Generated dartdoc
+doc/api/
+doc/
+
+# Playwright MCP cache
+.playwright-mcp/
+
+# Visual test artifacts
+*.screenshot.png
+screenshots/

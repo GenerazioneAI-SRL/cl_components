@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../foundations/animations.dart';
 import '../../foundations/icons.dart';
 import '../../theme/context_extensions.dart';
 import '../../tokens/sizing.dart';
@@ -239,7 +238,8 @@ class _GenaiTextFieldState extends State<GenaiTextField> {
   @override
   void initState() {
     super.initState();
-    _controller = widget.controller ?? TextEditingController(text: widget.initialValue ?? '');
+    _controller = widget.controller ??
+        TextEditingController(text: widget.initialValue ?? '');
     _ownController = widget.controller == null;
     _focusNode = widget.focusNode ?? FocusNode();
     _ownFocus = widget.focusNode == null;
@@ -301,13 +301,24 @@ class _GenaiTextFieldState extends State<GenaiTextField> {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final ty = context.typography;
+    final spacing = context.spacing;
+    final sizing = context.sizing;
+    final motion = context.motion;
     final isCompact = context.isCompact;
-    final h = widget.maxLines != null && widget.maxLines! > 1 ? null : widget.size.resolveHeight(isCompact: isCompact);
+    final h = widget.maxLines != null && widget.maxLines! > 1
+        ? null
+        : widget.size.resolveHeight(isCompact: isCompact);
 
-    final borderColor = _hasError ? colors.borderError : (_focused ? colors.borderFocus : colors.borderDefault);
-    final borderWidth = _focused || _hasError ? 2.0 : 1.0;
+    final borderColor = _hasError
+        ? colors.borderError
+        : (_focused ? colors.borderFocus : colors.borderDefault);
+    final borderWidth = _focused || _hasError
+        ? sizing.focusOutlineWidth
+        : widget.size.borderWidth;
 
-    final bg = widget.isDisabled ? colors.surfaceHover : (widget.isReadOnly ? colors.surfacePage : colors.surfaceInput);
+    final bg = widget.isDisabled
+        ? colors.surfaceHover
+        : (widget.isReadOnly ? colors.surfacePage : colors.surfaceInput);
 
     final inputStyle = ty.bodyMd.copyWith(
       color: widget.isDisabled ? colors.textDisabled : colors.textPrimary,
@@ -315,27 +326,37 @@ class _GenaiTextFieldState extends State<GenaiTextField> {
     );
 
     final isPassword = widget.obscureText;
-    final isSearch = widget.keyboardType == TextInputType.text && widget.hint == 'Cerca...' && widget.clearable;
+    final isSearch = widget.keyboardType == TextInputType.text &&
+        widget.hint == 'Cerca...' &&
+        widget.clearable;
     final hasValue = _controller.text.isNotEmpty;
 
     final prefixWidget = widget.prefix ??
         (isSearch
             ? Padding(
-                padding: const EdgeInsets.only(left: 12, right: 4),
-                child: Icon(LucideIcons.search, size: widget.size.iconSize, color: colors.textSecondary),
+                padding: EdgeInsets.only(left: spacing.s3, right: spacing.s1),
+                child: Icon(LucideIcons.search,
+                    size: widget.size.iconSize, color: colors.textSecondary),
               )
             : (widget.prefixText != null
                 ? Padding(
-                    padding: const EdgeInsets.only(left: 12, right: 4),
-                    child: Text(widget.prefixText!, style: inputStyle.copyWith(color: colors.textSecondary)),
+                    padding:
+                        EdgeInsets.only(left: spacing.s3, right: spacing.s1),
+                    child: Text(widget.prefixText!,
+                        style:
+                            inputStyle.copyWith(color: colors.textSecondary)),
                   )
                 : null));
 
     final suffixActions = <Widget>[];
     if (widget.isLoading) {
-      suffixActions.add(GenaiSpinner(size: widget.size, color: colors.textSecondary));
+      suffixActions
+          .add(GenaiSpinner(size: widget.size, color: colors.textSecondary));
     } else {
-      if (widget.clearable && hasValue && !widget.isDisabled && !widget.isReadOnly) {
+      if (widget.clearable &&
+          hasValue &&
+          !widget.isDisabled &&
+          !widget.isReadOnly) {
         suffixActions.add(GenaiIconButton(
           icon: LucideIcons.x,
           size: GenaiSize.xs,
@@ -359,7 +380,8 @@ class _GenaiTextFieldState extends State<GenaiTextField> {
     if (widget.suffixText != null) {
       suffixActions.insert(
         0,
-        Text(widget.suffixText!, style: inputStyle.copyWith(color: colors.textSecondary)),
+        Text(widget.suffixText!,
+            style: inputStyle.copyWith(color: colors.textSecondary)),
       );
     }
     if (widget.suffix != null) suffixActions.insert(0, widget.suffix!);
@@ -381,7 +403,8 @@ class _GenaiTextFieldState extends State<GenaiTextField> {
       cursorColor: colors.colorPrimary,
       onChanged: widget.onChanged,
       onSubmitted: widget.onSubmitted,
-      buildCounter: (_, {required currentLength, required isFocused, maxLength}) => null,
+      buildCounter:
+          (_, {required currentLength, required isFocused, maxLength}) => null,
       decoration: InputDecoration(
         isDense: true,
         hintText: widget.isDisabled ? null : widget.hint,
@@ -398,7 +421,8 @@ class _GenaiTextFieldState extends State<GenaiTextField> {
     );
 
     Widget container = AnimatedContainer(
-      duration: GenaiDurations.hover,
+      duration: motion.hover.duration,
+      curve: motion.hover.curve,
       height: h,
       decoration: BoxDecoration(
         color: bg,
@@ -406,16 +430,18 @@ class _GenaiTextFieldState extends State<GenaiTextField> {
         border: Border.all(color: borderColor, width: borderWidth),
       ),
       child: Row(
-        crossAxisAlignment: widget.maxLines != null && widget.maxLines! > 1 ? CrossAxisAlignment.start : CrossAxisAlignment.center,
+        crossAxisAlignment: widget.maxLines != null && widget.maxLines! > 1
+            ? CrossAxisAlignment.start
+            : CrossAxisAlignment.center,
         children: [
           if (prefixWidget != null) prefixWidget,
           Expanded(child: field),
           if (suffixActions.isNotEmpty) ...[
             ...suffixActions.map((w) => Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  padding: EdgeInsets.symmetric(horizontal: spacing.s1),
                   child: w,
                 )),
-            const SizedBox(width: 4),
+            SizedBox(width: spacing.s1),
           ],
         ],
       ),
@@ -424,8 +450,9 @@ class _GenaiTextFieldState extends State<GenaiTextField> {
     final children = <Widget>[];
     if (widget.label != null) {
       children.add(Padding(
-        padding: const EdgeInsets.only(bottom: 6),
-        child: Text(widget.label!, style: ty.label.copyWith(color: colors.textPrimary)),
+        padding: EdgeInsets.only(bottom: spacing.s1 + 2),
+        child: Text(widget.label!,
+            style: ty.label.copyWith(color: colors.textPrimary)),
       ));
     }
     children.add(container);
@@ -434,34 +461,45 @@ class _GenaiTextFieldState extends State<GenaiTextField> {
     final showCounter = widget.showCounter && widget.maxLength != null;
     if (showHelper || showCounter) {
       children.add(Padding(
-        padding: const EdgeInsets.only(top: 6),
+        padding: EdgeInsets.only(top: spacing.s1 + 2),
         child: Row(
           children: [
             if (showHelper)
               Expanded(
-                child: Row(
-                  children: [
-                    if (_hasError) ...[
-                      Icon(LucideIcons.circleAlert, size: 14, color: colors.textError),
-                      const SizedBox(width: 4),
-                    ],
-                    Flexible(
-                      child: Text(
-                        _resolvedError ?? widget.helperText ?? '',
-                        style: ty.caption.copyWith(
-                          color: _hasError ? colors.textError : colors.textSecondary,
+                child: Semantics(
+                  liveRegion: _hasError,
+                  child: Row(
+                    children: [
+                      if (_hasError) ...[
+                        ExcludeSemantics(
+                          child: Icon(LucideIcons.circleAlert,
+                              size: GenaiSize.xs.iconSize * 0.875,
+                              color: colors.textError),
+                        ),
+                        SizedBox(width: spacing.s1),
+                      ],
+                      Flexible(
+                        child: Text(
+                          _resolvedError ?? widget.helperText ?? '',
+                          style: ty.caption.copyWith(
+                            color: _hasError
+                                ? colors.textError
+                                : colors.textSecondary,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               )
             else
               const Spacer(),
             if (showCounter)
-              Text(
-                '${_controller.text.characters.length} / ${widget.maxLength}',
-                style: ty.caption.copyWith(color: colors.textSecondary),
+              ExcludeSemantics(
+                child: Text(
+                  '${_controller.text.characters.length} / ${widget.maxLength}',
+                  style: ty.caption.copyWith(color: colors.textSecondary),
+                ),
               ),
           ],
         ),
@@ -471,7 +509,12 @@ class _GenaiTextFieldState extends State<GenaiTextField> {
     return Semantics(
       textField: true,
       label: widget.semanticLabel ?? widget.label,
+      hint: widget.hint,
+      value: _controller.text,
       enabled: !widget.isDisabled,
+      readOnly: widget.isReadOnly,
+      obscured: isPassword && _obscured,
+      focused: _focused,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,

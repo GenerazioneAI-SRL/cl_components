@@ -4,6 +4,9 @@ import '../../foundations/animations.dart';
 import '../../theme/context_extensions.dart';
 import '../../tokens/sizing.dart';
 
+/// Single button inside a [GenaiToggleButtonGroup].
+///
+/// Provide either a [label], an [icon], or both.
 class GenaiToggleOption<T> {
   final T value;
   final String? label;
@@ -127,6 +130,7 @@ class _GenaiSegmentedGroup<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final isCompact = context.isCompact;
+    final divider = context.sizing.dividerThickness;
     final h = size.resolveHeight(isCompact: isCompact);
 
     final children = <Widget>[];
@@ -157,30 +161,37 @@ class _GenaiSegmentedGroup<T> extends StatelessWidget {
 
     final group = Container(
       decoration: BoxDecoration(
-        border: Border.all(color: colors.borderDefault, width: size.borderWidth),
+        border:
+            Border.all(color: colors.borderDefault, width: size.borderWidth),
         borderRadius: BorderRadius.circular(size.borderRadius),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(size.borderRadius),
         child: Row(
           mainAxisSize: isFullWidth ? MainAxisSize.max : MainAxisSize.min,
-          children: _withDividers(children, colors.borderDefault),
+          children: _withDividers(children, colors.borderDefault, divider),
         ),
       ),
     );
 
-    return Opacity(
-      opacity: isDisabled ? GenaiInteraction.disabledOpacity : 1.0,
-      child: group,
+    return Semantics(
+      container: true,
+      explicitChildNodes: true,
+      child: Opacity(
+        opacity: isDisabled ? GenaiInteraction.disabledOpacity : 1.0,
+        child: group,
+      ),
     );
   }
 
-  List<Widget> _withDividers(List<Widget> tiles, Color color) {
+  List<Widget> _withDividers(
+      List<Widget> tiles, Color color, double thickness) {
     final out = <Widget>[];
     for (var i = 0; i < tiles.length; i++) {
       out.add(tiles[i]);
       if (i < tiles.length - 1) {
-        out.add(VerticalDivider(width: 1, thickness: 1, color: color));
+        out.add(VerticalDivider(
+            width: thickness, thickness: thickness, color: color));
       }
     }
     return out;
@@ -220,7 +231,9 @@ class _SegmentedTileState extends State<_SegmentedTile> {
     final colors = context.colors;
     final ty = context.typography;
 
-    final bg = widget.selected ? colors.colorPrimary : (_hovered ? colors.surfaceHover : Colors.transparent);
+    final bg = widget.selected
+        ? colors.colorPrimary
+        : (_hovered ? colors.surfaceHover : Colors.transparent);
     final fg = widget.selected ? colors.textOnPrimary : colors.textPrimary;
 
     final children = <Widget>[];
@@ -233,22 +246,35 @@ class _SegmentedTileState extends State<_SegmentedTile> {
       children.add(Text(widget.label!, style: base.copyWith(color: fg)));
     }
 
-    return MouseRegion(
-      cursor: widget.disabled ? SystemMouseCursors.forbidden : SystemMouseCursors.click,
-      onEnter: (_) => setState(() => _hovered = true),
-      onExit: (_) => setState(() => _hovered = false),
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: widget.onTap,
-        child: AnimatedContainer(
-          duration: GenaiDurations.hover,
-          height: widget.height,
-          padding: EdgeInsets.symmetric(horizontal: widget.size.paddingH),
-          color: bg,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: children,
+    final motion = context.motion;
+    final sizing = context.sizing;
+    return Semantics(
+      button: true,
+      toggled: widget.selected,
+      enabled: !widget.disabled,
+      label: widget.label,
+      child: MouseRegion(
+        cursor: widget.disabled
+            ? SystemMouseCursors.forbidden
+            : SystemMouseCursors.click,
+        onEnter: (_) => setState(() => _hovered = true),
+        onExit: (_) => setState(() => _hovered = false),
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: widget.onTap,
+          child: AnimatedContainer(
+            duration: motion.hover.duration,
+            curve: motion.hover.curve,
+            height: widget.height < sizing.minTouchTarget
+                ? sizing.minTouchTarget
+                : widget.height,
+            padding: EdgeInsets.symmetric(horizontal: widget.size.paddingH),
+            color: bg,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: children,
+            ),
           ),
         ),
       ),

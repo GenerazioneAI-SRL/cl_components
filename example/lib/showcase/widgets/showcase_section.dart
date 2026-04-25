@@ -20,27 +20,33 @@ class ShowcaseScaffold extends StatelessWidget {
     return Container(
       color: colors.surfacePage,
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 1100),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                if (title != null)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Text(title!, style: context.typography.headingLg.copyWith(color: colors.textPrimary, fontWeight: FontWeight.w700)),
-                  ),
-                if (description != null)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 24),
-                    child: Text(description!, style: context.typography.bodyMd.copyWith(color: colors.textSecondary)),
-                  ),
-                ...children,
-              ],
-            ),
-          ),
+        padding: EdgeInsets.symmetric(
+          horizontal: context.spacing.pagePaddingH,
+          vertical: context.spacing.pagePaddingV,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (title != null)
+              Padding(
+                padding: EdgeInsets.only(bottom: context.spacing.s2),
+                child: Semantics(
+                  header: true,
+                  child: Text(title!,
+                      style: context.typography.headingLg.copyWith(
+                          color: colors.textPrimary,
+                          fontWeight: FontWeight.w700)),
+                ),
+              ),
+            if (description != null)
+              Padding(
+                padding: EdgeInsets.only(bottom: context.spacing.s6),
+                child: Text(description!,
+                    style: context.typography.bodyMd
+                        .copyWith(color: colors.textSecondary)),
+              ),
+            ...children,
+          ],
         ),
       ),
     );

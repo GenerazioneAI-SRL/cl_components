@@ -18,8 +18,8 @@ const _green = Color(0xFF5AE89E);
 const _red = Color(0xFFFF6B8A);
 
 /// Callback for when a chat button is tapped.
-typedef OnChatButtonTap =
-    void Function(AiChatMessage message, ChatButton button, int buttonIndex);
+typedef OnChatButtonTap = void Function(
+    AiChatMessage message, ChatButton button, int buttonIndex);
 
 /// Single chat bubble styled for the JARVIS-themed AI overlay.
 ///
@@ -66,35 +66,34 @@ class ChatBubble extends StatelessWidget {
   }
 
   Widget _aiAvatar() => Container(
-    width: 26,
-    height: 26,
-    decoration: BoxDecoration(
-      shape: BoxShape.circle,
-      gradient: const LinearGradient(colors: [_accent, _glow]),
-      boxShadow: [
-        BoxShadow(color: _accent.withValues(alpha: 0.25), blurRadius: 8),
-      ],
-    ),
-    child: const Icon(Icons.auto_awesome, size: 12, color: Colors.white),
-  );
+        width: 26,
+        height: 26,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: const LinearGradient(colors: [_accent, _glow]),
+          boxShadow: [
+            BoxShadow(color: _accent.withValues(alpha: 0.25), blurRadius: 8),
+          ],
+        ),
+        child: const Icon(Icons.auto_awesome, size: 12, color: Colors.white),
+      );
 
   Widget _bubble() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       constraints: const BoxConstraints(maxWidth: 300),
       decoration: BoxDecoration(
-        gradient:
-            _isUser
-                ? const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [_accent, Color(0xFF6B5CE7)],
-                )
-                : LinearGradient(
-                  begin: Alignment.centerLeft,
-                  end: const Alignment(0.5, 0),
-                  colors: [_accent.withValues(alpha: 0.06), _bgMid],
-                ),
+        gradient: _isUser
+            ? const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [_accent, Color(0xFF6B5CE7)],
+              )
+            : LinearGradient(
+                begin: Alignment.centerLeft,
+                end: const Alignment(0.5, 0),
+                colors: [_accent.withValues(alpha: 0.06), _bgMid],
+              ),
         borderRadius: BorderRadius.only(
           topLeft: const Radius.circular(18),
           topRight: const Radius.circular(18),
@@ -192,13 +191,13 @@ class ChatBubble extends StatelessWidget {
   Widget _renderBlock(ChatContent block) {
     return switch (block) {
       TextContent(:final text) => MarkdownText(
-        text: text,
-        baseStyle: TextStyle(
-          color: _isUser ? Colors.white : _textH,
-          fontSize: 13.5,
-          height: 1.45,
+          text: text,
+          baseStyle: TextStyle(
+            color: _isUser ? Colors.white : _textH,
+            fontSize: 13.5,
+            height: 1.45,
+          ),
         ),
-      ),
       ImageContent() => _renderImage(block),
       CardContent() => _renderCard(block),
       ButtonsContent() => _renderButtons(block),
@@ -229,27 +228,25 @@ class ChatBubble extends StatelessWidget {
               child: CircularProgressIndicator(
                 strokeWidth: 2,
                 color: _accent,
-                value:
-                    progress.expectedTotalBytes != null
-                        ? progress.cumulativeBytesLoaded /
-                            progress.expectedTotalBytes!
-                        : null,
+                value: progress.expectedTotalBytes != null
+                    ? progress.cumulativeBytesLoaded /
+                        progress.expectedTotalBytes!
+                    : null,
               ),
             ),
           );
         },
-        errorBuilder:
-            (_, __, ___) => Container(
-              height: 80,
-              color: _bgDeep,
-              child: const Center(
-                child: Icon(
-                  Icons.broken_image_outlined,
-                  color: _textD,
-                  size: 28,
-                ),
-              ),
+        errorBuilder: (_, __, ___) => Container(
+          height: 80,
+          color: _bgDeep,
+          child: const Center(
+            child: Icon(
+              Icons.broken_image_outlined,
+              color: _textD,
+              size: 28,
             ),
+          ),
+        ),
       );
     } else {
       return const SizedBox.shrink();
@@ -338,10 +335,9 @@ class ChatBubble extends StatelessWidget {
     );
 
     return GestureDetector(
-      onTap:
-          disabled
-              ? null
-              : () => onButtonTap?.call(message, button, globalIndex),
+      onTap: disabled
+          ? null
+          : () => onButtonTap?.call(message, button, globalIndex),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: EdgeInsets.symmetric(
@@ -352,15 +348,14 @@ class ChatBubble extends StatelessWidget {
           color: colors.bg,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(color: colors.border, width: isTapped ? 1.5 : 1),
-          boxShadow:
-              isTapped
-                  ? [
-                    BoxShadow(
-                      color: colors.border.withValues(alpha: 0.3),
-                      blurRadius: 8,
-                    ),
-                  ]
-                  : null,
+          boxShadow: isTapped
+              ? [
+                  BoxShadow(
+                    color: colors.border.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                  ),
+                ]
+              : null,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -418,40 +413,35 @@ class ChatBubble extends StatelessWidget {
 
     return switch (style) {
       ChatButtonStyle.primary => _ButtonColors(
-        bg:
-            isTapped
-                ? _accent.withValues(alpha: 0.25)
-                : _accent.withValues(alpha: 0.12),
-        border: _accent.withValues(alpha: isTapped ? 0.8 : 0.4),
-        text: isTapped ? _textH : _glow,
-      ),
+          bg: isTapped
+              ? _accent.withValues(alpha: 0.25)
+              : _accent.withValues(alpha: 0.12),
+          border: _accent.withValues(alpha: isTapped ? 0.8 : 0.4),
+          text: isTapped ? _textH : _glow,
+        ),
       ChatButtonStyle.outlined => _ButtonColors(
-        bg:
-            isTapped
-                ? _accent.withValues(alpha: 0.15)
-                : _bgMid.withValues(alpha: 0.5),
-        border:
-            isTapped
-                ? _accent.withValues(alpha: 0.7)
-                : _glassBorder.withValues(alpha: 0.4),
-        text: isTapped ? _textH : _textB,
-      ),
+          bg: isTapped
+              ? _accent.withValues(alpha: 0.15)
+              : _bgMid.withValues(alpha: 0.5),
+          border: isTapped
+              ? _accent.withValues(alpha: 0.7)
+              : _glassBorder.withValues(alpha: 0.4),
+          text: isTapped ? _textH : _textB,
+        ),
       ChatButtonStyle.success => _ButtonColors(
-        bg:
-            isTapped
-                ? _green.withValues(alpha: 0.2)
-                : _green.withValues(alpha: 0.08),
-        border: _green.withValues(alpha: isTapped ? 0.7 : 0.3),
-        text: isTapped ? _textH : _green,
-      ),
+          bg: isTapped
+              ? _green.withValues(alpha: 0.2)
+              : _green.withValues(alpha: 0.08),
+          border: _green.withValues(alpha: isTapped ? 0.7 : 0.3),
+          text: isTapped ? _textH : _green,
+        ),
       ChatButtonStyle.destructive => _ButtonColors(
-        bg:
-            isTapped
-                ? _red.withValues(alpha: 0.2)
-                : _red.withValues(alpha: 0.08),
-        border: _red.withValues(alpha: isTapped ? 0.7 : 0.3),
-        text: isTapped ? _textH : _red,
-      ),
+          bg: isTapped
+              ? _red.withValues(alpha: 0.2)
+              : _red.withValues(alpha: 0.08),
+          border: _red.withValues(alpha: isTapped ? 0.7 : 0.3),
+          text: isTapped ? _textH : _red,
+        ),
     };
   }
 
@@ -476,24 +466,22 @@ class ChatBubble extends StatelessWidget {
             SizedBox(
               height: 120,
               width: double.infinity,
-              child:
-                  card.imageBytes != null
-                      ? Image.memory(card.imageBytes!, fit: BoxFit.cover)
-                      : Image.network(
-                        card.imageUrl!,
-                        fit: BoxFit.cover,
-                        errorBuilder:
-                            (_, __, ___) => Container(
-                              color: _bgMid,
-                              child: const Center(
-                                child: Icon(
-                                  Icons.image_outlined,
-                                  color: _textD,
-                                  size: 32,
-                                ),
-                              ),
-                            ),
+              child: card.imageBytes != null
+                  ? Image.memory(card.imageBytes!, fit: BoxFit.cover)
+                  : Image.network(
+                      card.imageUrl!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
+                        color: _bgMid,
+                        child: const Center(
+                          child: Icon(
+                            Icons.image_outlined,
+                            color: _textD,
+                            size: 32,
+                          ),
+                        ),
                       ),
+                    ),
             ),
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
@@ -581,10 +569,9 @@ class ChatBubble extends StatelessWidget {
   // ── Action chips (tool execution history) ─────────────────────────────────
 
   Widget _actions() {
-    final visible =
-        message.actions!
-            .where((a) => a.toolName != 'get_screen_content')
-            .toList();
+    final visible = message.actions!
+        .where((a) => a.toolName != 'get_screen_content')
+        .toList();
     if (visible.isEmpty) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.only(top: 5),

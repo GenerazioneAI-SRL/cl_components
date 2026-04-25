@@ -77,13 +77,12 @@ class _HandoffIndicatorState extends State<HandoffIndicator>
       child: Padding(
         padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
         child: SlideTransition(
-          position:
-              Tween<Offset>(
-                begin: const Offset(0, -1.5),
-                end: Offset.zero,
-              ).animate(
-                CurvedAnimation(parent: _slideCtrl, curve: Curves.easeOutBack),
-              ),
+          position: Tween<Offset>(
+            begin: const Offset(0, -1.5),
+            end: Offset.zero,
+          ).animate(
+            CurvedAnimation(parent: _slideCtrl, curve: Curves.easeOutBack),
+          ),
           child: FadeTransition(
             opacity: CurvedAnimation(parent: _slideCtrl, curve: Curves.easeOut),
             child: Column(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../foundations/animations.dart';
+import '../../foundations/responsive.dart';
 import '../../theme/context_extensions.dart';
 import '../../tokens/sizing.dart';
 
@@ -151,6 +152,8 @@ class _GenaiButtonState extends State<GenaiButton> {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final motion = context.motion;
+    final sizing = context.sizing;
     final radius = widget.size.borderRadius;
     final isCompact = context.isCompact;
     final height = widget.size.resolveHeight(isCompact: isCompact);
@@ -163,38 +166,36 @@ class _GenaiButtonState extends State<GenaiButton> {
     final child = _buildContent(fg);
     final disabled = widget._isDisabled || widget.isLoading;
 
-    Widget button = AnimatedScale(
-      scale: _pressed ? GenaiInteraction.pressScale : 1.0,
-      duration: _pressed ? GenaiDurations.pressIn : GenaiDurations.pressOut,
-      curve: Curves.easeOut,
-      child: AnimatedContainer(
-        duration: GenaiDurations.hover,
-        curve: Curves.easeOut,
-        height: height,
-        constraints: BoxConstraints(minWidth: height),
-        padding: EdgeInsets.symmetric(horizontal: widget.size.paddingH),
-        decoration: BoxDecoration(
-          color: bg,
-          borderRadius: BorderRadius.circular(radius),
-          border: border,
+    // Inner painted button — plain Container so hover bg never flickers on
+    // fast cursor moves. AnimatedScale stays INSIDE so press feedback only
+    // scales the content, not the layout box.
+    final reduced = GenaiResponsive.reducedMotion(context);
+    Widget button = Container(
+      height: height,
+      constraints: BoxConstraints(minWidth: height),
+      padding: EdgeInsets.symmetric(horizontal: widget.size.paddingH),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(radius),
+        border: border,
+      ),
+      child: Center(
+        child: AnimatedScale(
+          scale: _pressed ? GenaiInteraction.pressScale : 1.0,
+          alignment: Alignment.center,
+          duration: reduced
+              ? Duration.zero
+              : (_pressed ? motion.pressIn.duration : motion.pressOut.duration),
+          curve: _pressed ? motion.pressIn.curve : motion.pressOut.curve,
+          child: child,
         ),
-        child: Center(child: child),
       ),
     );
 
-    if (_focused && !disabled) {
-      button = Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(radius + 2),
-          border: Border.all(color: colors.borderFocus, width: 2),
-        ),
-        padding: const EdgeInsets.all(2),
-        child: button,
-      );
-    }
-
     Widget result = Opacity(
-      opacity: widget._isDisabled ? GenaiInteraction.disabledOpacity : (widget.isLoading ? GenaiInteraction.loadingOpacity : 1.0),
+      opacity: widget._isDisabled
+          ? GenaiInteraction.disabledOpacity
+          : (widget.isLoading ? GenaiInteraction.loadingOpacity : 1.0),
       child: button,
     );
 
@@ -202,15 +203,56 @@ class _GenaiButtonState extends State<GenaiButton> {
       result = SizedBox(width: double.infinity, child: result);
     }
 
-    result = Focus(
-      onFocusChange: (f) => setState(() => _focused = f),
-      child: MouseRegion(
-        cursor: disabled ? SystemMouseCursors.forbidden : SystemMouseCursors.click,
-        onEnter: (_) => setState(() => _hovered = true),
-        onExit: (_) => setState(() {
-          _hovered = false;
-          _pressed = false;
-        }),
+    // Focus ring rendered as a non-layout overlay so focus appearance never
+    // changes the painted bounds — prevents hover/focus oscillation when
+    // a click triggers focus + hover at the same time.
+    if (_focused && !disabled) {
+      result = Stack(
+        clipBehavior: Clip.none,
+        children: [
+          result,
+          Positioned(
+            left: -sizing.focusOutlineOffset,
+            top: -sizing.focusOutlineOffset,
+            right: -sizing.focusOutlineOffset,
+            bottom: -sizing.focusOutlineOffset,
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius:
+                      BorderRadius.circular(radius + sizing.focusOutlineOffset),
+                  border: Border.all(
+                    color: colors.borderFocus,
+                    width: sizing.focusOutlineWidth,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    result = MouseRegion(
+      cursor:
+          disabled ? SystemMouseCursors.forbidden : SystemMouseCursors.click,
+      opaque: false,
+      hitTestBehavior: HitTestBehavior.opaque,
+      onEnter: (_) {
+        if (!_hovered) setState(() => _hovered = true);
+      },
+      onExit: (_) {
+        if (_hovered || _pressed) {
+          setState(() {
+            _hovered = false;
+            _pressed = false;
+          });
+        }
+      },
+      child: Focus(
+        onFocusChange: (f) {
+          if (_focused != f) setState(() => _focused = f);
+        },
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTapDown: disabled ? null : (_) => setState(() => _pressed = true),
@@ -227,9 +269,23 @@ class _GenaiButtonState extends State<GenaiButton> {
       ),
     );
 
+    // Expand hit target for xs/sm sizes without changing visual height.
+    if (height < sizing.minTouchTarget) {
+      result = ConstrainedBox(
+        constraints: BoxConstraints(minHeight: sizing.minTouchTarget),
+        child: Align(
+          alignment: Alignment.center,
+          widthFactor: 1.0,
+          heightFactor: 1.0,
+          child: result,
+        ),
+      );
+    }
+
     result = Semantics(
       button: true,
       enabled: !disabled,
+      focused: _focused,
       label: widget.semanticLabel ?? widget.label,
       child: result,
     );
@@ -237,7 +293,7 @@ class _GenaiButtonState extends State<GenaiButton> {
     if (widget.tooltip != null) {
       result = Tooltip(
         message: widget.tooltip!,
-        waitDuration: GenaiDurations.tooltipDelay,
+        waitDuration: context.motion.tooltipDelay,
         child: result,
       );
     }
@@ -251,7 +307,7 @@ class _GenaiButtonState extends State<GenaiButton> {
         height: widget.size.iconSize,
         width: widget.size.iconSize,
         child: CircularProgressIndicator(
-          strokeWidth: 2,
+          strokeWidth: context.sizing.focusOutlineWidth,
           valueColor: AlwaysStoppedAnimation(fg),
         ),
       );
@@ -274,12 +330,14 @@ class _GenaiButtonState extends State<GenaiButton> {
     }
     if (widget.trailingIcon != null) {
       if (children.isNotEmpty) children.add(SizedBox(width: widget.size.gap));
-      children.add(Icon(widget.trailingIcon, size: widget.size.iconSize, color: fg));
+      children.add(
+          Icon(widget.trailingIcon, size: widget.size.iconSize, color: fg));
     }
 
     if (children.isEmpty) {
       // Fallback for misuse: render an empty box at the icon size.
-      return SizedBox(width: widget.size.iconSize, height: widget.size.iconSize);
+      return SizedBox(
+          width: widget.size.iconSize, height: widget.size.iconSize);
     }
 
     return Row(
@@ -294,7 +352,9 @@ class _GenaiButtonState extends State<GenaiButton> {
     final base = widget.size == GenaiSize.xs ? ty.labelSm : ty.label;
     return base.copyWith(
       color: fg,
-      fontSize: widget.size == GenaiSize.lg || widget.size == GenaiSize.xl ? widget.size.fontSize : base.fontSize,
+      fontSize: widget.size == GenaiSize.lg || widget.size == GenaiSize.xl
+          ? widget.size.fontSize
+          : base.fontSize,
     );
   }
 
@@ -318,15 +378,15 @@ class _GenaiButtonState extends State<GenaiButton> {
       case GenaiButtonVariant.ghost:
         return _ButtonColors(
           bg: Colors.transparent,
-          bgHover: colors.surfaceHover,
-          bgPressed: colors.surfacePressed,
+          bgHover: colors.textPrimary.withValues(alpha: 0.06),
+          bgPressed: colors.textPrimary.withValues(alpha: 0.12),
           fg: colors.textPrimary,
         );
       case GenaiButtonVariant.outline:
         return _ButtonColors(
           bg: Colors.transparent,
-          bgHover: colors.surfaceHover,
-          bgPressed: colors.surfacePressed,
+          bgHover: colors.textPrimary.withValues(alpha: 0.06),
+          bgPressed: colors.textPrimary.withValues(alpha: 0.12),
           fg: colors.textPrimary,
           borderColor: colors.borderStrong,
         );
@@ -335,7 +395,7 @@ class _GenaiButtonState extends State<GenaiButton> {
           bg: colors.colorError,
           bgHover: colors.colorErrorHover,
           bgPressed: colors.colorErrorHover,
-          fg: Colors.white,
+          fg: colors.textOnPrimary,
         );
     }
   }

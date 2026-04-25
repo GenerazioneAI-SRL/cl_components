@@ -5,7 +5,10 @@ import '../../theme/context_extensions.dart';
 /// Visual separator (§6.3.2).
 class GenaiDivider extends StatelessWidget {
   final Axis direction;
-  final double thickness;
+
+  /// Line thickness. If null, resolves to `context.sizing.dividerThickness`.
+  final double? thickness;
+
   final double indent;
   final double endIndent;
   final String? label;
@@ -13,7 +16,7 @@ class GenaiDivider extends StatelessWidget {
   const GenaiDivider({
     super.key,
     this.direction = Axis.horizontal,
-    this.thickness = 1,
+    this.thickness,
     this.indent = 0,
     this.endIndent = 0,
     this.label,
@@ -21,7 +24,7 @@ class GenaiDivider extends StatelessWidget {
 
   const GenaiDivider.vertical({
     super.key,
-    this.thickness = 1,
+    this.thickness,
     this.indent = 0,
     this.endIndent = 0,
   })  : direction = Axis.vertical,
@@ -31,17 +34,23 @@ class GenaiDivider extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final ty = context.typography;
+    final spacing = context.spacing;
+    final sizing = context.sizing;
+    final t = thickness ?? sizing.dividerThickness;
 
     if (direction == Axis.vertical) {
-      return Container(
-        width: thickness,
-        margin: EdgeInsets.only(top: indent, bottom: endIndent),
-        color: colors.borderDefault,
+      return Semantics(
+        container: true,
+        child: Container(
+          width: t,
+          margin: EdgeInsets.only(top: indent, bottom: endIndent),
+          color: colors.borderDefault,
+        ),
       );
     }
 
     final line = Container(
-      height: thickness,
+      height: t,
       color: colors.borderDefault,
     );
 
@@ -52,20 +61,24 @@ class GenaiDivider extends StatelessWidget {
       );
     }
 
-    return Padding(
-      padding: EdgeInsets.only(left: indent, right: endIndent),
-      child: Row(
-        children: [
-          Expanded(child: line),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Text(
-              label!,
-              style: ty.caption.copyWith(color: colors.textSecondary),
+    return Semantics(
+      container: true,
+      label: label,
+      child: Padding(
+        padding: EdgeInsets.only(left: indent, right: endIndent),
+        child: Row(
+          children: [
+            Expanded(child: line),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: spacing.s3),
+              child: Text(
+                label!,
+                style: ty.caption.copyWith(color: colors.textSecondary),
+              ),
             ),
-          ),
-          Expanded(child: line),
-        ],
+            Expanded(child: line),
+          ],
+        ),
       ),
     );
   }

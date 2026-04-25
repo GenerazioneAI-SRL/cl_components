@@ -40,10 +40,10 @@ class ActionExecutor {
     this.navigatorKey,
     NavigatorObserver? navigatorObserver,
     List<String> knownRoutes = const [],
-  }) : _walker = walker,
-       _navigatorObserver = navigatorObserver,
-       _knownRoutes = knownRoutes,
-       _scrollHandler = ScrollHandler(walker: walker);
+  })  : _walker = walker,
+        _navigatorObserver = navigatorObserver,
+        _knownRoutes = knownRoutes,
+        _scrollHandler = ScrollHandler(walker: walker);
 
   /// Resolve the best available [NavigatorState]:
   /// 1. Explicit [navigatorKey]

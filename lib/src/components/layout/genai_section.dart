@@ -11,6 +11,8 @@ class GenaiSection extends StatelessWidget {
   final String? description;
   final Widget? trailing;
   final Widget child;
+
+  /// Optional outer padding. Defaults to `EdgeInsets.zero`.
   final EdgeInsetsGeometry padding;
 
   const GenaiSection({
@@ -26,39 +28,56 @@ class GenaiSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final ty = context.typography;
+    final spacing = context.spacing;
 
-    return Padding(
-      padding: padding,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(title, style: ty.headingSm.copyWith(color: colors.textPrimary)),
-                    if (description != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Text(description!, style: ty.bodyMd.copyWith(color: colors.textSecondary)),
+    return Semantics(
+      container: true,
+      label: title,
+      value: description,
+      child: Padding(
+        padding: padding,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Semantics(
+                        header: true,
+                        child: Text(
+                          title,
+                          style:
+                              ty.headingSm.copyWith(color: colors.textPrimary),
+                        ),
                       ),
-                  ],
+                      if (description != null)
+                        Padding(
+                          padding: EdgeInsets.only(top: spacing.s1),
+                          child: Text(
+                            description!,
+                            style:
+                                ty.bodyMd.copyWith(color: colors.textSecondary),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
-              ),
-              if (trailing != null) ...[
-                const SizedBox(width: 16),
-                trailing!,
+                if (trailing != null) ...[
+                  SizedBox(width: spacing.s4),
+                  trailing!,
+                ],
               ],
-            ],
-          ),
-          const SizedBox(height: 16),
-          child,
-        ],
+            ),
+            SizedBox(height: spacing.s4),
+            child,
+          ],
+        ),
       ),
     );
   }

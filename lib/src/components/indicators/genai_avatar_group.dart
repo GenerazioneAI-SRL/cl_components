@@ -23,7 +23,7 @@ class GenaiAvatarGroup extends StatelessWidget {
     final visible = avatars.take(maxVisible).toList();
     final overflow = avatars.length - visible.length;
     final dim = size.size;
-    final overlap = 8.0;
+    final overlap = context.spacing.s2;
     final stride = dim - overlap;
 
     final children = <Widget>[];
@@ -44,7 +44,8 @@ class GenaiAvatarGroup extends StatelessWidget {
       ));
     }
 
-    final totalWidth = stride * (visible.length + (overflow > 0 ? 1 : 0)) + overlap;
+    final totalWidth =
+        stride * (visible.length + (overflow > 0 ? 1 : 0)) + overlap;
     final stack = SizedBox(
       width: totalWidth,
       height: dim,
@@ -52,9 +53,13 @@ class GenaiAvatarGroup extends StatelessWidget {
     );
 
     if (onTap == null) return stack;
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(onTap: onTap, child: stack),
+    return Semantics(
+      button: true,
+      label: 'Gruppo avatar',
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(onTap: onTap, child: stack),
+      ),
     );
   }
 
@@ -64,7 +69,9 @@ class GenaiAvatarGroup extends StatelessWidget {
       height: dim,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: context.colors.surfaceCard, width: 2),
+        border: Border.all(
+            color: context.colors.surfaceCard,
+            width: context.sizing.focusOutlineWidth),
       ),
       child: ClipOval(child: avatar),
     );

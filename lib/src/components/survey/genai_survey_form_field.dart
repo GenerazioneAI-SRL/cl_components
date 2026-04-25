@@ -9,7 +9,8 @@ class GenaiSurveyFormField extends StatelessWidget {
   final FormFieldValidator<List<Map<String, String>>>? validator;
   final AutovalidateMode? autovalidateMode;
   final String defaultErrorText;
-  final Widget Function(FormFieldState<List<Map<String, String>>> state) builder;
+  final Widget Function(FormFieldState<List<Map<String, String>>> state)
+      builder;
 
   const GenaiSurveyFormField({
     super.key,

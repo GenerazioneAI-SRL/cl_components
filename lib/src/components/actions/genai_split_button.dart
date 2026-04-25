@@ -41,7 +41,8 @@ class _GenaiSplitButtonState extends State<GenaiSplitButton> {
     final pos = box.localToGlobal(Offset(0, box.size.height));
     final selected = await showMenu<int>(
       context: context,
-      position: RelativeRect.fromLTRB(pos.dx, pos.dy, pos.dx + box.size.width, pos.dy),
+      position: RelativeRect.fromLTRB(
+          pos.dx, pos.dy, pos.dx + box.size.width, pos.dy),
       items: widget.menuItems,
     );
     if (selected != null) widget.onMenuSelected?.call(selected);
@@ -50,31 +51,35 @@ class _GenaiSplitButtonState extends State<GenaiSplitButton> {
   @override
   Widget build(BuildContext context) {
     final radius = widget.size.borderRadius;
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(radius),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          GenaiButton(
-            label: widget.label,
-            icon: widget.icon,
-            variant: widget.variant,
-            size: widget.size,
-            onPressed: widget.isDisabled ? null : widget.onPressed,
-          ),
-          Container(
-            width: 1,
-            height: widget.size.resolveHeight(isCompact: context.isCompact),
-            color: context.colors.borderDefault,
-          ),
-          GenaiIconButton(
-            icon: LucideIcons.chevronDown,
-            variant: widget.variant,
-            size: widget.size,
-            onPressed: widget.isDisabled ? null : _openMenu,
-            semanticLabel: 'Altre azioni',
-          ),
-        ],
+    return Semantics(
+      container: true,
+      label: widget.label,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(radius),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            GenaiButton(
+              label: widget.label,
+              icon: widget.icon,
+              variant: widget.variant,
+              size: widget.size,
+              onPressed: widget.isDisabled ? null : widget.onPressed,
+            ),
+            Container(
+              width: context.sizing.dividerThickness,
+              height: widget.size.resolveHeight(isCompact: context.isCompact),
+              color: context.colors.borderDefault,
+            ),
+            GenaiIconButton(
+              icon: LucideIcons.chevronDown,
+              variant: widget.variant,
+              size: widget.size,
+              onPressed: widget.isDisabled ? null : _openMenu,
+              semanticLabel: 'Altre azioni',
+            ),
+          ],
+        ),
       ),
     );
   }

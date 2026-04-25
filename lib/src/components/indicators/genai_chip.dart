@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../foundations/animations.dart';
 import '../../foundations/icons.dart';
 import '../../theme/context_extensions.dart';
 import '../../tokens/sizing.dart';
@@ -72,7 +71,11 @@ class _GenaiChipState extends State<GenaiChip> {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final ty = context.typography;
+    final spacing = context.spacing;
+    final sizing = context.sizing;
+    final motion = context.motion;
     final h = widget.size.resolveHeight(isCompact: context.isCompact);
+    final iconSize = widget.size.iconSize * 0.67;
 
     final tagColor = widget.color;
     final Color bg;
@@ -88,19 +91,21 @@ class _GenaiChipState extends State<GenaiChip> {
       fg = tagColor;
       border = tagColor.withValues(alpha: 0.30);
     } else {
-      bg = _hovered && widget.onTap != null ? colors.surfaceHover : colors.surfaceCard;
+      bg = _hovered && widget.onTap != null
+          ? colors.surfaceHover
+          : colors.surfaceCard;
       fg = colors.textPrimary;
       border = colors.borderDefault;
     }
 
     final children = <Widget>[
       if (widget.isSelectable && widget.isSelected) ...[
-        Icon(LucideIcons.check, size: 12, color: fg),
-        const SizedBox(width: 4),
+        Icon(LucideIcons.check, size: iconSize, color: fg),
+        SizedBox(width: spacing.s1),
       ],
       if (widget.icon != null) ...[
-        Icon(widget.icon, size: 12, color: fg),
-        const SizedBox(width: 4),
+        Icon(widget.icon, size: iconSize, color: fg),
+        SizedBox(width: spacing.s1),
       ],
       Flexible(
         child: Text(
@@ -111,26 +116,27 @@ class _GenaiChipState extends State<GenaiChip> {
         ),
       ),
       if (widget.isRemovable) ...[
-        const SizedBox(width: 4),
+        SizedBox(width: spacing.s1),
         MouseRegion(
           cursor: SystemMouseCursors.click,
           child: GestureDetector(
             onTap: widget.onRemove,
-            child: Icon(LucideIcons.x, size: 12, color: fg),
+            child: Icon(LucideIcons.x, size: iconSize, color: fg),
           ),
         ),
       ],
     ];
 
     Widget chip = AnimatedContainer(
-      duration: GenaiDurations.hover,
+      duration: motion.hover.duration,
+      curve: motion.hover.curve,
       height: h,
-      constraints: const BoxConstraints(maxWidth: 200),
+      constraints: BoxConstraints(maxWidth: spacing.s24 * 2),
       padding: EdgeInsets.symmetric(horizontal: widget.size.paddingH),
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(h / 2),
-        border: Border.all(color: border, width: 1),
+        border: Border.all(color: border, width: sizing.dividerThickness),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

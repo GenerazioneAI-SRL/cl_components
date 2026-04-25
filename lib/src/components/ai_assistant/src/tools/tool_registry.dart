@@ -21,7 +21,7 @@ class ToolRegistry {
   /// Callback invoked when a confirmation-required tool is about to execute.
   /// Must return `true` to proceed, `false` to deny.
   Future<bool> Function(String toolName, Map<String, dynamic> args)?
-  onConfirmationRequired;
+      onConfirmationRequired;
 
   /// Mark tools as requiring user confirmation before execution.
   void setConfirmationRequired(Iterable<String> names) {

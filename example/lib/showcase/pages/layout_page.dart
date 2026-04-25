@@ -10,7 +10,8 @@ class LayoutPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return ShowcaseScaffold(
       title: 'Layout',
-      description: 'Card (4 varianti), Divider, Accordion, Section.',
+      description:
+          'Card (4 varianti), Divider, Accordion, Section, AspectRatio, ScrollArea, Resizable.',
       children: [
         ShowcaseSection(
           title: 'GenaiCard — varianti',
@@ -107,6 +108,64 @@ class LayoutPage extends StatelessWidget {
           ),
         ),
         ShowcaseSection(
+          title: 'GenaiCollapsible',
+          subtitle:
+              'Singolo pannello espandibile (shadcn <Collapsible>). Diverso da Accordion: un solo trigger + contenuto. Supporta initiallyOpen e onOpenChanged.',
+          child: SizedBox(
+            width: 420,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                GenaiCollapsible(
+                  semanticLabel: 'Mostra dettagli ordine',
+                  trigger: _collapsibleTrigger(context, 'Mostra dettagli'),
+                  content: _collapsibleContent(
+                    context,
+                    'Ordine #2451 · 3 articoli · totale €128,40. Spedito il 22/04/2026.',
+                  ),
+                ),
+                SizedBox(height: context.spacing.s3),
+                GenaiCollapsible(
+                  initiallyOpen: true,
+                  semanticLabel: 'Riepilogo pagamento',
+                  trigger: _collapsibleTrigger(context, 'Riepilogo pagamento'),
+                  content: _collapsibleContent(
+                    context,
+                    'Aperto di default. Pagamento con carta Visa •••• 4242. Fatturazione: Mario Rossi.',
+                  ),
+                ),
+                SizedBox(height: context.spacing.s3),
+                GenaiCard.outlined(
+                  child: Padding(
+                    padding: EdgeInsets.all(context.spacing.s4),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Impostazioni avanzate',
+                            style: context.typography.headingSm.copyWith(
+                                color: context.colors.textPrimary)),
+                        SizedBox(height: context.spacing.s1),
+                        Text('Annidato dentro una GenaiCard outlined.',
+                            style: context.typography.bodySm.copyWith(
+                                color: context.colors.textSecondary)),
+                        SizedBox(height: context.spacing.s3),
+                        GenaiCollapsible(
+                          semanticLabel: 'Mostra opzioni avanzate',
+                          trigger: _collapsibleTrigger(context, 'Opzioni avanzate'),
+                          content: _collapsibleContent(
+                            context,
+                            'Timeout: 30s · Retry: 3 · Cache: abilitata · Log livello debug.',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        ShowcaseSection(
           title: 'GenaiAccordion',
           child: GenaiAccordion(
             allowMultiple: true,
@@ -131,6 +190,206 @@ class LayoutPage extends StatelessWidget {
                 leadingIcon: LucideIcons.palette,
                 content: Text('Sostituisci i token tramite GenaiTheme.light(...) e GenaiTheme.dark(...).',
                     style: context.typography.bodyMd.copyWith(color: context.colors.textSecondary)),
+              ),
+            ],
+          ),
+        ),
+        ShowcaseSection(
+          title: 'GenaiAspectRatio',
+          subtitle:
+              'Wrapper con border-radius e border opzionale. Default 16:9, override 1:1 e showBorder.',
+          child: Wrap(spacing: 16, runSpacing: 16, children: [
+            SizedBox(
+              width: 320,
+              child: GenaiAspectRatio(
+                child: Container(
+                  color: context.colors.colorPrimarySubtle,
+                  child: Center(
+                    child: Text(
+                      '16:9',
+                      style: context.typography.headingSm
+                          .copyWith(color: context.colors.textPrimary),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(
+              width: 180,
+              child: GenaiAspectRatio(
+                ratio: 1,
+                child: Container(
+                  color: context.colors.colorInfoSubtle,
+                  child: Center(
+                    child: Text(
+                      '1:1',
+                      style: context.typography.headingSm
+                          .copyWith(color: context.colors.textPrimary),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(
+              width: 320,
+              child: GenaiAspectRatio(
+                showBorder: true,
+                child: Container(
+                  color: context.colors.colorSuccessSubtle,
+                  child: Center(
+                    child: Text(
+                      '16:9 · showBorder',
+                      style: context.typography.bodyMd
+                          .copyWith(color: context.colors.textPrimary),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ]),
+        ),
+        ShowcaseSection(
+          title: 'GenaiScrollArea',
+          subtitle:
+              'Scrollbar custom, thin e auto-hide. Vertical, horizontal e variante alwaysVisible.',
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ShowcaseVariant(
+                label: 'vertical',
+                child: SizedBox(
+                  width: 320,
+                  height: 200,
+                  child: GenaiCard.outlined(
+                    padding: EdgeInsets.zero,
+                    child: GenaiScrollArea(
+                      child: Padding(
+                        padding: EdgeInsets.all(context.spacing.s3),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            for (var i = 1; i <= 30; i++)
+                              Padding(
+                                padding: EdgeInsets.symmetric(
+                                    vertical: context.spacing.s1),
+                                child: Text(
+                                  'Riga $i — scorri per vedere la scrollbar',
+                                  style: context.typography.bodyMd.copyWith(
+                                      color: context.colors.textPrimary),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              ShowcaseVariant(
+                label: 'horizontal',
+                child: SizedBox(
+                  width: 420,
+                  height: 64,
+                  child: GenaiCard.outlined(
+                    padding: EdgeInsets.zero,
+                    child: GenaiScrollArea(
+                      axis: Axis.horizontal,
+                      child: Padding(
+                        padding: EdgeInsets.all(context.spacing.s2),
+                        child: Row(
+                          children: [
+                            for (var i = 1; i <= 15; i++)
+                              Padding(
+                                padding: EdgeInsets.only(
+                                    right: context.spacing.s2),
+                                child: GenaiChip.readonly(label: 'Tag $i'),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              ShowcaseVariant(
+                label: 'alwaysVisible',
+                child: SizedBox(
+                  width: 320,
+                  height: 160,
+                  child: GenaiCard.outlined(
+                    padding: EdgeInsets.zero,
+                    child: GenaiScrollArea(
+                      alwaysVisible: true,
+                      child: Padding(
+                        padding: EdgeInsets.all(context.spacing.s3),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            for (var i = 1; i <= 20; i++)
+                              Padding(
+                                padding: EdgeInsets.symmetric(
+                                    vertical: context.spacing.s1),
+                                child: Text(
+                                  'Riga $i · la barra resta sempre visibile',
+                                  style: context.typography.bodyMd.copyWith(
+                                      color: context.colors.textPrimary),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        ShowcaseSection(
+          title: 'GenaiResizable',
+          subtitle:
+              'Split pane con divisore trascinabile. Suggerimento: con tastiera, frecce sinistra/destra (o su/giù) regolano del 5% alla volta.',
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ShowcaseVariant(
+                label: 'horizontal · 30/70',
+                child: SizedBox(
+                  width: 520,
+                  height: 200,
+                  child: GenaiCard.outlined(
+                    padding: EdgeInsets.zero,
+                    child: GenaiResizable(
+                      initialRatio: 0.3,
+                      semanticLabel: 'Divisore pannelli orizzontale',
+                      first: _resizablePanel(context, 'Sidebar',
+                          context.colors.colorPrimarySubtle),
+                      second: _resizablePanel(
+                          context, 'Contenuto', context.colors.surfaceCard),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              ShowcaseVariant(
+                label: 'vertical · 50/50',
+                child: SizedBox(
+                  width: 420,
+                  height: 240,
+                  child: GenaiCard.outlined(
+                    padding: EdgeInsets.zero,
+                    child: GenaiResizable(
+                      axis: Axis.vertical,
+                      semanticLabel: 'Divisore pannelli verticale',
+                      first: _resizablePanel(
+                          context, 'Top', context.colors.colorInfoSubtle),
+                      second: _resizablePanel(context, 'Bottom',
+                          context.colors.colorSuccessSubtle),
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
@@ -165,6 +424,62 @@ class LayoutPage extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _collapsibleTrigger(BuildContext context, String label) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: context.spacing.s3,
+        vertical: context.spacing.s2,
+      ),
+      decoration: BoxDecoration(
+        color: context.colors.surfaceCard,
+        borderRadius: BorderRadius.circular(context.radius.sm),
+        border: Border.all(color: context.colors.borderDefault),
+      ),
+      child: Row(
+        children: [
+          Icon(LucideIcons.chevronsUpDown,
+              size: context.sizing.iconInline,
+              color: context.colors.textSecondary),
+          SizedBox(width: context.spacing.s2),
+          Expanded(
+            child: Text(label,
+                style: context.typography.label
+                    .copyWith(color: context.colors.textPrimary)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _collapsibleContent(BuildContext context, String text) {
+    return Padding(
+      padding: EdgeInsets.only(top: context.spacing.s2),
+      child: Container(
+        padding: EdgeInsets.all(context.spacing.s3),
+        decoration: BoxDecoration(
+          color: context.colors.surfaceHover,
+          borderRadius: BorderRadius.circular(context.radius.sm),
+        ),
+        child: Text(text,
+            style: context.typography.bodySm
+                .copyWith(color: context.colors.textSecondary)),
+      ),
+    );
+  }
+
+  Widget _resizablePanel(BuildContext context, String title, Color bg) {
+    return Container(
+      color: bg,
+      child: Center(
+        child: Text(
+          title,
+          style: context.typography.bodyMd
+              .copyWith(color: context.colors.textPrimary),
+        ),
+      ),
     );
   }
 

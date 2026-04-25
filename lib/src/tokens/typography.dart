@@ -29,7 +29,7 @@ class GenaiTypographyTokens {
     required this.code,
   });
 
-  /// Desktop scale (default).
+  /// Desktop scale (default) §2.3.1.
   factory GenaiTypographyTokens.defaultTokens({String? fontFamily}) {
     return GenaiTypographyTokens(
       displayLg: TextStyle(
@@ -173,7 +173,36 @@ class GenaiTypographyTokens {
     );
   }
 
-  static GenaiTypographyTokens lerp(GenaiTypographyTokens a, GenaiTypographyTokens b, double t) {
+  GenaiTypographyTokens copyWith({
+    TextStyle? displayLg,
+    TextStyle? displaySm,
+    TextStyle? headingLg,
+    TextStyle? headingSm,
+    TextStyle? bodyLg,
+    TextStyle? bodyMd,
+    TextStyle? bodySm,
+    TextStyle? label,
+    TextStyle? labelSm,
+    TextStyle? caption,
+    TextStyle? code,
+  }) {
+    return GenaiTypographyTokens(
+      displayLg: displayLg ?? this.displayLg,
+      displaySm: displaySm ?? this.displaySm,
+      headingLg: headingLg ?? this.headingLg,
+      headingSm: headingSm ?? this.headingSm,
+      bodyLg: bodyLg ?? this.bodyLg,
+      bodyMd: bodyMd ?? this.bodyMd,
+      bodySm: bodySm ?? this.bodySm,
+      label: label ?? this.label,
+      labelSm: labelSm ?? this.labelSm,
+      caption: caption ?? this.caption,
+      code: code ?? this.code,
+    );
+  }
+
+  static GenaiTypographyTokens lerp(
+      GenaiTypographyTokens a, GenaiTypographyTokens b, double t) {
     return GenaiTypographyTokens(
       displayLg: TextStyle.lerp(a.displayLg, b.displayLg, t)!,
       displaySm: TextStyle.lerp(a.displaySm, b.displaySm, t)!,
@@ -188,4 +217,36 @@ class GenaiTypographyTokens {
       code: TextStyle.lerp(a.code, b.code, t)!,
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is GenaiTypographyTokens &&
+          runtimeType == other.runtimeType &&
+          displayLg == other.displayLg &&
+          displaySm == other.displaySm &&
+          headingLg == other.headingLg &&
+          headingSm == other.headingSm &&
+          bodyLg == other.bodyLg &&
+          bodyMd == other.bodyMd &&
+          bodySm == other.bodySm &&
+          label == other.label &&
+          labelSm == other.labelSm &&
+          caption == other.caption &&
+          code == other.code;
+
+  @override
+  int get hashCode => Object.hash(
+        displayLg,
+        displaySm,
+        headingLg,
+        headingSm,
+        bodyLg,
+        bodyMd,
+        bodySm,
+        label,
+        labelSm,
+        caption,
+        code,
+      );
 }

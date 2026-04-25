@@ -9,4 +9,3 @@ abstract class GenaiUserInfo {
   /// Dati raw completi (per accesso a campi custom)
   Map<String, dynamic> get rawData;
 }
-

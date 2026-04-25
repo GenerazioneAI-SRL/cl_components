@@ -2,13 +2,16 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../../foundations/animations.dart';
 import '../../foundations/icons.dart';
 import '../../theme/context_extensions.dart';
 import '../../tokens/sizing.dart';
 import '../feedback/genai_spinner.dart';
 import '../indicators/genai_chip.dart';
 
+/// Single option inside a [GenaiSelect].
+///
+/// [group] is an optional header label used to visually cluster related
+/// options inside the dropdown.
 class GenaiSelectOption<T> {
   final T value;
   final String label;
@@ -27,7 +30,10 @@ class GenaiSelectOption<T> {
   });
 }
 
-typedef GenaiAsyncOptionsLoader<T> = Future<List<GenaiSelectOption<T>>> Function(String query);
+/// Signature of the async loader passed to [GenaiSelect.async] — receives the
+/// current search query and returns matching options.
+typedef GenaiAsyncOptionsLoader<T> = Future<List<GenaiSelectOption<T>>>
+    Function(String query);
 
 /// Dropdown select (§6.1.2).
 ///
@@ -188,7 +194,8 @@ class _GenaiSelectState<T> extends State<GenaiSelect<T>> {
   bool _asyncLoading = false;
   Timer? _debounce;
 
-  bool get _hasError => widget.errorText != null && widget.errorText!.isNotEmpty;
+  bool get _hasError =>
+      widget.errorText != null && widget.errorText!.isNotEmpty;
 
   void _toggle() {
     if (widget.isDisabled) return;
@@ -222,7 +229,7 @@ class _GenaiSelectState<T> extends State<GenaiSelect<T>> {
 
   void _runAsync(String q) {
     _debounce?.cancel();
-    _debounce = Timer(GenaiDurations.searchDebounce, () async {
+    _debounce = Timer(context.motion.searchDebounce, () async {
       if (!mounted) return;
       setState(() => _asyncLoading = true);
       try {
@@ -274,15 +281,18 @@ class _GenaiSelectState<T> extends State<GenaiSelect<T>> {
   Widget _buildMenuBody(BuildContext menuCtx) {
     final colors = menuCtx.colors;
     final ty = menuCtx.typography;
+    final spacing = menuCtx.spacing;
+    final radius = menuCtx.radius;
+    final sizing = menuCtx.sizing;
     final filtered = _filteredOptions;
 
     return Material(
       color: colors.surfaceCard,
       elevation: 0,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(radius.md),
       child: Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(radius.md),
           border: Border.all(color: colors.borderDefault),
           boxShadow: menuCtx.elevation.shadow(3),
         ),
@@ -292,29 +302,35 @@ class _GenaiSelectState<T> extends State<GenaiSelect<T>> {
           children: [
             if (widget.isSearchable || widget.asyncLoader != null)
               Padding(
-                padding: const EdgeInsets.all(8),
+                padding: EdgeInsets.all(spacing.s2),
                 child: SizedBox(
-                  height: 32,
+                  height: GenaiSize.sm.height - spacing.s2,
                   child: TextField(
                     autofocus: true,
                     style: ty.bodyMd.copyWith(color: colors.textPrimary),
                     decoration: InputDecoration(
                       isDense: true,
                       hintText: 'Cerca...',
-                      hintStyle: ty.bodyMd.copyWith(color: colors.textSecondary),
-                      prefixIcon: Icon(LucideIcons.search, size: 16, color: colors.textSecondary),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 4),
+                      hintStyle:
+                          ty.bodyMd.copyWith(color: colors.textSecondary),
+                      prefixIcon: Icon(LucideIcons.search,
+                          size: GenaiSize.xs.iconSize,
+                          color: colors.textSecondary),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: spacing.s1),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(6),
+                        borderRadius: BorderRadius.circular(radius.sm),
                         borderSide: BorderSide(color: colors.borderDefault),
                       ),
                       enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(6),
+                        borderRadius: BorderRadius.circular(radius.sm),
                         borderSide: BorderSide(color: colors.borderDefault),
                       ),
                       focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(6),
-                        borderSide: BorderSide(color: colors.borderFocus, width: 2),
+                        borderRadius: BorderRadius.circular(radius.sm),
+                        borderSide: BorderSide(
+                            color: colors.borderFocus,
+                            width: sizing.focusOutlineWidth),
                       ),
                     ),
                     onChanged: (v) {
@@ -330,17 +346,18 @@ class _GenaiSelectState<T> extends State<GenaiSelect<T>> {
               ),
             Flexible(
               child: _asyncLoading
-                  ? const Padding(
-                      padding: EdgeInsets.all(16),
-                      child: Center(child: GenaiSpinner()),
+                  ? Padding(
+                      padding: EdgeInsets.all(spacing.s4),
+                      child: const Center(child: GenaiSpinner()),
                     )
                   : (filtered.isEmpty
                       ? _buildEmpty(menuCtx)
                       : ListView.builder(
                           shrinkWrap: true,
-                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          padding: EdgeInsets.symmetric(vertical: spacing.s1),
                           itemCount: filtered.length,
-                          itemBuilder: (_, i) => _buildOption(menuCtx, filtered[i]),
+                          itemBuilder: (_, i) =>
+                              _buildOption(menuCtx, filtered[i]),
                         )),
             ),
           ],
@@ -352,6 +369,7 @@ class _GenaiSelectState<T> extends State<GenaiSelect<T>> {
   Widget _buildEmpty(BuildContext menuCtx) {
     final colors = menuCtx.colors;
     final ty = menuCtx.typography;
+    final spacing = menuCtx.spacing;
     if (widget.isCreatable && _query.isNotEmpty) {
       return InkWell(
         onTap: () {
@@ -359,13 +377,15 @@ class _GenaiSelectState<T> extends State<GenaiSelect<T>> {
           _close();
         },
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: EdgeInsets.all(spacing.s3),
           child: Row(
             children: [
-              Icon(LucideIcons.plus, size: 16, color: colors.colorPrimary),
-              const SizedBox(width: 8),
+              Icon(LucideIcons.plus,
+                  size: GenaiSize.xs.iconSize, color: colors.colorPrimary),
+              SizedBox(width: spacing.s2),
               Expanded(
-                child: Text('Crea "$_query"', style: ty.bodyMd.copyWith(color: colors.colorPrimary)),
+                child: Text('Crea "$_query"',
+                    style: ty.bodyMd.copyWith(color: colors.colorPrimary)),
               ),
             ],
           ),
@@ -373,9 +393,10 @@ class _GenaiSelectState<T> extends State<GenaiSelect<T>> {
       );
     }
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(spacing.s4),
       child: Center(
-        child: Text('Nessun risultato', style: ty.bodySm.copyWith(color: colors.textSecondary)),
+        child: Text('Nessun risultato',
+            style: ty.bodySm.copyWith(color: colors.textSecondary)),
       ),
     );
   }
@@ -383,26 +404,34 @@ class _GenaiSelectState<T> extends State<GenaiSelect<T>> {
   Widget _buildOption(BuildContext menuCtx, GenaiSelectOption<T> o) {
     final colors = menuCtx.colors;
     final ty = menuCtx.typography;
-    final selected = widget.isMulti ? widget.values.contains(o.value) : widget.value == o.value;
+    final spacing = menuCtx.spacing;
+    final selected = widget.isMulti
+        ? widget.values.contains(o.value)
+        : widget.value == o.value;
 
     return InkWell(
-      onTap: o.isDisabled ? null : () => widget.isMulti ? _toggleMulti(o.value) : _selectSingle(o.value),
+      onTap: o.isDisabled
+          ? null
+          : () =>
+              widget.isMulti ? _toggleMulti(o.value) : _selectSingle(o.value),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding:
+            EdgeInsets.symmetric(horizontal: spacing.s3, vertical: spacing.s2),
         color: selected ? colors.colorPrimarySubtle : null,
         child: Row(
           children: [
             if (widget.isMulti) ...[
               Icon(
                 selected ? LucideIcons.squareCheck : LucideIcons.square,
-                size: 16,
+                size: GenaiSize.xs.iconSize,
                 color: selected ? colors.colorPrimary : colors.textSecondary,
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: spacing.s2),
             ],
             if (o.icon != null) ...[
-              Icon(o.icon, size: 16, color: colors.textSecondary),
-              const SizedBox(width: 8),
+              Icon(o.icon,
+                  size: GenaiSize.xs.iconSize, color: colors.textSecondary),
+              SizedBox(width: spacing.s2),
             ],
             Expanded(
               child: Column(
@@ -411,14 +440,22 @@ class _GenaiSelectState<T> extends State<GenaiSelect<T>> {
                 children: [
                   Text(o.label,
                       style: ty.bodyMd.copyWith(
-                        color: o.isDisabled ? colors.textDisabled : colors.textPrimary,
-                        fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                        color: o.isDisabled
+                            ? colors.textDisabled
+                            : colors.textPrimary,
+                        fontWeight:
+                            selected ? FontWeight.w600 : FontWeight.w400,
                       )),
-                  if (o.description != null) Text(o.description!, style: ty.caption.copyWith(color: colors.textSecondary)),
+                  if (o.description != null)
+                    Text(o.description!,
+                        style:
+                            ty.caption.copyWith(color: colors.textSecondary)),
                 ],
               ),
             ),
-            if (selected && !widget.isMulti) Icon(LucideIcons.check, size: 16, color: colors.colorPrimary),
+            if (selected && !widget.isMulti)
+              Icon(LucideIcons.check,
+                  size: GenaiSize.xs.iconSize, color: colors.colorPrimary),
           ],
         ),
       ),
@@ -436,31 +473,46 @@ class _GenaiSelectState<T> extends State<GenaiSelect<T>> {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final ty = context.typography;
+    final spacing = context.spacing;
+    final sizing = context.sizing;
+    final motion = context.motion;
     final isCompact = context.isCompact;
     final h = widget.size.resolveHeight(isCompact: isCompact);
 
-    final borderColor = _hasError ? colors.borderError : (_open || _focused ? colors.borderFocus : colors.borderDefault);
-    final borderWidth = _open || _focused || _hasError ? 2.0 : 1.0;
+    final borderColor = _hasError
+        ? colors.borderError
+        : (_open || _focused ? colors.borderFocus : colors.borderDefault);
+    final borderWidth = _open || _focused || _hasError
+        ? sizing.focusOutlineWidth
+        : widget.size.borderWidth;
 
-    final hasValue = widget.isMulti ? widget.values.isNotEmpty : widget.value != null;
+    final hasValue =
+        widget.isMulti ? widget.values.isNotEmpty : widget.value != null;
 
     String? singleLabel;
     if (!widget.isMulti && widget.value != null) {
       final all = widget.asyncLoader != null ? _asyncResults : widget.options;
-      singleLabel = all.where((o) => o.value == widget.value).map((o) => o.label).firstOrNull;
+      singleLabel = all
+          .where((o) => o.value == widget.value)
+          .map((o) => o.label)
+          .firstOrNull;
     }
 
     Widget content;
     if (widget.isMulti && hasValue) {
       content = Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4),
+        padding: EdgeInsets.symmetric(vertical: spacing.s1),
         child: Wrap(
-          spacing: 4,
-          runSpacing: 4,
+          spacing: spacing.s1,
+          runSpacing: spacing.s1,
           children: [
             for (final v in widget.values)
               GenaiChip.removable(
-                label: widget.options.where((o) => o.value == v).map((o) => o.label).firstOrNull ?? '$v',
+                label: widget.options
+                        .where((o) => o.value == v)
+                        .map((o) => o.label)
+                        .firstOrNull ??
+                    '$v',
                 onRemove: () => _toggleMulti(v),
               ),
           ],
@@ -480,8 +532,9 @@ class _GenaiSelectState<T> extends State<GenaiSelect<T>> {
     final children = <Widget>[];
     if (widget.label != null) {
       children.add(Padding(
-        padding: const EdgeInsets.only(bottom: 6),
-        child: Text(widget.label!, style: ty.label.copyWith(color: colors.textPrimary)),
+        padding: EdgeInsets.only(bottom: spacing.s1 + 2),
+        child: Text(widget.label!,
+            style: ty.label.copyWith(color: colors.textPrimary)),
       ));
     }
 
@@ -490,20 +543,27 @@ class _GenaiSelectState<T> extends State<GenaiSelect<T>> {
       child: Focus(
         onFocusChange: (f) => setState(() => _focused = f),
         child: MouseRegion(
-          cursor: widget.isDisabled ? SystemMouseCursors.forbidden : SystemMouseCursors.click,
+          cursor: widget.isDisabled
+              ? SystemMouseCursors.forbidden
+              : SystemMouseCursors.click,
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: _toggle,
             child: AnimatedContainer(
               key: _fieldKey,
-              duration: GenaiDurations.hover,
+              duration: motion.hover.duration,
+              curve: motion.hover.curve,
               constraints: BoxConstraints(minHeight: h),
               padding: EdgeInsets.symmetric(
                 horizontal: widget.size.paddingH,
-                vertical: widget.isMulti && hasValue ? 4 : widget.size.paddingV,
+                vertical: widget.isMulti && hasValue
+                    ? spacing.s1
+                    : widget.size.paddingV,
               ),
               decoration: BoxDecoration(
-                color: widget.isDisabled ? colors.surfaceHover : colors.surfaceInput,
+                color: widget.isDisabled
+                    ? colors.surfaceHover
+                    : colors.surfaceInput,
                 borderRadius: BorderRadius.circular(widget.size.borderRadius),
                 border: Border.all(color: borderColor, width: borderWidth),
               ),
@@ -511,22 +571,27 @@ class _GenaiSelectState<T> extends State<GenaiSelect<T>> {
                 children: [
                   Expanded(child: content),
                   if (widget.isLoading)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 4),
-                      child: GenaiSpinner(size: GenaiSize.xs),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: spacing.s1),
+                      child: const GenaiSpinner(size: GenaiSize.xs),
                     ),
                   if (widget.clearable && hasValue)
                     GestureDetector(
                       onTap: _clear,
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: Icon(LucideIcons.x, size: 16, color: colors.textSecondary),
+                        padding: EdgeInsets.symmetric(horizontal: spacing.s1),
+                        child: Icon(LucideIcons.x,
+                            size: GenaiSize.xs.iconSize,
+                            color: colors.textSecondary),
                       ),
                     ),
                   AnimatedRotation(
                     turns: _open ? 0.5 : 0,
-                    duration: GenaiDurations.dropdownOpen,
-                    child: Icon(LucideIcons.chevronDown, size: 16, color: colors.textSecondary),
+                    duration: motion.dropdownOpen.duration,
+                    curve: motion.dropdownOpen.curve,
+                    child: Icon(LucideIcons.chevronDown,
+                        size: GenaiSize.xs.iconSize,
+                        color: colors.textSecondary),
                   ),
                 ],
               ),
@@ -538,11 +603,14 @@ class _GenaiSelectState<T> extends State<GenaiSelect<T>> {
 
     if (widget.helperText != null || _hasError) {
       children.add(Padding(
-        padding: const EdgeInsets.only(top: 6),
-        child: Text(
-          widget.errorText ?? widget.helperText!,
-          style: ty.caption.copyWith(
-            color: _hasError ? colors.textError : colors.textSecondary,
+        padding: EdgeInsets.only(top: spacing.s1 + 2),
+        child: Semantics(
+          liveRegion: _hasError,
+          child: Text(
+            widget.errorText ?? widget.helperText!,
+            style: ty.caption.copyWith(
+              color: _hasError ? colors.textError : colors.textSecondary,
+            ),
           ),
         ),
       ));
@@ -550,7 +618,9 @@ class _GenaiSelectState<T> extends State<GenaiSelect<T>> {
 
     return Semantics(
       button: true,
+      expanded: _open,
       label: widget.semanticLabel ?? widget.label,
+      hint: widget.hint,
       enabled: !widget.isDisabled,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

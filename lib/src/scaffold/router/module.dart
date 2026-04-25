@@ -11,11 +11,21 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'configure.dart';
 
+/// A feature module exposing one or more [ModularRoute]s.
+///
+/// Subclasses override [moduleRoute] (the module's root identifier) and
+/// [routes] to declare the module's surface. Registered via [ModuleRoute] or
+/// inside a [ShellModularRoute].
 abstract class Module {
+  /// Routes exposed by this module.
   List<ModularRoute> get routes => const [];
 
+  /// The module's root route — name and base path.
   GenaiRoute get moduleRoute;
 
+  /// Flattens this module's [routes] into [RouteBase]s that [GoRouter]
+  /// can consume. Called by [GoRouterModular.configure] — apps do not need
+  /// to call this directly.
   List<RouteBase> configureRoutes({
     String modulePath = '',
     bool topLevel = false,
@@ -143,9 +153,8 @@ abstract class Module {
   }) {
     final source = routeList ?? routes;
     return source.whereType<ModuleRoute>().map((module) {
-      final fullPath = (modulePath != module.path)
-          ? modulePath + module.path
-          : module.path;
+      final fullPath =
+          (modulePath != module.path) ? modulePath + module.path : module.path;
       final String? parentName = topLevel ? null : moduleRoute.name;
       final String? parentPath = topLevel ? null : moduleRoute.path;
       return _createModule(

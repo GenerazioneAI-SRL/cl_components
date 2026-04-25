@@ -146,7 +146,9 @@ class ReactAgent {
           'actionCount': executedActions.length,
           'reason': 'user_requested',
         });
-        final text = executedActions.isNotEmpty ? 'Task stopped. ${_summarizeActions(executedActions)}' : 'Task stopped.';
+        final text = executedActions.isNotEmpty
+            ? 'Task stopped. ${_summarizeActions(executedActions)}'
+            : 'Task stopped.';
         memory.addAssistantMessage(text);
         return AgentResponse(text: text, actions: executedActions);
       }
@@ -164,7 +166,8 @@ class ReactAgent {
         final actionSummary = executedActions
             .where((a) => a.toolName != 'get_screen_content')
             .map(
-              (a) => '${a.toolName}(${a.arguments.values.first}): ${a.result.success ? "OK" : "FAIL"}',
+              (a) =>
+                  '${a.toolName}(${a.arguments.values.first}): ${a.result.success ? "OK" : "FAIL"}',
             )
             .take(8)
             .join(' → ');
@@ -201,7 +204,9 @@ class ReactAgent {
       // in conversation memory (screenshots are large and change every iteration).
       final messages = memory.getMessages();
       final screenshot = context.screenshot;
-      final messagesWithScreenshot = screenshot != null ? _injectScreenshot(messages, screenshot) : messages;
+      final messagesWithScreenshot = screenshot != null
+          ? _injectScreenshot(messages, screenshot)
+          : messages;
 
       AiLogger.log(
         'Sending ${messages.length} messages '
@@ -240,7 +245,9 @@ class ReactAgent {
               'Agent cancelled during LLM call at iteration ${i + 1}',
               tag: 'Agent',
             );
-            final text = executedActions.isNotEmpty ? 'Task stopped. ${_summarizeActions(executedActions)}' : 'Task stopped.';
+            final text = executedActions.isNotEmpty
+                ? 'Task stopped. ${_summarizeActions(executedActions)}'
+                : 'Task stopped.';
             memory.addAssistantMessage(text);
             return AgentResponse(text: text, actions: executedActions);
           }
@@ -257,7 +264,8 @@ class ReactAgent {
           'errorType': 'authentication',
           'isRetryable': false,
         });
-        const text = 'API key is invalid or expired. Please check your configuration.';
+        const text =
+            'API key is invalid or expired. Please check your configuration.';
         memory.addAssistantMessage(text);
         return AgentResponse(text: text, actions: executedActions);
       } on ContextOverflowException catch (e) {
@@ -315,7 +323,9 @@ class ReactAgent {
       // Handle empty/null response — LLM returned neither text nor tool calls.
       // Retry up to 3 times before giving up (the LLM may have hit a
       // transient limit or returned an empty candidate list).
-      if (!response.isToolCall && (response.textContent == null || response.textContent!.trim().isEmpty)) {
+      if (!response.isToolCall &&
+          (response.textContent == null ||
+              response.textContent!.trim().isEmpty)) {
         consecutiveEmptyResponses++;
         AiLogger.warn(
           'LLM returned empty response at iteration ${i + 1} '
@@ -348,7 +358,8 @@ class ReactAgent {
 
         if (consecutiveEmptyResponses >= 3) {
           if (executedActions.isEmpty) {
-            const fallback = "I'm not sure how to help with that. Could you rephrase your request?";
+            const fallback =
+                "I'm not sure how to help with that. Could you rephrase your request?";
             memory.addAssistantMessage(fallback);
             return AgentResponse(text: fallback, actions: executedActions);
           }
@@ -367,7 +378,8 @@ class ReactAgent {
       emit(AiEventType.llmResponseReceived, {
         'iteration': i + 1,
         'hasToolCalls': response.isToolCall,
-        'hasText': response.textContent != null && response.textContent!.trim().isNotEmpty,
+        'hasText': response.textContent != null &&
+            response.textContent!.trim().isNotEmpty,
         'durationMs': llmStopwatch.elapsedMilliseconds,
       });
 
@@ -377,7 +389,9 @@ class ReactAgent {
         // ── Search failure intercept (max 1 retry) ──
         // If the agent returns text claiming it can't find a search bar,
         // but the user's request implies searching, force ONE retry.
-        if (_claimsNoSearchBar(text) && _userNeedsSearch(userMessage) && searchRetries < 1) {
+        if (_claimsNoSearchBar(text) &&
+            _userNeedsSearch(userMessage) &&
+            searchRetries < 1) {
           searchRetries++;
           memory.addAssistantMessage(text);
           memory.addUserMessage(
@@ -417,7 +431,9 @@ class ReactAgent {
           (a) => builtInToolNames.contains(a.toolName),
         );
 
-        if (executedActions.isNotEmpty && usedAnyBuiltInTool && verificationAttempts < maxVerificationAttempts) {
+        if (executedActions.isNotEmpty &&
+            usedAnyBuiltInTool &&
+            verificationAttempts < maxVerificationAttempts) {
           verificationAttempts++;
           AiLogger.log(
             'Post-completion verification ($verificationAttempts/$maxVerificationAttempts): '
@@ -609,7 +625,9 @@ class ReactAgent {
         // completes). 30 seconds is generous; most tools complete in <2s.
         ToolResult result;
         try {
-          result = await toolRegistry.executeTool(toolCall).timeout(const Duration(seconds: 30));
+          result = await toolRegistry
+              .executeTool(toolCall)
+              .timeout(const Duration(seconds: 30));
         } on TimeoutException {
           AiLogger.warn(
             'Tool ${toolCall.name} timed out after 30s',
@@ -646,7 +664,10 @@ class ReactAgent {
           }
         }
         // T2.2: Warn if tapping a result that doesn't match the search query.
-        if (toolCall.name == 'tap_element' && result.success && lastSearchQuery != null && lastSearchQuery.isNotEmpty) {
+        if (toolCall.name == 'tap_element' &&
+            result.success &&
+            lastSearchQuery != null &&
+            lastSearchQuery.isNotEmpty) {
           final tapLabel = (toolCall.arguments['label'] as String?) ?? '';
           // Skip mismatch check for common action buttons — these are
           // expected to not match the search query (e.g. tapping "ADD"
@@ -675,7 +696,9 @@ class ReactAgent {
           );
           final searchWords = _extractWords(lastSearchQuery);
           final tapWords = _extractWords(tapLabel);
-          if (!isActionButton && searchWords.isNotEmpty && tapWords.isNotEmpty) {
+          if (!isActionButton &&
+              searchWords.isNotEmpty &&
+              tapWords.isNotEmpty) {
             final overlap = searchWords.intersection(tapWords).length;
             final similarity = overlap / searchWords.length;
             if (similarity < 0.3) {
@@ -742,7 +765,8 @@ class ReactAgent {
           '3. If you have no useful information, say so honestly.\n'
           'Do NOT attempt any more tap_element or set_text calls.',
         );
-        consecutiveFailures = 0; // Reset so the breaker doesn't fire every iteration.
+        consecutiveFailures =
+            0; // Reset so the breaker doesn't fire every iteration.
       }
 
       emit(AiEventType.agentIterationCompleted, {
@@ -792,7 +816,9 @@ class ReactAgent {
       if (lower.contains(intent)) return true;
     }
     // "last/recent/my" + noun pattern (e.g. "my last order").
-    if (lower.contains('last') || lower.contains('recent') || lower.contains('latest')) {
+    if (lower.contains('last') ||
+        lower.contains('recent') ||
+        lower.contains('latest')) {
       // If the message has a recency prefix and is asking about *something*,
       // it's likely a detail query. The LLM will determine the specifics.
       if (lower.contains('my') || lower.contains('the')) return true;
@@ -891,8 +917,10 @@ class ReactAgent {
       final idx = lowerU.indexOf(w);
       if (idx == -1) return false;
       final before = idx > 0 ? lowerU[idx - 1] : ' ';
-      final after = idx + w.length < lowerU.length ? lowerU[idx + w.length] : ' ';
-      return !RegExp(r'[a-z]').hasMatch(before) && !RegExp(r'[a-z]').hasMatch(after);
+      final after =
+          idx + w.length < lowerU.length ? lowerU[idx + w.length] : ' ';
+      return !RegExp(r'[a-z]').hasMatch(before) &&
+          !RegExp(r'[a-z]').hasMatch(after);
     });
   }
 
@@ -952,7 +980,12 @@ class ReactAgent {
       'will',
       'shall',
     };
-    return text.toLowerCase().replaceAll(RegExp(r'[^\w\s]'), '').split(RegExp(r'\s+')).where((w) => w.length > 1 && !stopWords.contains(w)).toSet();
+    return text
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^\w\s]'), '')
+        .split(RegExp(r'\s+'))
+        .where((w) => w.length > 1 && !stopWords.contains(w))
+        .toSet();
   }
 
   /// Heuristic: does the user's message imply they need to search for something?
@@ -961,7 +994,9 @@ class ReactAgent {
   static bool _userNeedsSearch(String message) {
     final lower = message.toLowerCase();
     // Explicit search intent.
-    if (lower.contains('search') || lower.contains('find') || lower.contains('look for')) {
+    if (lower.contains('search') ||
+        lower.contains('find') ||
+        lower.contains('look for')) {
       return true;
     }
     // Imperative commands that typically require searching:
@@ -1443,7 +1478,8 @@ class ReactAgent {
       if (extraRoutes.isNotEmpty) {
         buffer.writeln('OTHER DISCOVERED SCREENS:');
         for (final route in extraRoutes) {
-          final desc = route.description != null ? ' — ${route.description}' : '';
+          final desc =
+              route.description != null ? ' — ${route.description}' : '';
           buffer.writeln('  ${route.name}$desc');
         }
         buffer.writeln();
@@ -1453,7 +1489,8 @@ class ReactAgent {
       if (context.availableRoutes.isNotEmpty) {
         buffer.writeln('APP SCREENS (navigate with exact route name):');
         for (final route in context.availableRoutes) {
-          final desc = route.description != null ? ' — ${route.description}' : '';
+          final desc =
+              route.description != null ? ' — ${route.description}' : '';
           buffer.writeln('  • ${route.name}$desc');
         }
         buffer.writeln();
@@ -1482,7 +1519,9 @@ class ReactAgent {
 
     // ── Section 5: Live UI ──
     buffer.writeln(
-      manifest != null ? 'LIVE UI (what\'s actually on screen right now):' : 'WHAT\'S ON SCREEN:',
+      manifest != null
+          ? 'LIVE UI (what\'s actually on screen right now):'
+          : 'WHAT\'S ON SCREEN:',
     );
     buffer.writeln(context.screenContext.toPromptString());
     buffer.writeln();
@@ -1490,7 +1529,8 @@ class ReactAgent {
     // Screen knowledge cache (brief).
     if (context.screenKnowledge.isNotEmpty) {
       buffer.writeln('SCREENS SEEN BEFORE:');
-      final knownEntries = context.screenKnowledge.entries.toList()..sort((a, b) => a.key.compareTo(b.key));
+      final knownEntries = context.screenKnowledge.entries.toList()
+        ..sort((a, b) => a.key.compareTo(b.key));
       for (final entry in knownEntries.take(20)) {
         buffer.writeln(
           '  • ${entry.key}: ${entry.value.elements.length} elements',
@@ -1530,7 +1570,9 @@ class ReactAgent {
 
     if (manifest.globalNavigation.isNotEmpty) {
       buffer.writeln('GLOBAL NAVIGATION:');
-      final navItems = manifest.globalNavigation.map((n) => '${n.label} (${n.route})').join(', ');
+      final navItems = manifest.globalNavigation
+          .map((n) => '${n.label} (${n.route})')
+          .join(', ');
       buffer.writeln('  $navItems');
       buffer.writeln();
     }
@@ -1567,7 +1609,10 @@ class ReactAgent {
     }
 
     if (prioritizedRoutes.length < maxDetailedScreens) {
-      final remaining = manifest.screens.keys.where((r) => !prioritizedRoutes.contains(r)).toList()..sort();
+      final remaining = manifest.screens.keys
+          .where((r) => !prioritizedRoutes.contains(r))
+          .toList()
+        ..sort();
       for (final route in remaining) {
         prioritizedRoutes.add(route);
         if (prioritizedRoutes.length >= maxDetailedScreens) break;

@@ -8,14 +8,12 @@ class BuiltInToolHandlers {
   final Future<Map<String, dynamic>> Function(
     String label, {
     String? parentContext,
-  })
-  onTap;
+  }) onTap;
   final Future<Map<String, dynamic>> Function(
     String label,
     String text, {
     String? parentContext,
-  })
-  onSetText;
+  }) onSetText;
   final Future<Map<String, dynamic>> Function(String direction) onScroll;
   final Future<Map<String, dynamic>> Function(String routeName) onNavigate;
   final Future<Map<String, dynamic>> Function() onGoBack;
@@ -23,8 +21,7 @@ class BuiltInToolHandlers {
   final Future<Map<String, dynamic>> Function(
     String label, {
     String? parentContext,
-  })
-  onLongPress;
+  }) onLongPress;
   final Future<Map<String, dynamic>> Function(String label) onIncrease;
   final Future<Map<String, dynamic>> Function(String label) onDecrease;
   final Future<String> Function(String question) onAskUser;
@@ -155,8 +152,7 @@ List<AiTool> createBuiltInTools(BuiltInToolHandlers handlers) {
     // --- go_back ---
     AiTool(
       name: 'go_back',
-      description:
-          'Go back to the previous screen (pop the current route). '
+      description: 'Go back to the previous screen (pop the current route). '
           'Equivalent to pressing the back button.',
       parameters: const {},
       required: const [],
@@ -265,8 +261,7 @@ List<AiTool> createBuiltInTools(BuiltInToolHandlers handlers) {
         return {
           'yourQuestion': question,
           'userResponse': response,
-          'instruction':
-              'The user responded to your question. '
+          'instruction': 'The user responded to your question. '
               'If their response ANSWERS your question → continue with the task. '
               'If their response is a COMPLETELY DIFFERENT REQUEST '
               '(unrelated to your question) → ABANDON your current task '
@@ -308,8 +303,7 @@ List<AiTool> createBuiltInTools(BuiltInToolHandlers handlers) {
           final result = await handlers.onHandoff!(buttonLabel, summary);
           return {
             'handoffResult': result,
-            'instruction':
-                'The user has acted. Call get_screen_content to see '
+            'instruction': 'The user has acted. Call get_screen_content to see '
                 'the current screen and report the outcome to the user.',
           };
         },

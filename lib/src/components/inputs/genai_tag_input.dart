@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../foundations/animations.dart';
 import '../../foundations/icons.dart';
 import '../../theme/context_extensions.dart';
 import '../../tokens/sizing.dart';
@@ -72,35 +71,45 @@ class _GenaiTagInputState extends State<GenaiTagInput> {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final ty = context.typography;
+    final spacing = context.spacing;
+    final sizing = context.sizing;
+    final motion = context.motion;
     final hasError = widget.errorText != null && widget.errorText!.isNotEmpty;
-    final borderColor = hasError ? colors.borderError : (_focused ? colors.borderFocus : colors.borderDefault);
-    final borderWidth = _focused || hasError ? 2.0 : 1.0;
+    final borderColor = hasError
+        ? colors.borderError
+        : (_focused ? colors.borderFocus : colors.borderDefault);
+    final borderWidth = _focused || hasError
+        ? sizing.focusOutlineWidth
+        : widget.size.borderWidth;
 
     final children = <Widget>[];
     if (widget.label != null) {
       children.add(Padding(
-        padding: const EdgeInsets.only(bottom: 6),
-        child: Text(widget.label!, style: ty.label.copyWith(color: colors.textPrimary)),
+        padding: EdgeInsets.only(bottom: spacing.s1 + 2),
+        child: Text(widget.label!,
+            style: ty.label.copyWith(color: colors.textPrimary)),
       ));
     }
 
     children.add(AnimatedContainer(
-      duration: GenaiDurations.hover,
-      padding: const EdgeInsets.all(6),
+      duration: motion.hover.duration,
+      curve: motion.hover.curve,
+      padding: EdgeInsets.all(spacing.s1 + 2),
       decoration: BoxDecoration(
         color: colors.surfaceInput,
         borderRadius: BorderRadius.circular(widget.size.borderRadius),
         border: Border.all(color: borderColor, width: borderWidth),
       ),
       child: Wrap(
-        spacing: 4,
-        runSpacing: 4,
+        spacing: spacing.s1,
+        runSpacing: spacing.s1,
         crossAxisAlignment: WrapCrossAlignment.center,
         children: [
-          for (final t in widget.tags) GenaiChip.removable(label: t, onRemove: () => _removeTag(t)),
+          for (final t in widget.tags)
+            GenaiChip.removable(label: t, onRemove: () => _removeTag(t)),
           IntrinsicWidth(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(minWidth: 80),
+              constraints: BoxConstraints(minWidth: spacing.s20),
               child: TextField(
                 controller: _controller,
                 focusNode: _focus,
@@ -112,7 +121,8 @@ class _GenaiTagInputState extends State<GenaiTagInput> {
                   border: InputBorder.none,
                   hintText: widget.tags.isEmpty ? widget.hint : null,
                   hintStyle: ty.bodyMd.copyWith(color: colors.textSecondary),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+                  contentPadding: EdgeInsets.symmetric(
+                      horizontal: spacing.s1, vertical: spacing.s1 + 2),
                 ),
                 onSubmitted: _addTag,
                 onChanged: (v) {
@@ -127,18 +137,21 @@ class _GenaiTagInputState extends State<GenaiTagInput> {
       ),
     ));
 
-    if (widget.suggestions.isNotEmpty && _focused && widget.tags.length != widget.maxTags) {
+    if (widget.suggestions.isNotEmpty &&
+        _focused &&
+        widget.tags.length != widget.maxTags) {
       final filtered = widget.suggestions
           .where((s) => !widget.tags.contains(s))
-          .where((s) => s.toLowerCase().contains(_controller.text.toLowerCase()))
+          .where(
+              (s) => s.toLowerCase().contains(_controller.text.toLowerCase()))
           .take(6)
           .toList();
       if (filtered.isNotEmpty) {
         children.add(Padding(
-          padding: const EdgeInsets.only(top: 6),
+          padding: EdgeInsets.only(top: spacing.s1 + 2),
           child: Wrap(
-            spacing: 4,
-            runSpacing: 4,
+            spacing: spacing.s1,
+            runSpacing: spacing.s1,
             children: [
               for (final s in filtered)
                 GestureDetector(
@@ -146,8 +159,10 @@ class _GenaiTagInputState extends State<GenaiTagInput> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(LucideIcons.plus, size: 12, color: colors.textSecondary),
-                      const SizedBox(width: 2),
+                      Icon(LucideIcons.plus,
+                          size: GenaiSize.xs.iconSize * 0.75,
+                          color: colors.textSecondary),
+                      SizedBox(width: spacing.s1 / 2),
                       GenaiChip.readonly(label: s),
                     ],
                   ),
@@ -160,18 +175,28 @@ class _GenaiTagInputState extends State<GenaiTagInput> {
 
     if (widget.helperText != null || hasError) {
       children.add(Padding(
-        padding: const EdgeInsets.only(top: 6),
-        child: Text(
-          widget.errorText ?? widget.helperText!,
-          style: ty.caption.copyWith(color: hasError ? colors.textError : colors.textSecondary),
+        padding: EdgeInsets.only(top: spacing.s1 + 2),
+        child: Semantics(
+          liveRegion: hasError,
+          child: Text(
+            widget.errorText ?? widget.helperText!,
+            style: ty.caption.copyWith(
+                color: hasError ? colors.textError : colors.textSecondary),
+          ),
         ),
       ));
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      mainAxisSize: MainAxisSize.min,
-      children: children,
+    return Semantics(
+      container: true,
+      label: widget.label,
+      hint: widget.hint,
+      enabled: !widget.isDisabled,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: children,
+      ),
     );
   }
 }

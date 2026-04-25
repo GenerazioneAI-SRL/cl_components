@@ -16,7 +16,20 @@ enum GenaiAvatarSize {
   const GenaiAvatarSize(this.size);
 }
 
-enum GenaiAvatarPresence { online, away, busy, offline }
+/// Presence dot rendered in the bottom-right of an avatar.
+enum GenaiAvatarPresence {
+  /// Green dot — user is available.
+  online,
+
+  /// Amber dot — user is idle.
+  away,
+
+  /// Red dot — do-not-disturb.
+  busy,
+
+  /// Grey dot — user is offline.
+  offline,
+}
 
 /// User avatar with image / initials / placeholder fallback (§6.7.4).
 ///
@@ -59,6 +72,7 @@ class GenaiAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final dim = size.size;
     final colors = context.colors;
+    final sizing = context.sizing;
 
     Widget content;
     if (imageUrl != null && imageUrl!.isNotEmpty) {
@@ -92,7 +106,8 @@ class GenaiAvatar extends StatelessWidget {
               decoration: BoxDecoration(
                 color: _presenceColor(colors),
                 shape: BoxShape.circle,
-                border: Border.all(color: colors.surfaceCard, width: 2),
+                border: Border.all(
+                    color: colors.surfaceCard, width: sizing.focusOutlineWidth),
               ),
             ),
           ),
@@ -113,8 +128,8 @@ class GenaiAvatar extends StatelessWidget {
 
     if (name != null && name!.trim().isNotEmpty) {
       final initials = _computeInitials(name!);
-      final bg = _generatedBg(name!, context.isDark);
-      final fg = _contrastForeground(bg);
+      final bg = _generatedBg(name!, context.isDark, colors);
+      final fg = _contrastForeground(bg, colors);
       return Container(
         width: dim,
         height: dim,
@@ -151,32 +166,31 @@ class GenaiAvatar extends StatelessWidget {
   String _computeInitials(String name) {
     final parts = name.trim().split(RegExp(r'\s+'));
     if (parts.length == 1) return parts.first.characters.first.toUpperCase();
-    return (parts.first.characters.first + parts.last.characters.first).toUpperCase();
+    return (parts.first.characters.first + parts.last.characters.first)
+        .toUpperCase();
   }
 
-  /// Deterministic background color based on the user's name.
-  Color _generatedBg(String key, bool isDark) {
-    const palette = <Color>[
-      Color(0xFF7C3AED),
-      Color(0xFFDB2777),
-      Color(0xFFE11D48),
-      Color(0xFFEA580C),
-      Color(0xFFCA8A04),
-      Color(0xFF65A30D),
-      Color(0xFF059669),
-      Color(0xFF0891B2),
-      Color(0xFF2563EB),
-      Color(0xFF4F46E5),
+  /// Deterministic background color based on the user's name. Uses the
+  /// semantic status/info palette so the choice adapts to light/dark themes
+  /// without hardcoded hex values.
+  Color _generatedBg(String key, bool isDark, dynamic colors) {
+    final palette = <Color>[
+      colors.colorInfo as Color,
+      colors.colorPrimary as Color,
+      colors.colorSuccess as Color,
+      colors.colorWarning as Color,
+      colors.colorError as Color,
+      colors.colorPrimaryHover as Color,
+      colors.colorInfoHover as Color,
+      colors.colorSuccessHover as Color,
     ];
     final hash = key.codeUnits.fold<int>(0, (a, b) => (a + b) & 0x7FFFFFFF);
-    final base = palette[hash % palette.length];
-    if (!isDark) return base;
-    return Color.alphaBlend(Colors.black.withValues(alpha: 0.25), base);
+    return palette[hash % palette.length];
   }
 
-  Color _contrastForeground(Color bg) {
+  Color _contrastForeground(Color bg, dynamic colors) {
     final luminance = bg.computeLuminance();
-    return luminance > 0.6 ? Colors.black : Colors.white;
+    return luminance > 0.6 ? colors.textPrimary : colors.textOnPrimary;
   }
 
   Color _presenceColor(dynamic colors) {
@@ -188,7 +202,7 @@ class GenaiAvatar extends StatelessWidget {
       case GenaiAvatarPresence.busy:
         return colors.colorError;
       case GenaiAvatarPresence.offline:
-        return const Color(0xFF9CA3AF);
+        return colors.textDisabled;
     }
   }
 }

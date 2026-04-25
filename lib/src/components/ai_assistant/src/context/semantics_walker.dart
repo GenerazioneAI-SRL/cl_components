@@ -112,8 +112,7 @@ class SemanticsWalker {
     final isInteractive = hasActions && type != UiElementType.unknown;
 
     if (hasContent || isInteractive) {
-      final isEnabled =
-          !flags.containsFlag(SemanticsFlag.hasEnabledState) ||
+      final isEnabled = !flags.containsFlag(SemanticsFlag.hasEnabledState) ||
           flags.containsFlag(SemanticsFlag.isEnabled);
       final isFocused = flags.containsFlag(SemanticsFlag.isFocused);
 
@@ -144,9 +143,8 @@ class SemanticsWalker {
     }
 
     // Build parent labels for children: include this node's label if present.
-    final childParentLabels = label.isNotEmpty
-        ? [...parentLabels, label]
-        : parentLabels;
+    final childParentLabels =
+        label.isNotEmpty ? [...parentLabels, label] : parentLabels;
 
     // Collect sibling labels once per parent level (O(n) instead of O(n²)).
     // Only collect when the parent has multiple children worth labeling.

@@ -8,24 +8,38 @@ import '../../tokens/sizing.dart';
 class GenaiSpinner extends StatelessWidget {
   final GenaiSize size;
   final Color? color;
-  final double strokeWidth;
+
+  /// Stroke width. If null, resolves to the theme divider thickness * 2.
+  final double? strokeWidth;
+
+  /// Accessible label for assistive tech. Defaults to "Caricamento".
+  final String semanticLabel;
 
   const GenaiSpinner({
     super.key,
     this.size = GenaiSize.md,
     this.color,
-    this.strokeWidth = 2,
+    this.strokeWidth,
+    this.semanticLabel = 'Caricamento',
   });
 
   @override
   Widget build(BuildContext context) {
     final dim = size.iconSize;
-    return SizedBox(
-      width: dim,
-      height: dim,
-      child: CircularProgressIndicator(
-        strokeWidth: strokeWidth,
-        valueColor: AlwaysStoppedAnimation(color ?? context.colors.colorPrimary),
+    final stroke = strokeWidth ?? context.sizing.dividerThickness * 2;
+    return Semantics(
+      liveRegion: true,
+      label: semanticLabel,
+      child: SizedBox(
+        width: dim,
+        height: dim,
+        child: ExcludeSemantics(
+          child: CircularProgressIndicator(
+            strokeWidth: stroke,
+            valueColor:
+                AlwaysStoppedAnimation(color ?? context.colors.colorPrimary),
+          ),
+        ),
       ),
     );
   }

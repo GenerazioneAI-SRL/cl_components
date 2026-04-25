@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../foundations/icons.dart';
 import '../../theme/context_extensions.dart';
-import '../../tokens/colors.dart';
 import '../actions/genai_button.dart';
 import 'genai_text_field.dart';
 
@@ -95,18 +94,20 @@ class _GenaiColorPickerState extends State<GenaiColorPicker> {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final ty = context.typography;
+    final spacing = context.spacing;
 
     final children = <Widget>[];
     if (widget.label != null) {
       children.add(Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: Text(widget.label!, style: ty.label.copyWith(color: colors.textPrimary)),
+        padding: EdgeInsets.only(bottom: spacing.s2),
+        child: Text(widget.label!,
+            style: ty.label.copyWith(color: colors.textPrimary)),
       ));
     }
 
     children.add(Wrap(
-      spacing: 8,
-      runSpacing: 8,
+      spacing: spacing.s2,
+      runSpacing: spacing.s2,
       children: [
         for (final c in widget.swatches)
           _Swatch(
@@ -118,7 +119,7 @@ class _GenaiColorPickerState extends State<GenaiColorPicker> {
     ));
 
     if (widget.allowCustomHex) {
-      children.add(const SizedBox(height: 12));
+      children.add(SizedBox(height: spacing.s3));
       children.add(Row(
         children: [
           Expanded(
@@ -129,7 +130,7 @@ class _GenaiColorPickerState extends State<GenaiColorPicker> {
               prefixText: '#',
             ),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: spacing.s2),
           GenaiButton.secondary(
             label: 'Applica',
             onPressed: widget.isDisabled
@@ -160,26 +161,54 @@ class _Swatch extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.colors;
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 28,
-        height: 28,
-        decoration: BoxDecoration(
-          color: color,
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: selected ? tokens.colorPrimary : tokens.borderDefault,
-            width: selected ? 2 : 1,
+    final sizing = context.sizing;
+    // Swatch is a small round pressable target; bump to min touch target via
+    // an inset GestureDetector for touch-friendly devices.
+    const double visual = 28;
+    final borderW =
+        selected ? sizing.focusOutlineWidth : sizing.dividerThickness;
+    // Pick a contrasting check color from the theme rather than raw black/white.
+    final checkColor = color.computeLuminance() > 0.6
+        ? tokens.textPrimary
+        : tokens.textOnPrimary;
+    return Semantics(
+      button: true,
+      selected: selected,
+      enabled: onTap != null,
+      label:
+          'Colore #${(color.r * 255).round().toRadixString(16).padLeft(2, '0')}${(color.g * 255).round().toRadixString(16).padLeft(2, '0')}${(color.b * 255).round().toRadixString(16).padLeft(2, '0')}'
+              .toUpperCase(),
+      child: MouseRegion(
+        cursor: onTap == null
+            ? SystemMouseCursors.forbidden
+            : SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: onTap,
+          behavior: HitTestBehavior.opaque,
+          child: SizedBox(
+            width: sizing.minTouchTarget,
+            height: sizing.minTouchTarget,
+            child: Center(
+              child: Container(
+                width: visual,
+                height: visual,
+                decoration: BoxDecoration(
+                  color: color,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color:
+                        selected ? tokens.colorPrimary : tokens.borderDefault,
+                    width: borderW,
+                  ),
+                ),
+                child: selected
+                    ? Icon(LucideIcons.check,
+                        size: visual / 2, color: checkColor)
+                    : null,
+              ),
+            ),
           ),
         ),
-        child: selected
-            ? Icon(
-                LucideIcons.check,
-                size: 14,
-                color: color.computeLuminance() > 0.6 ? GenaiColorsPrimitive.neutral900 : Colors.white,
-              )
-            : null,
       ),
     );
   }

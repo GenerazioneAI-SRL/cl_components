@@ -271,24 +271,20 @@ class GenaiAiAssistantController extends ChangeNotifier {
     _toolRegistry.registerAll(
       createBuiltInTools(
         BuiltInToolHandlers(
-          onTap:
-              (label, {parentContext}) => _unwrapResult(
-                _executor.tapElement(label, parentContext: parentContext),
-              ),
-          onSetText:
-              (label, text, {parentContext}) => _unwrapResult(
-                _executor.setText(label, text, parentContext: parentContext),
-              ),
+          onTap: (label, {parentContext}) => _unwrapResult(
+            _executor.tapElement(label, parentContext: parentContext),
+          ),
+          onSetText: (label, text, {parentContext}) => _unwrapResult(
+            _executor.setText(label, text, parentContext: parentContext),
+          ),
           onScroll: (direction) => _unwrapResult(_executor.scroll(direction)),
-          onNavigate:
-              (routeName) =>
-                  _unwrapResult(_executor.navigateToRoute(routeName)),
+          onNavigate: (routeName) =>
+              _unwrapResult(_executor.navigateToRoute(routeName)),
           onGoBack: () => _unwrapResult(_executor.goBack()),
           onGetScreenContent: () => _unwrapResult(_executor.getScreenContent()),
-          onLongPress:
-              (label, {parentContext}) => _unwrapResult(
-                _executor.longPress(label, parentContext: parentContext),
-              ),
+          onLongPress: (label, {parentContext}) => _unwrapResult(
+            _executor.longPress(label, parentContext: parentContext),
+          ),
           onIncrease: (label) => _unwrapResult(_executor.increaseValue(label)),
           onDecrease: (label) => _unwrapResult(_executor.decreaseValue(label)),
           onAskUser: _handleAskUser,
@@ -524,15 +520,14 @@ class GenaiAiAssistantController extends ChangeNotifier {
         },
       );
       AiLogger.log('Handoff resolved: $result', tag: 'Controller');
-      final resolution =
-          result.contains('cancelled')
-              ? 'cancelled'
-              : result.contains('timed out')
+      final resolution = result.contains('cancelled')
+          ? 'cancelled'
+          : result.contains('timed out')
               ? 'timeout'
               : result.contains('route changed') ||
-                  result.contains('Screen changed')
-              ? 'route_change'
-              : 'manual';
+                      result.contains('Screen changed')
+                  ? 'route_change'
+                  : 'manual';
       final routeAfter = AiNavigatorObserver.currentRoute;
 
       _emit(AiEventType.handoffCompleted, {
@@ -543,12 +538,9 @@ class GenaiAiAssistantController extends ChangeNotifier {
         'routeAfter': routeAfter,
         'userMessage': _currentTaskMessage,
         'wasVoice': _currentTaskIsVoice,
-        'durationMs':
-            _currentTaskStartedAt != null
-                ? DateTime.now()
-                    .difference(_currentTaskStartedAt!)
-                    .inMilliseconds
-                : null,
+        'durationMs': _currentTaskStartedAt != null
+            ? DateTime.now().difference(_currentTaskStartedAt!).inMilliseconds
+            : null,
       });
 
       // On cancel, keep overlay so user can give new instructions.
@@ -755,20 +747,18 @@ class GenaiAiAssistantController extends ChangeNotifier {
     final preamble = question.substring(0, firstMatchStart).trim();
 
     // Extract option labels.
-    final buttons =
-        matches.map((m) {
-          final label = m.group(2)!.trim();
-          return ChatButton(label: label, style: ChatButtonStyle.primary);
-        }).toList();
+    final buttons = matches.map((m) {
+      final label = m.group(2)!.trim();
+      return ChatButton(label: label, style: ChatButtonStyle.primary);
+    }).toList();
 
     return [
       if (preamble.isNotEmpty) TextContent(preamble),
       ButtonsContent(
         buttons: buttons,
-        layout:
-            buttons.any((b) => b.label.length > 30)
-                ? ButtonLayout.column
-                : ButtonLayout.wrap,
+        layout: buttons.any((b) => b.label.length > 30)
+            ? ButtonLayout.column
+            : ButtonLayout.wrap,
       ),
     ];
   }
@@ -945,10 +935,9 @@ class GenaiAiAssistantController extends ChangeNotifier {
           )
           .timeout(
             const Duration(minutes: 10),
-            onTimeout:
-                () => const AgentResponse(
-                  text: 'The session expired. Please try again.',
-                ),
+            onTimeout: () => const AgentResponse(
+              text: 'The session expired. Please try again.',
+            ),
           );
 
       // If tools were executed, show the final response in the feed briefly.
@@ -1003,20 +992,18 @@ class GenaiAiAssistantController extends ChangeNotifier {
 
       stopwatch.stop();
       _emit(AiEventType.conversationCompleted, {
-        'response':
-            response.text.length > 200
-                ? '${response.text.substring(0, 200)}...'
-                : response.text,
+        'response': response.text.length > 200
+            ? '${response.text.substring(0, 200)}...'
+            : response.text,
         'responseType': responseType.name,
         'totalActions': response.actions.length,
         'durationMs': stopwatch.elapsedMilliseconds,
         'wasVoice': isVoice,
       });
       _emit(AiEventType.messageReceived, {
-        'response':
-            response.text.length > 200
-                ? '${response.text.substring(0, 200)}...'
-                : response.text,
+        'response': response.text.length > 200
+            ? '${response.text.substring(0, 200)}...'
+            : response.text,
         'responseType': responseType.name,
         'actionCount': response.actions.length,
       });
@@ -1053,10 +1040,9 @@ class GenaiAiAssistantController extends ChangeNotifier {
         if (_config.enableHaptics) HapticFeedback.heavyImpact();
         if (_config.enableTts) {
           _emit(AiEventType.ttsStarted, {
-            'text':
-                response.text.length > 100
-                    ? '${response.text.substring(0, 100)}...'
-                    : response.text,
+            'text': response.text.length > 100
+                ? '${response.text.substring(0, 100)}...'
+                : response.text,
             'isProgress': false,
           });
           _voiceOutput!.speakSummary(response.text);
@@ -1266,10 +1252,9 @@ class GenaiAiAssistantController extends ChangeNotifier {
     );
     if (index != -1) {
       _actionSteps[index] = _actionSteps[index].copyWith(
-        status:
-            result.success
-                ? ActionStepStatus.completed
-                : ActionStepStatus.failed,
+        status: result.success
+            ? ActionStepStatus.completed
+            : ActionStepStatus.failed,
         error: result.error,
         completedAt: DateTime.now(),
       );
@@ -1519,8 +1504,7 @@ class GenaiAiAssistantController extends ChangeNotifier {
     // Info-query pattern: agent navigated somewhere THEN read the screen to
     // extract data (e.g. "what's my balance?" → navigate → get_screen_content).
     // These should stay open even if the response is short.
-    final isInfoPattern =
-        response.actions.isNotEmpty &&
+    final isInfoPattern = response.actions.isNotEmpty &&
         response.actions.last.toolName == 'get_screen_content' &&
         !response.actions.any(
           (a) =>

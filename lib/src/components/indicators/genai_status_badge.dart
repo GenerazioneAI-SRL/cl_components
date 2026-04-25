@@ -2,7 +2,30 @@ import 'package:flutter/material.dart';
 
 import '../../theme/context_extensions.dart';
 
-enum GenaiStatusType { active, pending, error, success, warning, info, neutral }
+/// Semantic status carried by a [GenaiStatusBadge]; drives the dot and label
+/// color from the current color tokens.
+enum GenaiStatusType {
+  /// In progress / online — maps to `colorSuccess`.
+  active,
+
+  /// Pending approval / waiting — maps to `colorWarning`.
+  pending,
+
+  /// Failure — maps to `colorError`.
+  error,
+
+  /// Done / positive — maps to `colorSuccess`.
+  success,
+
+  /// Attention — maps to `colorWarning`.
+  warning,
+
+  /// Informational — maps to `colorInfo`.
+  info,
+
+  /// No specific status — maps to `textSecondary`.
+  neutral,
+}
 
 /// Status pill with optional leading dot (§6.7.3).
 class GenaiStatusBadge extends StatelessWidget {
@@ -25,29 +48,37 @@ class GenaiStatusBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final ty = context.typography;
+    final spacing = context.spacing;
+    final radius = context.radius;
 
     final dotColor = colorOverride ?? _statusColor(colors);
     final bg = dotColor.withValues(alpha: 0.12);
+    final dotSize = spacing.s1 + 2;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (hasDot) ...[
-            Container(
-              width: 6,
-              height: 6,
-              decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle),
-            ),
-            const SizedBox(width: 6),
+    return Semantics(
+      label: label,
+      child: Container(
+        padding:
+            EdgeInsets.symmetric(horizontal: spacing.s2, vertical: spacing.s1),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(radius.pill),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (hasDot) ...[
+              Container(
+                width: dotSize,
+                height: dotSize,
+                decoration:
+                    BoxDecoration(color: dotColor, shape: BoxShape.circle),
+              ),
+              SizedBox(width: spacing.s1 + 2),
+            ],
+            Text(label, style: ty.labelSm.copyWith(color: dotColor)),
           ],
-          Text(label, style: ty.labelSm.copyWith(color: dotColor)),
-        ],
+        ),
       ),
     );
   }

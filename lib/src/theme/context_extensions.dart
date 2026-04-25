@@ -30,6 +30,10 @@ extension GenaiThemeContext on BuildContext {
   GenaiSizingTokens get sizing => _ext.sizing;
   GenaiElevationTokens get elevation => _ext.elevation;
   GenaiRadiusTokens get radius => _ext.radius;
+  GenaiMotionTokens get motion => _ext.motion;
+
+  /// Page grid resolved from the current [GenaiWindowSize] (§2.2.2).
+  GenaiGridTokens get grid => GenaiGridTokens.forWindow(windowSize);
 
   /// True when the current theme is dark.
   bool get isDark => Theme.of(this).brightness == Brightness.dark;

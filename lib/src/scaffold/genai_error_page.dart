@@ -29,7 +29,8 @@ class GenaiErrorPage extends StatelessWidget {
       };
 
   String _message(int? code) => switch (code) {
-        401 => 'La tua sessione è scaduta. Effettua nuovamente il login per continuare.',
+        401 =>
+          'La tua sessione è scaduta. Effettua nuovamente il login per continuare.',
         403 => 'Non hai i permessi necessari per accedere a questa risorsa.',
         _ => 'Si è verificato un errore imprevisto.',
       };

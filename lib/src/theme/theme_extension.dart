@@ -11,6 +11,7 @@ class GenaiThemeExtension extends ThemeExtension<GenaiThemeExtension> {
   final GenaiSizingTokens sizing;
   final GenaiElevationTokens elevation;
   final GenaiRadiusTokens radius;
+  final GenaiMotionTokens motion;
 
   const GenaiThemeExtension({
     required this.colors,
@@ -19,6 +20,7 @@ class GenaiThemeExtension extends ThemeExtension<GenaiThemeExtension> {
     required this.sizing,
     required this.elevation,
     required this.radius,
+    required this.motion,
   });
 
   @override
@@ -29,6 +31,7 @@ class GenaiThemeExtension extends ThemeExtension<GenaiThemeExtension> {
     GenaiSizingTokens? sizing,
     GenaiElevationTokens? elevation,
     GenaiRadiusTokens? radius,
+    GenaiMotionTokens? motion,
   }) {
     return GenaiThemeExtension(
       colors: colors ?? this.colors,
@@ -37,11 +40,13 @@ class GenaiThemeExtension extends ThemeExtension<GenaiThemeExtension> {
       sizing: sizing ?? this.sizing,
       elevation: elevation ?? this.elevation,
       radius: radius ?? this.radius,
+      motion: motion ?? this.motion,
     );
   }
 
   @override
-  GenaiThemeExtension lerp(ThemeExtension<GenaiThemeExtension>? other, double t) {
+  GenaiThemeExtension lerp(
+      ThemeExtension<GenaiThemeExtension>? other, double t) {
     if (other is! GenaiThemeExtension) return this;
     return GenaiThemeExtension(
       colors: GenaiColorTokens.lerp(colors, other.colors, t),
@@ -50,6 +55,7 @@ class GenaiThemeExtension extends ThemeExtension<GenaiThemeExtension> {
       sizing: GenaiSizingTokens.lerp(sizing, other.sizing, t),
       elevation: GenaiElevationTokens.lerp(elevation, other.elevation, t),
       radius: GenaiRadiusTokens.lerp(radius, other.radius, t),
+      motion: GenaiMotionTokens.lerp(motion, other.motion, t),
     );
   }
 }

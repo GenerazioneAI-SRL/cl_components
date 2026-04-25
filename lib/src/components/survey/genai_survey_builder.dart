@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -28,7 +29,8 @@ class GenaiSurveyBuilder extends StatefulWidget {
     required String surveyJson,
     required void Function(List<GenaiSurveyQuestion>) onSurveyChange,
   }) =>
-      GenaiSurveyBuilder(surveyJson: surveyJson, onSurveyChange: onSurveyChange);
+      GenaiSurveyBuilder(
+          surveyJson: surveyJson, onSurveyChange: onSurveyChange);
 
   factory GenaiSurveyBuilder.fromArray({
     required List<GenaiSurveyQuestion> questions,
@@ -42,13 +44,16 @@ class GenaiSurveyBuilder extends StatefulWidget {
 
 class _GenaiSurveyBuilderState extends State<GenaiSurveyBuilder> {
   List<GenaiSurveyQuestion> _questions = [];
+  Timer? _autosaveTimer;
 
   @override
   void initState() {
     super.initState();
     if (widget.surveyJson != null) {
       final decoded = jsonDecode(widget.surveyJson!) as List<dynamic>;
-      _questions = decoded.map((j) => GenaiSurveyQuestion.fromJson(j as Map<String, dynamic>)).toList();
+      _questions = decoded
+          .map((j) => GenaiSurveyQuestion.fromJson(j as Map<String, dynamic>))
+          .toList();
     } else {
       _questions = widget.questions ?? [];
     }
@@ -56,12 +61,29 @@ class _GenaiSurveyBuilderState extends State<GenaiSurveyBuilder> {
   }
 
   @override
+  void dispose() {
+    _autosaveTimer?.cancel();
+    super.dispose();
+  }
+
+  /// Debounce the onSurveyChange callback so rapid edits do not thrash
+  /// downstream consumers (e.g. persisting to the backend).
+  void _debouncedNotify(List<GenaiSurveyQuestion> qs) {
+    _autosaveTimer?.cancel();
+    final debounce = context.motion.autosaveDebounce;
+    _autosaveTimer = Timer(debounce, () {
+      if (mounted) widget.onSurveyChange(qs);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final spacing = context.spacing;
+    final sizing = context.sizing;
     return ChangeNotifierProvider<GenaiSurveyBuilderState>(
       create: (_) => GenaiSurveyBuilderState(
         questions: _questions,
-        onSurveyChange: widget.onSurveyChange,
+        onSurveyChange: _debouncedNotify,
       ),
       builder: (context, _) {
         final state = context.watch<GenaiSurveyBuilderState>();
@@ -79,24 +101,31 @@ class _GenaiSurveyBuilderState extends State<GenaiSurveyBuilder> {
                   onUpdate: (q) => state.updateQuestion(entry.key, q),
                   onDelete: () => state.deleteQuestion(entry.key),
                 )),
-            InkWell(
-              onTap: state.addNewQuestion,
-              borderRadius: BorderRadius.circular(radius.sm),
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: spacing.s4, vertical: spacing.s2),
-                decoration: BoxDecoration(
-                  color: c.surfacePage,
-                  border: Border.all(color: c.borderDefault),
-                  borderRadius: BorderRadius.circular(radius.sm),
+            Semantics(
+              button: true,
+              label: 'Aggiungi domanda',
+              child: InkWell(
+                onTap: state.addNewQuestion,
+                borderRadius: BorderRadius.circular(radius.sm),
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                      horizontal: spacing.s4, vertical: spacing.s2),
+                  constraints: BoxConstraints(minHeight: sizing.minTouchTarget),
+                  decoration: BoxDecoration(
+                    color: c.surfacePage,
+                    border: Border.all(color: c.borderDefault),
+                    borderRadius: BorderRadius.circular(radius.sm),
+                  ),
+                  child: Row(mainAxisSize: MainAxisSize.min, children: [
+                    Icon(LucideIcons.plus, size: 20, color: c.textPrimary),
+                    SizedBox(width: spacing.iconLabelGap),
+                    Text('Aggiungi domanda',
+                        style: ty.bodyMd.copyWith(color: c.textPrimary)),
+                  ]),
                 ),
-                child: Row(mainAxisSize: MainAxisSize.min, children: [
-                  Icon(LucideIcons.plus, size: 20, color: c.textPrimary),
-                  SizedBox(width: spacing.s2),
-                  Text('Aggiungi domanda', style: ty.bodyMd.copyWith(color: c.textPrimary)),
-                ]),
               ),
             ),
-            SizedBox(height: spacing.s4),
+            SizedBox(height: spacing.formFieldGap),
           ],
         );
       },
@@ -150,7 +179,10 @@ class _QuestionEditorState extends State<_QuestionEditor> {
   @override
   void initState() {
     super.initState();
-    _qCtrl = TextEditingController(text: widget.question.question.isEmpty ? 'Testo della ${widget.title}' : widget.question.question);
+    _qCtrl = TextEditingController(
+        text: widget.question.question.isEmpty
+            ? 'Testo della ${widget.title}'
+            : widget.question.question);
     _isMandatory = widget.question.isMandatory;
     _options = List.from(widget.question.options);
   }
@@ -179,7 +211,8 @@ class _QuestionEditorState extends State<_QuestionEditor> {
   void _addOption() {
     setState(() {
       final id = 'option_${widget.questionIndex}_${_options.length + 1}';
-      _options.add(GenaiSurveyOption(id: id, text: 'Opzione ${_options.length + 1}'));
+      _options.add(
+          GenaiSurveyOption(id: id, text: 'Opzione ${_options.length + 1}'));
       _push();
     });
   }
@@ -220,7 +253,8 @@ class _QuestionEditorState extends State<_QuestionEditor> {
           break;
         case 'Rating Numerico':
           _options = [
-            for (var i = 1; i <= 5; i++) GenaiSurveyOption(id: 'option_rating_$i', text: '$i'),
+            for (var i = 1; i <= 5; i++)
+              GenaiSurveyOption(id: 'option_rating_$i', text: '$i'),
           ];
           _isSingleChoice = true;
           _isRating = true;
@@ -231,9 +265,11 @@ class _QuestionEditorState extends State<_QuestionEditor> {
           break;
         case 'Rating Testuale':
           _options = [
-            GenaiSurveyOption(id: 'option_rating_1', text: 'Non sono interessato'),
+            GenaiSurveyOption(
+                id: 'option_rating_1', text: 'Non sono interessato'),
             GenaiSurveyOption(id: 'option_rating_2', text: 'Poco interessato'),
-            GenaiSurveyOption(id: 'option_rating_3', text: 'Abbastanza interessato'),
+            GenaiSurveyOption(
+                id: 'option_rating_3', text: 'Abbastanza interessato'),
             GenaiSurveyOption(id: 'option_rating_4', text: 'Molto Interessato'),
           ];
           _isSingleChoice = true;
@@ -254,7 +290,8 @@ class _QuestionEditorState extends State<_QuestionEditor> {
           break;
         default:
           if (_options.isEmpty) {
-            _options.add(GenaiSurveyOption(id: 'option_${widget.questionIndex}_1', text: 'Opzione 1'));
+            _options.add(GenaiSurveyOption(
+                id: 'option_${widget.questionIndex}_1', text: 'Opzione 1'));
           }
           _isSingleChoice = (item == 'Scelta Singola');
           _canAddOption = true;
@@ -295,8 +332,9 @@ class _QuestionEditorState extends State<_QuestionEditor> {
     final radius = context.radius;
     final spacing = context.spacing;
 
+    final sizing = context.sizing;
     return Container(
-      margin: EdgeInsets.only(bottom: spacing.s4),
+      margin: EdgeInsets.only(bottom: spacing.formFieldGap),
       decoration: BoxDecoration(
         color: c.surfaceCard,
         borderRadius: BorderRadius.circular(radius.md),
@@ -307,7 +345,7 @@ class _QuestionEditorState extends State<_QuestionEditor> {
         children: [
           // Header
           Container(
-            padding: EdgeInsets.all(spacing.s4),
+            padding: EdgeInsets.all(spacing.cardPadding),
             decoration: BoxDecoration(
               color: c.surfacePage,
               borderRadius: BorderRadius.only(
@@ -317,25 +355,32 @@ class _QuestionEditorState extends State<_QuestionEditor> {
             ),
             child: Row(children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: EdgeInsets.symmetric(
+                    horizontal: spacing.s3, vertical: spacing.s1),
                 decoration: BoxDecoration(
                   color: c.colorPrimarySubtle,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(radius.pill),
                 ),
-                child: Text(widget.title, style: ty.bodyMd.copyWith(color: c.colorPrimary, fontWeight: FontWeight.w600)),
+                child: Text(widget.title,
+                    style: ty.bodyMd.copyWith(
+                        color: c.colorPrimary, fontWeight: FontWeight.w600)),
               ),
               SizedBox(width: spacing.s2),
               if (_selectedType.isNotEmpty)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: spacing.s3, vertical: spacing.s1),
                   decoration: BoxDecoration(
                     color: c.colorInfoSubtle,
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(radius.pill),
                   ),
                   child: Row(mainAxisSize: MainAxisSize.min, children: [
-                    Icon(_iconForType(_selectedType), size: 16, color: c.colorInfo),
-                    const SizedBox(width: 4),
-                    Text(_selectedType, style: ty.caption.copyWith(color: c.colorInfo, fontWeight: FontWeight.w600)),
+                    Icon(_iconForType(_selectedType),
+                        size: 16, color: c.colorInfo),
+                    SizedBox(width: spacing.s1),
+                    Text(_selectedType,
+                        style: ty.caption.copyWith(
+                            color: c.colorInfo, fontWeight: FontWeight.w600)),
                   ]),
                 ),
               const Spacer(),
@@ -348,7 +393,7 @@ class _QuestionEditorState extends State<_QuestionEditor> {
           ),
           // Body
           Padding(
-            padding: EdgeInsets.all(spacing.s4),
+            padding: EdgeInsets.all(spacing.cardPadding),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -363,51 +408,64 @@ class _QuestionEditorState extends State<_QuestionEditor> {
                         onChanged: (_) => _push(),
                       ),
                     ),
-                    SizedBox(width: spacing.s4),
+                    SizedBox(width: spacing.formFieldGap),
                     Expanded(
                       child: GenaiSelect<String>(
                         label: 'Tipo domanda',
                         value: _selectedType,
                         options: [
-                          for (final t in _kQuestionTypes) GenaiSelectOption(value: t, label: t),
+                          for (final t in _kQuestionTypes)
+                            GenaiSelectOption(value: t, label: t),
                         ],
                         onChanged: _onTypeChanged,
                       ),
                     ),
                   ],
                 ),
-                SizedBox(height: spacing.s4),
-                InkWell(
-                  onTap: () => setState(() {
-                    _isMandatory = !_isMandatory;
-                    _push();
-                  }),
-                  borderRadius: BorderRadius.circular(radius.sm),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Row(mainAxisSize: MainAxisSize.min, children: [
-                      Checkbox(
-                        value: _isMandatory,
-                        onChanged: (v) => setState(() {
-                          _isMandatory = v ?? false;
-                          _push();
-                        }),
-                        activeColor: c.colorPrimary,
-                        checkColor: c.textOnPrimary,
-                        side: BorderSide(color: c.borderDefault),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius.sm)),
+                SizedBox(height: spacing.formFieldGap),
+                Semantics(
+                  toggled: _isMandatory,
+                  label: 'Domanda obbligatoria',
+                  child: InkWell(
+                    onTap: () => setState(() {
+                      _isMandatory = !_isMandatory;
+                      _push();
+                    }),
+                    borderRadius: BorderRadius.circular(radius.sm),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: spacing.s1),
+                      child: ConstrainedBox(
+                        constraints:
+                            BoxConstraints(minHeight: sizing.minTouchTarget),
+                        child: Row(mainAxisSize: MainAxisSize.min, children: [
+                          Checkbox(
+                            value: _isMandatory,
+                            onChanged: (v) => setState(() {
+                              _isMandatory = v ?? false;
+                              _push();
+                            }),
+                            activeColor: c.colorPrimary,
+                            checkColor: c.textOnPrimary,
+                            side: BorderSide(color: c.borderDefault),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(radius.sm)),
+                          ),
+                          SizedBox(width: spacing.iconLabelGap),
+                          Text('Domanda obbligatoria',
+                              style: ty.bodyMd.copyWith(color: c.textPrimary)),
+                        ]),
                       ),
-                      const SizedBox(width: 8),
-                      Text('Domanda obbligatoria', style: ty.bodyMd.copyWith(color: c.textPrimary)),
-                    ]),
+                    ),
                   ),
                 ),
                 if (_options.isNotEmpty) ...[
-                  SizedBox(height: spacing.s4),
+                  SizedBox(height: spacing.formFieldGap),
                   Row(children: [
                     Icon(LucideIcons.menu, size: 18, color: c.textSecondary),
-                    SizedBox(width: spacing.s2),
-                    Text('Opzioni di risposta', style: ty.bodyMd.copyWith(color: c.textPrimary, fontWeight: FontWeight.w600)),
+                    SizedBox(width: spacing.iconLabelGap),
+                    Text('Opzioni di risposta',
+                        style: ty.bodyMd.copyWith(
+                            color: c.textPrimary, fontWeight: FontWeight.w600)),
                   ]),
                   SizedBox(height: spacing.s2),
                   ..._options.asMap().entries.map((entry) {
@@ -449,20 +507,31 @@ class _QuestionEditorState extends State<_QuestionEditor> {
                 if (_canAddOption)
                   Padding(
                     padding: EdgeInsets.only(top: spacing.s2),
-                    child: InkWell(
-                      onTap: _addOption,
-                      borderRadius: BorderRadius.circular(radius.sm),
-                      child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: spacing.s4, vertical: spacing.s2),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: c.colorPrimary),
-                          borderRadius: BorderRadius.circular(radius.sm),
+                    child: Semantics(
+                      button: true,
+                      label: 'Aggiungi opzione',
+                      child: InkWell(
+                        onTap: _addOption,
+                        borderRadius: BorderRadius.circular(radius.sm),
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: spacing.s4, vertical: spacing.s2),
+                          constraints:
+                              BoxConstraints(minHeight: sizing.minTouchTarget),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: c.colorPrimary),
+                            borderRadius: BorderRadius.circular(radius.sm),
+                          ),
+                          child: Row(mainAxisSize: MainAxisSize.min, children: [
+                            Icon(LucideIcons.plus,
+                                size: 18, color: c.colorPrimary),
+                            SizedBox(width: spacing.iconLabelGap),
+                            Text('Aggiungi opzione',
+                                style: ty.bodyMd.copyWith(
+                                    color: c.colorPrimary,
+                                    fontWeight: FontWeight.w600)),
+                          ]),
                         ),
-                        child: Row(mainAxisSize: MainAxisSize.min, children: [
-                          Icon(LucideIcons.plus, size: 18, color: c.colorPrimary),
-                          SizedBox(width: spacing.s2),
-                          Text('Aggiungi opzione', style: ty.bodyMd.copyWith(color: c.colorPrimary, fontWeight: FontWeight.w600)),
-                        ]),
                       ),
                     ),
                   ),
@@ -528,6 +597,7 @@ class _OptionEditorState extends State<_OptionEditor> {
     final spacing = context.spacing;
     final nested = widget.option.nested ?? [];
 
+    final sizing = context.sizing;
     return Container(
       padding: EdgeInsets.all(spacing.s4),
       decoration: BoxDecoration(
@@ -575,7 +645,8 @@ class _OptionEditorState extends State<_OptionEditor> {
               decoration: BoxDecoration(
                 color: c.surfaceCard,
                 borderRadius: BorderRadius.circular(radius.sm),
-                border: Border.all(color: c.borderDefault.withValues(alpha: 0.3)),
+                border:
+                    Border.all(color: c.borderDefault.withValues(alpha: 0.3)),
               ),
               child: Theme(
                 data: Theme.of(context).copyWith(
@@ -586,21 +657,26 @@ class _OptionEditorState extends State<_OptionEditor> {
                 ),
                 child: ExpansionTile(
                   initiallyExpanded: true,
-                  tilePadding: EdgeInsets.symmetric(horizontal: spacing.s4, vertical: spacing.s2),
+                  tilePadding: EdgeInsets.symmetric(
+                      horizontal: spacing.s4, vertical: spacing.s2),
                   childrenPadding: EdgeInsets.all(spacing.s4),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius.sm)),
-                  collapsedShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius.sm)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(radius.sm)),
+                  collapsedShape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(radius.sm)),
                   leading: Container(
-                    padding: const EdgeInsets.all(6),
+                    padding: EdgeInsets.all(spacing.s1),
                     decoration: BoxDecoration(
                       color: c.colorInfoSubtle,
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(radius.xs),
                     ),
-                    child: Icon(LucideIcons.workflow, size: 18, color: c.colorInfo),
+                    child: Icon(LucideIcons.workflow,
+                        size: 18, color: c.colorInfo),
                   ),
                   title: Text(
                     'Domande subordinate (${nested.length})',
-                    style: ty.bodyMd.copyWith(color: c.textPrimary, fontWeight: FontWeight.w600),
+                    style: ty.bodyMd.copyWith(
+                        color: c.textPrimary, fontWeight: FontWeight.w600),
                   ),
                   children: [
                     ...List.generate(nested.length, (i) {
@@ -624,20 +700,31 @@ class _OptionEditorState extends State<_OptionEditor> {
                         ),
                       );
                     }),
-                    InkWell(
-                      onTap: widget.onAddSubQuestion,
-                      borderRadius: BorderRadius.circular(radius.sm),
-                      child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: spacing.s4, vertical: spacing.s2),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: c.colorPrimary),
-                          borderRadius: BorderRadius.circular(radius.sm),
+                    Semantics(
+                      button: true,
+                      label: 'Aggiungi domanda subordinata',
+                      child: InkWell(
+                        onTap: widget.onAddSubQuestion,
+                        borderRadius: BorderRadius.circular(radius.sm),
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: spacing.s4, vertical: spacing.s2),
+                          constraints:
+                              BoxConstraints(minHeight: sizing.minTouchTarget),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: c.colorPrimary),
+                            borderRadius: BorderRadius.circular(radius.sm),
+                          ),
+                          child: Row(mainAxisSize: MainAxisSize.min, children: [
+                            Icon(LucideIcons.plus,
+                                size: 18, color: c.colorPrimary),
+                            SizedBox(width: spacing.iconLabelGap),
+                            Text('Aggiungi domanda subordinata',
+                                style: ty.bodyMd.copyWith(
+                                    color: c.colorPrimary,
+                                    fontWeight: FontWeight.w600)),
+                          ]),
                         ),
-                        child: Row(mainAxisSize: MainAxisSize.min, children: [
-                          Icon(LucideIcons.plus, size: 18, color: c.colorPrimary),
-                          SizedBox(width: spacing.s2),
-                          Text('Aggiungi domanda subordinata', style: ty.bodyMd.copyWith(color: c.colorPrimary, fontWeight: FontWeight.w600)),
-                        ]),
                       ),
                     ),
                   ],

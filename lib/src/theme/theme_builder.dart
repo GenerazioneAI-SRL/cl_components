@@ -18,7 +18,8 @@ class GenaiTheme {
     GenaiDensity density = GenaiDensity.normal,
   }) {
     final colors = colorsOverride ?? GenaiColorTokens.defaultLight();
-    final typography = typographyOverride ?? GenaiTypographyTokens.defaultTokens(fontFamily: fontFamily ?? 'Inter');
+    final typography = typographyOverride ??
+        GenaiTypographyTokens.defaultTokens(fontFamily: fontFamily ?? 'Inter');
 
     return _build(
       brightness: Brightness.light,
@@ -39,7 +40,8 @@ class GenaiTheme {
     GenaiDensity density = GenaiDensity.normal,
   }) {
     final colors = colorsOverride ?? GenaiColorTokens.defaultDark();
-    final typography = typographyOverride ?? GenaiTypographyTokens.defaultTokens(fontFamily: fontFamily ?? 'Inter');
+    final typography = typographyOverride ??
+        GenaiTypographyTokens.defaultTokens(fontFamily: fontFamily ?? 'Inter');
 
     return _build(
       brightness: Brightness.dark,
@@ -68,6 +70,7 @@ class GenaiTheme {
       sizing: GenaiSizingTokens(density: density),
       elevation: elevation,
       radius: GenaiRadiusTokens.defaultTokens(baseRadius: baseRadius),
+      motion: GenaiMotionTokens.defaultTokens(),
     );
 
     final base = ThemeData(

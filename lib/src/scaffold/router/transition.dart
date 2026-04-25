@@ -8,8 +8,7 @@ class Transition {
     Animation<double> animation,
     Animation<double> secondaryAnimation,
     Widget child,
-  )
-  builder({
+  ) builder({
     required PageTransition pageTransition,
     VoidCallback? onTransitionStart,
   }) {

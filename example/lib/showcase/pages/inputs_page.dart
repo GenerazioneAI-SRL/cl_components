@@ -27,6 +27,44 @@ class _InputsPageState extends State<InputsPage> {
   String _otp = '';
   Color _color = const Color(0xFF7C3AED);
   List<GenaiUploadedFile> _files = const [];
+  String? _comboSingle;
+  List<String> _comboMulti = const ['milan', 'rome'];
+  final TextEditingController _textareaCtrl =
+      TextEditingController(text: 'Testo di prova nella textarea.');
+
+  static const _comboCities = <GenaiSelectOption<String>>[
+    GenaiSelectOption(value: 'milan', label: 'Milano'),
+    GenaiSelectOption(value: 'rome', label: 'Roma'),
+    GenaiSelectOption(value: 'naples', label: 'Napoli'),
+    GenaiSelectOption(value: 'turin', label: 'Torino'),
+    GenaiSelectOption(value: 'palermo', label: 'Palermo'),
+    GenaiSelectOption(value: 'genoa', label: 'Genova'),
+    GenaiSelectOption(value: 'bologna', label: 'Bologna'),
+    GenaiSelectOption(value: 'florence', label: 'Firenze'),
+    GenaiSelectOption(value: 'bari', label: 'Bari'),
+    GenaiSelectOption(value: 'catania', label: 'Catania'),
+    GenaiSelectOption(value: 'venice', label: 'Venezia'),
+    GenaiSelectOption(value: 'verona', label: 'Verona'),
+    GenaiSelectOption(value: 'messina', label: 'Messina'),
+    GenaiSelectOption(value: 'padua', label: 'Padova'),
+    GenaiSelectOption(value: 'trieste', label: 'Trieste'),
+    GenaiSelectOption(value: 'brescia', label: 'Brescia'),
+    GenaiSelectOption(value: 'parma', label: 'Parma'),
+    GenaiSelectOption(value: 'modena', label: 'Modena'),
+    GenaiSelectOption(value: 'reggio', label: 'Reggio Emilia'),
+    GenaiSelectOption(value: 'taranto', label: 'Taranto'),
+    GenaiSelectOption(
+      value: 'livorno',
+      label: 'Livorno (non disponibile)',
+      isDisabled: true,
+    ),
+  ];
+
+  @override
+  void dispose() {
+    _textareaCtrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,6 +73,92 @@ class _InputsPageState extends State<InputsPage> {
       description:
           'TextField (5 varianti) · Checkbox tri-state · Radio · Toggle · Slider/Range · Select (5 modi) · DatePicker · FileUpload · TagInput · OTP · ColorPicker.',
       children: [
+        ShowcaseSection(
+          title: 'GenaiLabel',
+          subtitle:
+              'Label stand-alone (shadcn <Label>). Asterisco rosso con isRequired, testo disabilitato, 3 taglie. Con child diventa wrapper label + input.',
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const ShowcaseRow(label: 'Default', children: [
+                GenaiLabel(text: 'Nome utente'),
+              ]),
+              const ShowcaseRow(label: 'isRequired', children: [
+                GenaiLabel(text: 'Email', isRequired: true),
+              ]),
+              const ShowcaseRow(label: 'isDisabled', children: [
+                GenaiLabel(text: 'Campo bloccato', isDisabled: true),
+              ]),
+              const ShowcaseRow(label: 'Sizes', children: [
+                GenaiLabel(text: 'Label xs', size: GenaiSize.xs),
+                GenaiLabel(text: 'Label sm', size: GenaiSize.sm),
+                GenaiLabel(text: 'Label md (default)'),
+              ]),
+              SizedBox(height: context.spacing.s2),
+              const SizedBox(
+                width: 360,
+                child: GenaiLabel(
+                  text: 'Username',
+                  htmlFor: 'field-username',
+                  isRequired: true,
+                  child: GenaiTextField(hint: 'mario.rossi'),
+                ),
+              ),
+            ],
+          ),
+        ),
+        ShowcaseSection(
+          title: 'GenaiTextarea',
+          subtitle:
+              'Multi-line shadcn <Textarea>. Counter con maxLength, autoGrow, helperText/errorText, read-only e disabled.',
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const GenaiTextarea(
+                label: 'Descrizione',
+                hintText: 'Scrivi una descrizione breve...',
+              ),
+              SizedBox(height: context.spacing.s3),
+              const GenaiTextarea(
+                label: 'Note interne',
+                hintText: 'Visibili solo al team.',
+                helperText: 'Max 2–3 righe consigliate.',
+              ),
+              SizedBox(height: context.spacing.s3),
+              const GenaiTextarea(
+                label: 'Bio',
+                hintText: 'Presentati...',
+                errorText: 'La bio non può essere vuota.',
+                isRequired: true,
+              ),
+              SizedBox(height: context.spacing.s3),
+              GenaiTextarea(
+                label: 'Testo sola lettura',
+                controller: _textareaCtrl,
+                isReadOnly: true,
+              ),
+              SizedBox(height: context.spacing.s3),
+              const GenaiTextarea(
+                label: 'Textarea disabilitata',
+                hintText: 'Non modificabile.',
+                isDisabled: true,
+              ),
+              SizedBox(height: context.spacing.s3),
+              const GenaiTextarea(
+                label: 'Commento (con counter)',
+                hintText: 'Massimo 200 caratteri',
+                maxLength: 200,
+              ),
+              SizedBox(height: context.spacing.s3),
+              const GenaiTextarea(
+                label: 'Auto-grow',
+                hintText: 'Scrivi a piacere, cresce con il contenuto...',
+                autoGrow: true,
+                minLines: 2,
+              ),
+            ],
+          ),
+        ),
         ShowcaseSection(
           title: 'GenaiTextField',
           child: Column(
@@ -166,6 +290,43 @@ class _InputsPageState extends State<InputsPage> {
                   GenaiSelectOption(value: 'na', label: 'Napoli'),
                   GenaiSelectOption(value: 'to', label: 'Torino'),
                 ],
+              ),
+            ],
+          ),
+        ),
+        ShowcaseSection(
+          title: 'GenaiCombobox',
+          subtitle:
+              'Dropdown con ricerca inline e debounce. Single-select, multi-select con chip, stato empty e opzione disabilitata.',
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              GenaiCombobox<String>(
+                label: 'Città (single select)',
+                hintText: 'Seleziona una città',
+                semanticLabel: 'Seleziona città',
+                value: _comboSingle,
+                options: _comboCities,
+                onChanged: (v) => setState(() => _comboSingle = v),
+              ),
+              const SizedBox(height: 12),
+              GenaiCombobox<String>(
+                label: 'Città (multi select)',
+                hintText: 'Aggiungi città',
+                semanticLabel: 'Seleziona una o più città',
+                isMultiple: true,
+                values: _comboMulti,
+                options: _comboCities,
+                onChangedMulti: (v) => setState(() => _comboMulti = v),
+              ),
+              const SizedBox(height: 12),
+              GenaiCombobox<String>(
+                label: 'Stato vuoto (emptyText)',
+                hintText: 'Prova a cercare "zzz"',
+                semanticLabel: 'Combobox con empty state',
+                emptyText: 'Nessuna città trovata',
+                options: _comboCities,
+                onChanged: (_) {},
               ),
             ],
           ),

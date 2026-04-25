@@ -9,6 +9,11 @@ import '../actions/genai_button.dart';
 import '../actions/genai_icon_button.dart';
 import '../feedback/genai_progress_bar.dart';
 
+/// Descriptor of a file attached to a [GenaiFileUpload].
+///
+/// `progress` is a value in `[0, 1]` while the upload is in flight, and `null`
+/// once the upload completes or has not started. `errorMessage` marks a
+/// failed upload.
 class GenaiUploadedFile {
   final String name;
   final int sizeBytes;
@@ -28,7 +33,8 @@ class GenaiUploadedFile {
     this.errorMessage,
   });
 
-  GenaiUploadedFile copyWith({double? progress, String? errorMessage}) => GenaiUploadedFile(
+  GenaiUploadedFile copyWith({double? progress, String? errorMessage}) =>
+      GenaiUploadedFile(
         name: name,
         sizeBytes: sizeBytes,
         mimeType: mimeType,
@@ -103,54 +109,76 @@ class _GenaiFileUploadState extends State<GenaiFileUpload> {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final ty = context.typography;
+    final spacing = context.spacing;
+    final radius = context.radius;
+    final sizing = context.sizing;
     final hasError = widget.errorText != null && widget.errorText!.isNotEmpty;
 
     final children = <Widget>[];
     if (widget.label != null) {
       children.add(Padding(
-        padding: const EdgeInsets.only(bottom: 6),
-        child: Text(widget.label!, style: ty.label.copyWith(color: colors.textPrimary)),
+        padding: EdgeInsets.only(bottom: spacing.s1 + 2),
+        child: Text(widget.label!,
+            style: ty.label.copyWith(color: colors.textPrimary)),
       ));
     }
 
     final dropzone = MouseRegion(
       onEnter: (_) => setState(() => _hovering = true),
       onExit: (_) => setState(() => _hovering = false),
-      child: GestureDetector(
-        onTap: widget.isDisabled ? null : widget.onPickRequested,
-        child: DottedBorderBox(
-          color: hasError ? colors.borderError : (_hovering ? colors.colorPrimary : colors.borderStrong),
-          radius: 8,
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-            color: _hovering ? colors.colorPrimarySubtle : Colors.transparent,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(LucideIcons.cloudUpload, size: 32, color: colors.textSecondary),
-                const SizedBox(height: 8),
-                Text(
-                  widget.isMulti ? 'Trascina i file qui o clicca per selezionare' : 'Trascina un file qui o clicca per selezionare',
-                  style: ty.bodyMd.copyWith(color: colors.textPrimary),
-                  textAlign: TextAlign.center,
-                ),
-                if (widget.acceptedExtensions.isNotEmpty || widget.maxSizeBytes != null) ...[
-                  const SizedBox(height: 4),
+      child: Semantics(
+        button: true,
+        enabled: !widget.isDisabled,
+        label: widget.label ?? 'Carica file',
+        hint: widget.isMulti
+            ? 'Trascina o clicca per selezionare uno o più file'
+            : 'Trascina o clicca per selezionare un file',
+        child: GestureDetector(
+          onTap: widget.isDisabled ? null : widget.onPickRequested,
+          child: DottedBorderBox(
+            color: hasError
+                ? colors.borderError
+                : (_hovering ? colors.colorPrimary : colors.borderStrong),
+            radius: radius.md,
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                  vertical: spacing.s6, horizontal: spacing.s4),
+              color: _hovering ? colors.colorPrimarySubtle : Colors.transparent,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(LucideIcons.cloudUpload,
+                      size: spacing.s8, color: colors.textSecondary),
+                  SizedBox(height: spacing.s2),
                   Text(
-                    [
-                      if (widget.acceptedExtensions.isNotEmpty) widget.acceptedExtensions.join(', '),
-                      if (widget.maxSizeBytes != null) 'max ${_formatSize(widget.maxSizeBytes!)}',
-                    ].join(' • '),
-                    style: ty.caption.copyWith(color: colors.textSecondary),
+                    widget.isMulti
+                        ? 'Trascina i file qui o clicca per selezionare'
+                        : 'Trascina un file qui o clicca per selezionare',
+                    style: ty.bodyMd.copyWith(color: colors.textPrimary),
+                    textAlign: TextAlign.center,
+                  ),
+                  if (widget.acceptedExtensions.isNotEmpty ||
+                      widget.maxSizeBytes != null) ...[
+                    SizedBox(height: spacing.s1),
+                    Text(
+                      [
+                        if (widget.acceptedExtensions.isNotEmpty)
+                          widget.acceptedExtensions.join(', '),
+                        if (widget.maxSizeBytes != null)
+                          'max ${_formatSize(widget.maxSizeBytes!)}',
+                      ].join(' • '),
+                      style: ty.caption.copyWith(color: colors.textSecondary),
+                    ),
+                  ],
+                  SizedBox(height: spacing.s3),
+                  GenaiButton.outline(
+                    label: 'Seleziona file',
+                    size: GenaiSize.sm,
+                    onPressed:
+                        widget.isDisabled ? null : widget.onPickRequested,
                   ),
                 ],
-                const SizedBox(height: 12),
-                GenaiButton.outline(
-                  label: 'Seleziona file',
-                  size: GenaiSize.sm,
-                  onPressed: widget.isDisabled ? null : widget.onPickRequested,
-                ),
-              ],
+              ),
             ),
           ),
         ),
@@ -160,33 +188,43 @@ class _GenaiFileUploadState extends State<GenaiFileUpload> {
     children.add(dropzone);
 
     if (widget.files.isNotEmpty) {
-      children.add(const SizedBox(height: 8));
+      children.add(SizedBox(height: spacing.s2));
       for (final f in widget.files) {
         children.add(Padding(
-          padding: const EdgeInsets.only(top: 4),
+          padding: EdgeInsets.only(top: spacing.s1),
           child: Container(
-            padding: const EdgeInsets.all(8),
+            padding: EdgeInsets.all(spacing.s2),
             decoration: BoxDecoration(
               color: colors.surfaceCard,
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: f.errorMessage != null ? colors.borderError : colors.borderDefault),
+              borderRadius: BorderRadius.circular(radius.sm),
+              border: Border.all(
+                  color: f.errorMessage != null
+                      ? colors.borderError
+                      : colors.borderDefault,
+                  width: sizing.dividerThickness),
             ),
             child: Row(
               children: [
-                Icon(LucideIcons.file, size: 20, color: colors.textSecondary),
-                const SizedBox(width: 8),
+                Icon(LucideIcons.file,
+                    size: GenaiSize.md.iconSize, color: colors.textSecondary),
+                SizedBox(width: spacing.s2),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(f.name, style: ty.label.copyWith(color: colors.textPrimary), overflow: TextOverflow.ellipsis),
+                      Text(f.name,
+                          style: ty.label.copyWith(color: colors.textPrimary),
+                          overflow: TextOverflow.ellipsis),
                       Text(
                         f.errorMessage ?? _formatSize(f.sizeBytes),
-                        style: ty.caption.copyWith(color: f.errorMessage != null ? colors.textError : colors.textSecondary),
+                        style: ty.caption.copyWith(
+                            color: f.errorMessage != null
+                                ? colors.textError
+                                : colors.textSecondary),
                       ),
                       if (f.progress != null && f.progress! < 1) ...[
-                        const SizedBox(height: 4),
+                        SizedBox(height: spacing.s1),
                         GenaiProgressBar(value: f.progress),
                       ],
                     ],
@@ -207,10 +245,14 @@ class _GenaiFileUploadState extends State<GenaiFileUpload> {
 
     if (widget.helperText != null || hasError) {
       children.add(Padding(
-        padding: const EdgeInsets.only(top: 6),
-        child: Text(
-          widget.errorText ?? widget.helperText!,
-          style: ty.caption.copyWith(color: hasError ? colors.textError : colors.textSecondary),
+        padding: EdgeInsets.only(top: spacing.s1 + 2),
+        child: Semantics(
+          liveRegion: hasError,
+          child: Text(
+            widget.errorText ?? widget.helperText!,
+            style: ty.caption.copyWith(
+                color: hasError ? colors.textError : colors.textSecondary),
+          ),
         ),
       ));
     }
@@ -291,7 +333,8 @@ class _DashedBorderPainter extends CustomPainter {
       double dist = 0;
       while (dist < metric.length) {
         final next = dist + dashWidth;
-        canvas.drawPath(metric.extractPath(dist, next.clamp(0, metric.length)), paint);
+        canvas.drawPath(
+            metric.extractPath(dist, next.clamp(0, metric.length)), paint);
         dist = next + dashSpace;
       }
     }
@@ -299,5 +342,9 @@ class _DashedBorderPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _DashedBorderPainter old) =>
-      old.color != color || old.radius != radius || old.dashWidth != dashWidth || old.dashSpace != dashSpace || old.strokeWidth != strokeWidth;
+      old.color != color ||
+      old.radius != radius ||
+      old.dashWidth != dashWidth ||
+      old.dashSpace != dashSpace ||
+      old.strokeWidth != strokeWidth;
 }

@@ -39,12 +39,13 @@ class GenaiAiAssistant extends StatefulWidget {
   /// The app widget tree to wrap.
   final Widget child;
 
-  const GenaiAiAssistant({super.key, required this.config, required this.child});
+  const GenaiAiAssistant(
+      {super.key, required this.config, required this.child});
 
   /// Access the controller from anywhere in the widget tree.
   static GenaiAiAssistantController of(BuildContext context) {
-    final scope = context
-        .dependOnInheritedWidgetOfExactType<_AiAssistantScope>();
+    final scope =
+        context.dependOnInheritedWidgetOfExactType<_AiAssistantScope>();
     assert(
       scope != null,
       'GenaiAiAssistant.of() called outside of GenaiAiAssistant widget tree.',
@@ -201,15 +202,14 @@ class _DraggableFabAreaState extends State<_DraggableFabArea>
   @override
   void initState() {
     super.initState();
-    _snapCtrl =
-        AnimationController(
-          vsync: this,
-          duration: const Duration(milliseconds: 350),
-        )..addListener(() {
-          if (_snapAnimation != null) {
-            setState(() => _position = _snapAnimation!.value);
-          }
-        });
+    _snapCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 350),
+    )..addListener(() {
+        if (_snapAnimation != null) {
+          setState(() => _position = _snapAnimation!.value);
+        }
+      });
   }
 
   @override
@@ -271,9 +271,8 @@ class _DraggableFabAreaState extends State<_DraggableFabArea>
 
     // Snap to nearest horizontal edge.
     final snapRight = _position!.dx > size.width / 2;
-    final targetX = snapRight
-        ? size.width - _fabEdgeMargin - half
-        : _fabEdgeMargin + half;
+    final targetX =
+        snapRight ? size.width - _fabEdgeMargin - half : _fabEdgeMargin + half;
 
     _snapAnimation = Tween<Offset>(
       begin: _position!,

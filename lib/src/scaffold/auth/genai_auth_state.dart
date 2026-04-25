@@ -32,8 +32,8 @@ abstract class GenaiAuthState extends ChangeNotifier {
   Future<void> signOut();
 
   // ── Permessi (opzionale — override nelle app che li usano) ──
-  bool can(String action, String subject, {Map<String, dynamic>? resource}) => true;
+  bool can(String action, String subject, {Map<String, dynamic>? resource}) =>
+      true;
 
   bool checkTenantContext(String tenantContext) => true;
 }
-

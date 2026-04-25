@@ -1,5 +1,9 @@
 import 'genai_survey_question.dart';
 
+/// Single choice offered by a [GenaiSurveyQuestion].
+///
+/// Supports nested follow-up questions via [nested], used to drive
+/// branching survey flows.
 class GenaiSurveyOption {
   final String id;
   String text;
@@ -17,9 +21,15 @@ class GenaiSurveyOption {
         'nested': nested?.map((q) => q.toJson()).toList(),
       };
 
-  factory GenaiSurveyOption.fromJson(Map<String, dynamic> json) => GenaiSurveyOption(
+  factory GenaiSurveyOption.fromJson(Map<String, dynamic> json) =>
+      GenaiSurveyOption(
         id: json['id'] as String,
         text: json['text'] as String,
-        nested: json['nested'] != null ? (json['nested'] as List).map((q) => GenaiSurveyQuestion.fromJson(q as Map<String, dynamic>)).toList() : null,
+        nested: json['nested'] != null
+            ? (json['nested'] as List)
+                .map((q) =>
+                    GenaiSurveyQuestion.fromJson(q as Map<String, dynamic>))
+                .toList()
+            : null,
       );
 }

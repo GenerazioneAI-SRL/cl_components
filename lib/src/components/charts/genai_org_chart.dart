@@ -14,7 +14,8 @@ export 'org_chart/base/edge_painter_utils.dart'
 export 'org_chart/common/node_builder_details.dart' show NodeBuilderDetails;
 
 export 'org_chart/genogram/genogram.dart' show GenaiGenogram;
-export 'org_chart/genogram/genogram_controller.dart' show GenaiGenogramController;
+export 'org_chart/genogram/genogram_controller.dart'
+    show GenaiGenogramController;
 
 export 'org_chart/genogram/edge_painter.dart'
     show GenogramEdgePainter, ConnectionPoint, RelationshipType;

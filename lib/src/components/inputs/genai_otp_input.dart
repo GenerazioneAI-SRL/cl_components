@@ -13,6 +13,9 @@ class GenaiOTPInput extends StatefulWidget {
   final bool hasError;
   final bool autofocus;
 
+  /// Screen-reader label for the overall input group.
+  final String semanticLabel;
+
   const GenaiOTPInput({
     super.key,
     this.length = 6,
@@ -22,6 +25,7 @@ class GenaiOTPInput extends StatefulWidget {
     this.isDisabled = false,
     this.hasError = false,
     this.autofocus = true,
+    this.semanticLabel = 'Codice di verifica',
   });
 
   @override
@@ -76,7 +80,10 @@ class _GenaiOTPInputState extends State<GenaiOTPInput> {
   }
 
   KeyEventResult _onKey(int idx, FocusNode _, KeyEvent event) {
-    if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.backspace && _controllers[idx].text.isEmpty && idx > 0) {
+    if (event is KeyDownEvent &&
+        event.logicalKey == LogicalKeyboardKey.backspace &&
+        _controllers[idx].text.isEmpty &&
+        idx > 0) {
       _focusNodes[idx - 1].requestFocus();
       _controllers[idx - 1].clear();
       return KeyEventResult.handled;
@@ -99,54 +106,73 @@ class _GenaiOTPInputState extends State<GenaiOTPInput> {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final ty = context.typography;
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        for (var i = 0; i < widget.length; i++) ...[
-          if (i > 0) const SizedBox(width: 8),
-          SizedBox(
-            width: 44,
-            height: 52,
-            child: Focus(
-              onKeyEvent: (n, e) => _onKey(i, n, e),
-              child: TextField(
-                controller: _controllers[i],
-                focusNode: _focusNodes[i],
-                autofocus: widget.autofocus && i == 0,
-                enabled: !widget.isDisabled,
-                textAlign: TextAlign.center,
-                keyboardType: TextInputType.number,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                ],
-                style: ty.headingSm.copyWith(color: colors.textPrimary),
-                cursorColor: colors.colorPrimary,
-                decoration: InputDecoration(
-                  counterText: '',
-                  filled: true,
-                  fillColor: colors.surfaceInput,
-                  contentPadding: EdgeInsets.zero,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: widget.hasError ? colors.borderError : colors.borderDefault),
+    final spacing = context.spacing;
+    final radius = context.radius;
+    final sizing = context.sizing;
+    final cellWidth = 44.0;
+    final cellHeight = sizing.minTouchTarget + spacing.s1;
+
+    return Semantics(
+      label: widget.semanticLabel,
+      textField: true,
+      enabled: !widget.isDisabled,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (var i = 0; i < widget.length; i++) ...[
+            if (i > 0) SizedBox(width: spacing.s2),
+            SizedBox(
+              width: cellWidth,
+              height: cellHeight,
+              child: Focus(
+                onKeyEvent: (n, e) => _onKey(i, n, e),
+                child: TextField(
+                  controller: _controllers[i],
+                  focusNode: _focusNodes[i],
+                  autofocus: widget.autofocus && i == 0,
+                  enabled: !widget.isDisabled,
+                  textAlign: TextAlign.center,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                  ],
+                  style: ty.headingSm.copyWith(color: colors.textPrimary),
+                  cursorColor: colors.colorPrimary,
+                  decoration: InputDecoration(
+                    counterText: '',
+                    filled: true,
+                    fillColor: colors.surfaceInput,
+                    contentPadding: EdgeInsets.zero,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(radius.md),
+                      borderSide: BorderSide(
+                          color: widget.hasError
+                              ? colors.borderError
+                              : colors.borderDefault),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(radius.md),
+                      borderSide: BorderSide(
+                          color: widget.hasError
+                              ? colors.borderError
+                              : colors.borderDefault),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(radius.md),
+                      borderSide: BorderSide(
+                          color: widget.hasError
+                              ? colors.borderError
+                              : colors.borderFocus,
+                          width: sizing.focusOutlineWidth),
+                    ),
                   ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: widget.hasError ? colors.borderError : colors.borderDefault),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: widget.hasError ? colors.borderError : colors.borderFocus, width: 2),
-                  ),
+                  onChanged: (v) => _onChanged(i, v),
                 ),
-                onChanged: (v) => _onChanged(i, v),
               ),
             ),
-          ),
+          ],
         ],
-      ],
+      ),
     );
   }
 }
-
-// Suppress unused field warning during single-state design.

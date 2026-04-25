@@ -44,8 +44,8 @@ class ClaudeProvider implements LlmProvider {
     this.temperature = 0.2,
     this.requestTimeout = const Duration(seconds: 45),
     http.Client? httpClient,
-  }) : _client = httpClient ?? http.Client(),
-       _ownsClient = httpClient == null;
+  })  : _client = httpClient ?? http.Client(),
+        _ownsClient = httpClient == null;
 
   /// Close the internal HTTP client. Only needed if no custom client was provided.
   @override
@@ -58,10 +58,11 @@ class ClaudeProvider implements LlmProvider {
     required List<LlmMessage> messages,
     required List<ToolDefinition> tools,
     String? systemPrompt,
-  }) => retryOnRateLimit(
-    () => _sendMessageInner(messages, tools, systemPrompt),
-    tag: 'Claude',
-  );
+  }) =>
+      retryOnRateLimit(
+        () => _sendMessageInner(messages, tools, systemPrompt),
+        tag: 'Claude',
+      );
 
   Future<LlmResponse> _sendMessageInner(
     List<LlmMessage> messages,

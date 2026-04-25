@@ -14,6 +14,9 @@ class GenaiToggle extends StatefulWidget {
   final bool isDisabled;
   final GenaiSize size;
 
+  /// Screen-reader label when [label] is absent.
+  final String? semanticLabel;
+
   const GenaiToggle({
     super.key,
     required this.value,
@@ -22,6 +25,7 @@ class GenaiToggle extends StatefulWidget {
     this.description,
     this.isDisabled = false,
     this.size = GenaiSize.sm,
+    this.semanticLabel,
   });
 
   @override
@@ -41,19 +45,29 @@ class _GenaiToggleState extends State<GenaiToggle> {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final ty = context.typography;
+    final spacing = context.spacing;
+    final sizing = context.sizing;
+    final elevation = context.elevation;
+    final motion = context.motion;
 
-    final trackW = 36.0;
-    final trackH = 20.0;
-    final thumbSize = 16.0;
+    // Track/thumb scale on size. Defaults aligned with the sm size (36×20).
+    final (double trackW, double trackH, double thumbSize) =
+        switch (widget.size) {
+      GenaiSize.xs => (28.0, 16.0, 12.0),
+      GenaiSize.sm => (36.0, 20.0, 16.0),
+      GenaiSize.md => (44.0, 24.0, 20.0),
+      GenaiSize.lg || GenaiSize.xl => (52.0, 28.0, 24.0),
+    };
+    final thumbPad = (trackH - thumbSize) / 2;
 
     final trackColor = widget.value ? colors.colorPrimary : colors.borderStrong;
 
     Widget toggle = AnimatedContainer(
-      duration: GenaiDurations.toggleSlide,
-      curve: GenaiCurves.toggle,
+      duration: motion.toggleSlide.duration,
+      curve: motion.toggleSlide.curve,
       width: trackW,
       height: trackH,
-      padding: const EdgeInsets.all(2),
+      padding: EdgeInsets.all(thumbPad),
       decoration: BoxDecoration(
         color: trackColor,
         borderRadius: BorderRadius.circular(trackH / 2),
@@ -62,26 +76,22 @@ class _GenaiToggleState extends State<GenaiToggle> {
       child: Container(
         width: thumbSize,
         height: thumbSize,
-        decoration: const BoxDecoration(
-          color: Colors.white,
+        decoration: BoxDecoration(
+          color: colors.textOnPrimary,
           shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: Color(0x29000000),
-              blurRadius: 4,
-              offset: Offset(0, 1),
-            ),
-          ],
+          boxShadow: elevation.shadow(1),
         ),
       ),
     );
 
     if (_focused && !widget.isDisabled) {
       toggle = Container(
-        padding: const EdgeInsets.all(2),
+        padding: EdgeInsets.all(sizing.focusOutlineOffset),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(trackH / 2 + 2),
-          border: Border.all(color: colors.borderFocus, width: 2),
+          borderRadius:
+              BorderRadius.circular(trackH / 2 + sizing.focusOutlineOffset),
+          border: Border.all(
+              color: colors.borderFocus, width: sizing.focusOutlineWidth),
         ),
         child: toggle,
       );
@@ -99,16 +109,19 @@ class _GenaiToggleState extends State<GenaiToggle> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (widget.label != null) Text(widget.label!, style: ty.label.copyWith(color: colors.textPrimary)),
+                if (widget.label != null)
+                  Text(widget.label!,
+                      style: ty.label.copyWith(color: colors.textPrimary)),
                 if (widget.description != null)
                   Padding(
-                    padding: const EdgeInsets.only(top: 2),
-                    child: Text(widget.description!, style: ty.bodySm.copyWith(color: colors.textSecondary)),
+                    padding: EdgeInsets.only(top: spacing.s1 / 2),
+                    child: Text(widget.description!,
+                        style: ty.bodySm.copyWith(color: colors.textSecondary)),
                   ),
               ],
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: spacing.s3),
           toggle,
         ],
       );
@@ -119,15 +132,26 @@ class _GenaiToggleState extends State<GenaiToggle> {
       child: Focus(
         onFocusChange: (f) => setState(() => _focused = f),
         child: MouseRegion(
-          cursor: widget.isDisabled ? SystemMouseCursors.forbidden : SystemMouseCursors.click,
+          cursor: widget.isDisabled
+              ? SystemMouseCursors.forbidden
+              : SystemMouseCursors.click,
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: _toggle,
             child: Semantics(
+              button: true,
               toggled: widget.value,
               enabled: !widget.isDisabled,
-              label: widget.label,
-              child: content,
+              focused: _focused,
+              label: widget.semanticLabel ?? widget.label,
+              hint: widget.description,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: hasText ? 0 : sizing.minTouchTarget,
+                  minWidth: hasText ? 0 : sizing.minTouchTarget,
+                ),
+                child: Center(child: content),
+              ),
             ),
           ),
         ),

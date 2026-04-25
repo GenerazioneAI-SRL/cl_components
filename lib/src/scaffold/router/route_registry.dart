@@ -1,4 +1,7 @@
-/// Registry per mappare i nomi delle route ai loro path completi
+/// Singleton that maps route names to their fully resolved paths.
+///
+/// Populated by [GoRouterModular] while it flattens modules; consumers can
+/// call [getPathByName] to resolve a name back into a concrete URL.
 class RouteRegistry {
   static final RouteRegistry _instance = RouteRegistry._internal();
 
@@ -41,7 +44,8 @@ class RouteRegistry {
       for (final path in paths) {
         // Calcola il prefisso comune
         int commonLength = 0;
-        final minLength = path.length < contextPath.length ? path.length : contextPath.length;
+        final minLength =
+            path.length < contextPath.length ? path.length : contextPath.length;
         for (int i = 0; i < minLength; i++) {
           if (path[i] == contextPath[i]) {
             commonLength++;

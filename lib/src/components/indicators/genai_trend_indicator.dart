@@ -4,7 +4,18 @@ import '../../foundations/icons.dart';
 import '../../theme/context_extensions.dart';
 import '../../tokens/sizing.dart';
 
-enum GenaiTrendDirection { up, down, neutral }
+/// Direction of a trend shown by [GenaiTrendIndicator]. Leave `null` on the
+/// widget to auto-derive from the sign of `percentage`.
+enum GenaiTrendDirection {
+  /// Positive direction — green arrow up.
+  up,
+
+  /// Negative direction — red arrow down.
+  down,
+
+  /// No change — neutral dash icon.
+  neutral,
+}
 
 /// Trend pill with arrow + percentage + optional comparison label (§6.7.6).
 class GenaiTrendIndicator extends StatelessWidget {
@@ -32,6 +43,7 @@ class GenaiTrendIndicator extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final ty = context.typography;
+    final spacing = context.spacing;
 
     final dir = _resolvedDirection;
     final color = switch (dir) {
@@ -46,23 +58,27 @@ class GenaiTrendIndicator extends StatelessWidget {
     };
 
     final sign = percentage > 0 ? '+' : '';
-    final formatted = '$sign${percentage.toStringAsFixed(1)}%'.replaceAll('.', ',');
+    final formatted =
+        '$sign${percentage.toStringAsFixed(1)}%'.replaceAll('.', ',');
     final base = size == GenaiSize.xs ? ty.labelSm : ty.label;
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: size.iconSize, color: color),
-        const SizedBox(width: 4),
-        Text(formatted, style: base.copyWith(color: color)),
-        if (compareLabel != null) ...[
-          const SizedBox(width: 6),
-          Text(
-            compareLabel!,
-            style: ty.bodySm.copyWith(color: colors.textSecondary),
-          ),
+    return Semantics(
+      label: '$formatted ${compareLabel ?? ''}'.trim(),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: size.iconSize, color: color),
+          SizedBox(width: spacing.s1),
+          Text(formatted, style: base.copyWith(color: color)),
+          if (compareLabel != null) ...[
+            SizedBox(width: spacing.iconLabelGap),
+            Text(
+              compareLabel!,
+              style: ty.bodySm.copyWith(color: colors.textSecondary),
+            ),
+          ],
         ],
-      ],
+      ),
     );
   }
 }

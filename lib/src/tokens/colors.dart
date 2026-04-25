@@ -130,6 +130,14 @@ class GenaiColorTokens {
   final Color colorErrorSubtle;
   final Color colorInfoSubtle;
 
+  // Inverse / overlay — inverse chips (toast, tooltip) and scrims behind
+  // modals and drawers. Kept distinct from surface/text primaries so brand
+  // theming of those tokens doesn't warp overlay semantics.
+  final Color surfaceInverse;
+  final Color textOnInverse;
+  final Color scrimModal;
+  final Color scrimDrawer;
+
   const GenaiColorTokens({
     required this.colorPrimary,
     required this.colorPrimaryHover,
@@ -167,6 +175,10 @@ class GenaiColorTokens {
     required this.colorWarningSubtle,
     required this.colorErrorSubtle,
     required this.colorInfoSubtle,
+    required this.surfaceInverse,
+    required this.textOnInverse,
+    required this.scrimModal,
+    required this.scrimDrawer,
   });
 
   factory GenaiColorTokens.defaultLight() => const GenaiColorTokens(
@@ -206,6 +218,10 @@ class GenaiColorTokens {
         colorWarningSubtle: GenaiColorsPrimitive.warning50,
         colorErrorSubtle: GenaiColorsPrimitive.error50,
         colorInfoSubtle: GenaiColorsPrimitive.info50,
+        surfaceInverse: GenaiColorsPrimitive.neutral800,
+        textOnInverse: Colors.white,
+        scrimModal: Color(0x66000000),
+        scrimDrawer: Color(0x99000000),
       );
 
   factory GenaiColorTokens.defaultDark() => const GenaiColorTokens(
@@ -245,6 +261,10 @@ class GenaiColorTokens {
         colorWarningSubtle: GenaiColorsPrimitive.warning900,
         colorErrorSubtle: GenaiColorsPrimitive.error900,
         colorInfoSubtle: GenaiColorsPrimitive.info900,
+        surfaceInverse: GenaiColorsPrimitive.neutral100,
+        textOnInverse: GenaiColorsPrimitive.neutral900,
+        scrimModal: Color(0x66000000),
+        scrimDrawer: Color(0x99000000),
       );
 
   GenaiColorTokens copyWith({
@@ -284,6 +304,10 @@ class GenaiColorTokens {
     Color? colorWarningSubtle,
     Color? colorErrorSubtle,
     Color? colorInfoSubtle,
+    Color? surfaceInverse,
+    Color? textOnInverse,
+    Color? scrimModal,
+    Color? scrimDrawer,
   }) {
     return GenaiColorTokens(
       colorPrimary: colorPrimary ?? this.colorPrimary,
@@ -322,15 +346,23 @@ class GenaiColorTokens {
       colorWarningSubtle: colorWarningSubtle ?? this.colorWarningSubtle,
       colorErrorSubtle: colorErrorSubtle ?? this.colorErrorSubtle,
       colorInfoSubtle: colorInfoSubtle ?? this.colorInfoSubtle,
+      surfaceInverse: surfaceInverse ?? this.surfaceInverse,
+      textOnInverse: textOnInverse ?? this.textOnInverse,
+      scrimModal: scrimModal ?? this.scrimModal,
+      scrimDrawer: scrimDrawer ?? this.scrimDrawer,
     );
   }
 
-  static GenaiColorTokens lerp(GenaiColorTokens a, GenaiColorTokens b, double t) {
+  static GenaiColorTokens lerp(
+      GenaiColorTokens a, GenaiColorTokens b, double t) {
     return GenaiColorTokens(
       colorPrimary: Color.lerp(a.colorPrimary, b.colorPrimary, t)!,
-      colorPrimaryHover: Color.lerp(a.colorPrimaryHover, b.colorPrimaryHover, t)!,
-      colorPrimaryPressed: Color.lerp(a.colorPrimaryPressed, b.colorPrimaryPressed, t)!,
-      colorPrimarySubtle: Color.lerp(a.colorPrimarySubtle, b.colorPrimarySubtle, t)!,
+      colorPrimaryHover:
+          Color.lerp(a.colorPrimaryHover, b.colorPrimaryHover, t)!,
+      colorPrimaryPressed:
+          Color.lerp(a.colorPrimaryPressed, b.colorPrimaryPressed, t)!,
+      colorPrimarySubtle:
+          Color.lerp(a.colorPrimarySubtle, b.colorPrimarySubtle, t)!,
       surfacePage: Color.lerp(a.surfacePage, b.surfacePage, t)!,
       surfaceCard: Color.lerp(a.surfaceCard, b.surfaceCard, t)!,
       surfaceInput: Color.lerp(a.surfaceInput, b.surfaceInput, t)!,
@@ -352,17 +384,115 @@ class GenaiColorTokens {
       textSuccess: Color.lerp(a.textSuccess, b.textSuccess, t)!,
       textWarning: Color.lerp(a.textWarning, b.textWarning, t)!,
       colorSuccess: Color.lerp(a.colorSuccess, b.colorSuccess, t)!,
-      colorSuccessHover: Color.lerp(a.colorSuccessHover, b.colorSuccessHover, t)!,
+      colorSuccessHover:
+          Color.lerp(a.colorSuccessHover, b.colorSuccessHover, t)!,
       colorWarning: Color.lerp(a.colorWarning, b.colorWarning, t)!,
-      colorWarningHover: Color.lerp(a.colorWarningHover, b.colorWarningHover, t)!,
+      colorWarningHover:
+          Color.lerp(a.colorWarningHover, b.colorWarningHover, t)!,
       colorError: Color.lerp(a.colorError, b.colorError, t)!,
       colorErrorHover: Color.lerp(a.colorErrorHover, b.colorErrorHover, t)!,
       colorInfo: Color.lerp(a.colorInfo, b.colorInfo, t)!,
       colorInfoHover: Color.lerp(a.colorInfoHover, b.colorInfoHover, t)!,
-      colorSuccessSubtle: Color.lerp(a.colorSuccessSubtle, b.colorSuccessSubtle, t)!,
-      colorWarningSubtle: Color.lerp(a.colorWarningSubtle, b.colorWarningSubtle, t)!,
+      colorSuccessSubtle:
+          Color.lerp(a.colorSuccessSubtle, b.colorSuccessSubtle, t)!,
+      colorWarningSubtle:
+          Color.lerp(a.colorWarningSubtle, b.colorWarningSubtle, t)!,
       colorErrorSubtle: Color.lerp(a.colorErrorSubtle, b.colorErrorSubtle, t)!,
       colorInfoSubtle: Color.lerp(a.colorInfoSubtle, b.colorInfoSubtle, t)!,
+      surfaceInverse: Color.lerp(a.surfaceInverse, b.surfaceInverse, t)!,
+      textOnInverse: Color.lerp(a.textOnInverse, b.textOnInverse, t)!,
+      scrimModal: Color.lerp(a.scrimModal, b.scrimModal, t)!,
+      scrimDrawer: Color.lerp(a.scrimDrawer, b.scrimDrawer, t)!,
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is GenaiColorTokens &&
+          runtimeType == other.runtimeType &&
+          colorPrimary == other.colorPrimary &&
+          colorPrimaryHover == other.colorPrimaryHover &&
+          colorPrimaryPressed == other.colorPrimaryPressed &&
+          colorPrimarySubtle == other.colorPrimarySubtle &&
+          surfacePage == other.surfacePage &&
+          surfaceCard == other.surfaceCard &&
+          surfaceInput == other.surfaceInput &&
+          surfaceOverlay == other.surfaceOverlay &&
+          surfaceSidebar == other.surfaceSidebar &&
+          surfaceHover == other.surfaceHover &&
+          surfacePressed == other.surfacePressed &&
+          borderDefault == other.borderDefault &&
+          borderStrong == other.borderStrong &&
+          borderFocus == other.borderFocus &&
+          borderError == other.borderError &&
+          borderSuccess == other.borderSuccess &&
+          textPrimary == other.textPrimary &&
+          textSecondary == other.textSecondary &&
+          textDisabled == other.textDisabled &&
+          textOnPrimary == other.textOnPrimary &&
+          textLink == other.textLink &&
+          textError == other.textError &&
+          textSuccess == other.textSuccess &&
+          textWarning == other.textWarning &&
+          colorSuccess == other.colorSuccess &&
+          colorSuccessHover == other.colorSuccessHover &&
+          colorWarning == other.colorWarning &&
+          colorWarningHover == other.colorWarningHover &&
+          colorError == other.colorError &&
+          colorErrorHover == other.colorErrorHover &&
+          colorInfo == other.colorInfo &&
+          colorInfoHover == other.colorInfoHover &&
+          colorSuccessSubtle == other.colorSuccessSubtle &&
+          colorWarningSubtle == other.colorWarningSubtle &&
+          colorErrorSubtle == other.colorErrorSubtle &&
+          colorInfoSubtle == other.colorInfoSubtle &&
+          surfaceInverse == other.surfaceInverse &&
+          textOnInverse == other.textOnInverse &&
+          scrimModal == other.scrimModal &&
+          scrimDrawer == other.scrimDrawer;
+
+  @override
+  int get hashCode => Object.hashAll([
+        colorPrimary,
+        colorPrimaryHover,
+        colorPrimaryPressed,
+        colorPrimarySubtle,
+        surfacePage,
+        surfaceCard,
+        surfaceInput,
+        surfaceOverlay,
+        surfaceSidebar,
+        surfaceHover,
+        surfacePressed,
+        borderDefault,
+        borderStrong,
+        borderFocus,
+        borderError,
+        borderSuccess,
+        textPrimary,
+        textSecondary,
+        textDisabled,
+        textOnPrimary,
+        textLink,
+        textError,
+        textSuccess,
+        textWarning,
+        colorSuccess,
+        colorSuccessHover,
+        colorWarning,
+        colorWarningHover,
+        colorError,
+        colorErrorHover,
+        colorInfo,
+        colorInfoHover,
+        colorSuccessSubtle,
+        colorWarningSubtle,
+        colorErrorSubtle,
+        colorInfoSubtle,
+        surfaceInverse,
+        textOnInverse,
+        scrimModal,
+        scrimDrawer,
+      ]);
 }

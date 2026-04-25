@@ -7,11 +7,13 @@ export 'src/tokens/tokens.dart';
 // Theme
 export 'src/theme/theme_extension.dart';
 export 'src/theme/theme_builder.dart';
+export 'src/theme/presets.dart';
 export 'src/theme/context_extensions.dart';
 // Foundations
 export 'src/foundations/responsive.dart';
 export 'src/foundations/animations.dart';
 export 'src/foundations/icons.dart';
+export 'src/foundations/genai_direction.dart';
 
 // Components — Actions
 export 'src/components/actions/genai_button.dart';
@@ -19,8 +21,10 @@ export 'src/components/actions/genai_icon_button.dart';
 export 'src/components/actions/genai_link_button.dart';
 export 'src/components/actions/genai_copy_button.dart';
 export 'src/components/actions/genai_toggle_button_group.dart';
+export 'src/components/actions/genai_toggle_button.dart';
 export 'src/components/actions/genai_split_button.dart';
 export 'src/components/actions/genai_fab.dart';
+export 'src/components/actions/genai_button_group.dart';
 
 // Components — Indicators
 export 'src/components/indicators/genai_badge.dart';
@@ -30,6 +34,7 @@ export 'src/components/indicators/genai_avatar.dart';
 export 'src/components/indicators/genai_avatar_group.dart';
 export 'src/components/indicators/genai_trend_indicator.dart';
 export 'src/components/indicators/genai_progress_ring.dart';
+export 'src/components/indicators/genai_kbd.dart';
 
 // Components — Feedback (atomic)
 export 'src/components/feedback/genai_spinner.dart';
@@ -43,6 +48,8 @@ export 'src/components/feedback/genai_error_state.dart';
 
 // Components — Inputs
 export 'src/components/inputs/genai_text_field.dart';
+export 'src/components/inputs/genai_textarea.dart';
+export 'src/components/inputs/genai_label.dart';
 export 'src/components/inputs/genai_checkbox.dart';
 export 'src/components/inputs/genai_radio.dart';
 export 'src/components/inputs/genai_toggle.dart';
@@ -53,19 +60,31 @@ export 'src/components/inputs/genai_file_upload.dart';
 export 'src/components/inputs/genai_tag_input.dart';
 export 'src/components/inputs/genai_otp_input.dart';
 export 'src/components/inputs/genai_color_picker.dart';
+export 'src/components/inputs/genai_combobox.dart';
+export 'src/components/inputs/genai_native_select.dart';
+export 'src/components/inputs/genai_field.dart';
+export 'src/components/inputs/genai_input_group.dart';
 
 // Components — Layout
 export 'src/components/layout/genai_card.dart';
 export 'src/components/layout/genai_divider.dart';
 export 'src/components/layout/genai_accordion.dart';
+export 'src/components/layout/genai_collapsible.dart';
 export 'src/components/layout/genai_section.dart';
+export 'src/components/layout/genai_aspect_ratio.dart';
+export 'src/components/layout/genai_scroll_area.dart';
+export 'src/components/layout/genai_resizable.dart';
 
 // Components — Overlay
 export 'src/components/overlay/genai_modal.dart';
+export 'src/components/overlay/genai_alert_dialog.dart';
 export 'src/components/overlay/genai_drawer.dart';
 export 'src/components/overlay/genai_tooltip.dart';
 export 'src/components/overlay/genai_popover.dart';
 export 'src/components/overlay/genai_context_menu.dart';
+export 'src/components/overlay/genai_hover_card.dart';
+export 'src/components/overlay/genai_sheet.dart';
+export 'src/components/overlay/genai_dropdown_menu.dart';
 
 // Components — Display
 export 'src/components/display/genai_list.dart';
@@ -75,6 +94,16 @@ export 'src/components/display/genai_calendar.dart';
 export 'src/components/display/genai_kanban.dart';
 export 'src/components/display/genai_tree_view.dart';
 export 'src/components/display/genai_table.dart';
+export 'src/components/display/genai_carousel.dart';
+export 'src/components/display/genai_focus_card.dart';
+export 'src/components/display/genai_suggestion_item.dart';
+export 'src/components/display/genai_bar_row.dart';
+export 'src/components/display/genai_agenda_row.dart';
+export 'src/components/display/genai_formation_card.dart';
+export 'src/components/display/genai_item.dart';
+
+// Components — Typography
+export 'src/components/display/genai_typography.dart';
 
 // Components — Charts
 export 'src/components/charts/genai_bar_chart.dart';
@@ -135,6 +164,10 @@ export 'src/components/navigation/genai_sidebar.dart';
 export 'src/components/navigation/genai_command_palette.dart';
 export 'src/components/navigation/genai_notification_center.dart';
 export 'src/components/navigation/genai_shell.dart';
+export 'src/components/navigation/genai_menubar.dart';
+export 'src/components/navigation/genai_navigation_menu.dart';
+export 'src/components/navigation/genai_ask_bar.dart';
+export 'src/components/navigation/genai_topbar.dart';
 
 // Utils
 export 'src/utils/genai_formatters.dart';

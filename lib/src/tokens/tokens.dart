@@ -7,3 +7,5 @@ export 'typography.dart';
 export 'sizing.dart';
 export 'elevation.dart';
 export 'radius.dart';
+export 'motion.dart';
+export 'z_index.dart';

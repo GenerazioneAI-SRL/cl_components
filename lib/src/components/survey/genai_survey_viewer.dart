@@ -59,7 +59,11 @@ class _GenaiSurveyViewerState extends State<GenaiSurveyViewer> {
   @override
   void initState() {
     super.initState();
-    _questions = widget.surveyJson != null ? widget.surveyJson!.map((j) => GenaiSurveyQuestion.fromJson(j)).toList() : (widget.questions ?? []);
+    _questions = widget.surveyJson != null
+        ? widget.surveyJson!
+            .map((j) => GenaiSurveyQuestion.fromJson(j))
+            .toList()
+        : (widget.questions ?? []);
   }
 
   @override
@@ -84,30 +88,42 @@ class _GenaiSurveyViewerState extends State<GenaiSurveyViewer> {
     final ty = context.typography;
     final radius = context.radius;
     final spacing = context.spacing;
-    return Container(
-      padding: EdgeInsets.all(spacing.s8),
-      decoration: BoxDecoration(
-        color: c.surfacePage,
-        borderRadius: BorderRadius.circular(radius.md),
-        border: Border.all(color: c.borderDefault),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: EdgeInsets.all(spacing.s4),
-            decoration: BoxDecoration(
-              color: c.textSecondary.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
+    final sizing = context.sizing;
+    return Semantics(
+      container: true,
+      label: 'Nessuna domanda disponibile',
+      child: Container(
+        padding: EdgeInsets.all(spacing.pageSectionGap),
+        decoration: BoxDecoration(
+          color: c.surfacePage,
+          borderRadius: BorderRadius.circular(radius.md),
+          border: Border.all(color: c.borderDefault),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: EdgeInsets.all(spacing.s4),
+              decoration: BoxDecoration(
+                color: c.textSecondary.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                LucideIcons.circleQuestionMark,
+                size: sizing.iconEmptyState * 0.7,
+                color: c.textSecondary,
+              ),
             ),
-            child: Icon(LucideIcons.circleQuestionMark, size: 32, color: c.textSecondary),
-          ),
-          SizedBox(height: spacing.s4),
-          Text('Nessuna domanda disponibile', style: ty.bodyMd.copyWith(color: c.textSecondary, fontWeight: FontWeight.w500)),
-          const SizedBox(height: 4),
-          Text('Il questionario non contiene domande', style: ty.caption.copyWith(color: c.textSecondary)),
-        ],
+            SizedBox(height: spacing.s4),
+            Text('Nessuna domanda disponibile',
+                style: ty.bodyMd.copyWith(
+                    color: c.textSecondary, fontWeight: FontWeight.w500)),
+            SizedBox(height: spacing.s1),
+            Text('Il questionario non contiene domande',
+                style: ty.caption.copyWith(color: c.textSecondary)),
+          ],
+        ),
       ),
     );
   }
@@ -118,20 +134,23 @@ class _GenaiSurveyViewerState extends State<GenaiSurveyViewer> {
     final radius = context.radius;
     final spacing = context.spacing;
     return Padding(
-      padding: EdgeInsets.only(bottom: spacing.s4),
+      padding: EdgeInsets.only(bottom: spacing.formFieldGap),
       child: Row(children: [
         Container(
-          padding: EdgeInsets.symmetric(horizontal: spacing.s4, vertical: spacing.s2),
+          padding: EdgeInsets.symmetric(
+              horizontal: spacing.s4, vertical: spacing.s2),
           decoration: BoxDecoration(
             color: c.colorPrimarySubtle,
             borderRadius: BorderRadius.circular(radius.md),
           ),
           child: Row(mainAxisSize: MainAxisSize.min, children: [
-            Icon(LucideIcons.circleQuestionMark, size: 18, color: c.colorPrimary),
-            SizedBox(width: spacing.s2),
+            Icon(LucideIcons.circleQuestionMark,
+                size: 18, color: c.colorPrimary),
+            SizedBox(width: spacing.iconLabelGap),
             Text(
               '${_questions.length} ${_questions.length == 1 ? 'domanda' : 'domande'}',
-              style: ty.bodyMd.copyWith(color: c.colorPrimary, fontWeight: FontWeight.w600),
+              style: ty.bodyMd
+                  .copyWith(color: c.colorPrimary, fontWeight: FontWeight.w600),
             ),
           ]),
         ),

@@ -91,7 +91,8 @@ class _NavigationPageState extends State<NavigationPage> {
 
     return ShowcaseScaffold(
       title: 'Navigation',
-      description: 'Tabs · Breadcrumb · Pagination · Stepper · BottomNav · NavigationRail · CommandPalette · NotificationCenter.',
+      description:
+          'Tabs · Breadcrumb · Pagination · Stepper · BottomNav · NavigationRail · CommandPalette · NotificationCenter · Menubar.',
       children: [
         ShowcaseSection(
           title: 'GenaiTabs — varianti',
@@ -248,6 +249,257 @@ class _NavigationPageState extends State<NavigationPage> {
           child: GenaiButton.primary(label: 'Apri command palette', icon: LucideIcons.search, onPressed: _openCommandPalette),
         ),
         ShowcaseSection(
+          title: 'GenaiNavigationMenu',
+          subtitle:
+              'Barra di navigazione orizzontale con dropdown ricchi (shadcn NavigationMenu). Mix di link semplici, dropdown con griglia di card, e voce disabilitata.',
+          child: GenaiCard.outlined(
+            padding: EdgeInsets.symmetric(
+              horizontal: context.spacing.s2,
+              vertical: context.spacing.s1,
+            ),
+            child: GenaiNavigationMenu(
+              semanticLabel: 'Menu principale demo',
+              items: [
+                GenaiNavigationMenuItem.link(
+                  label: 'Home',
+                  icon: LucideIcons.house,
+                  onTap: () => showGenaiToast(context, message: 'Home'),
+                ),
+                GenaiNavigationMenuItem.dropdown(
+                  label: 'Getting started',
+                  icon: LucideIcons.rocket,
+                  dropdownWidth: 520,
+                  dropdown: (ctx) => _navDropdownGrid(ctx, const [
+                    _NavFeature(
+                      title: 'Installazione',
+                      description:
+                          'Aggiungi il pacchetto al pubspec.yaml.',
+                      icon: LucideIcons.download,
+                    ),
+                    _NavFeature(
+                      title: 'Quickstart',
+                      description:
+                          'Primo esempio di app con ShowcaseApp.',
+                      icon: LucideIcons.zap,
+                    ),
+                    _NavFeature(
+                      title: 'Tema',
+                      description: 'Personalizza colori, radius e density.',
+                      icon: LucideIcons.palette,
+                    ),
+                    _NavFeature(
+                      title: 'Tokens',
+                      description:
+                          'Sei famiglie di token: colors, spacing, typography…',
+                      icon: LucideIcons.layers,
+                    ),
+                  ]),
+                ),
+                GenaiNavigationMenuItem.dropdown(
+                  label: 'Components',
+                  icon: LucideIcons.blocks,
+                  dropdownWidth: 520,
+                  dropdown: (ctx) => _navDropdownGrid(ctx, const [
+                    _NavFeature(
+                      title: 'Buttons',
+                      description:
+                          'Primary, secondary, ghost, outline, destructive.',
+                      icon: LucideIcons.mousePointerClick,
+                    ),
+                    _NavFeature(
+                      title: 'Forms',
+                      description:
+                          'Input, select, checkbox, radio, textarea.',
+                      icon: LucideIcons.fileInput,
+                    ),
+                    _NavFeature(
+                      title: 'Data display',
+                      description: 'Table, list, timeline, kanban.',
+                      icon: LucideIcons.table,
+                    ),
+                    _NavFeature(
+                      title: 'Overlay',
+                      description: 'Modal, drawer, popover, tooltip.',
+                      icon: LucideIcons.panelTopOpen,
+                    ),
+                  ]),
+                ),
+                GenaiNavigationMenuItem.dropdown(
+                  label: 'Resources',
+                  icon: LucideIcons.bookOpen,
+                  dropdownWidth: 360,
+                  dropdown: (ctx) => Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      GenaiCard.interactive(
+                        onTap: () {},
+                        child: Padding(
+                          padding: EdgeInsets.all(ctx.spacing.s3),
+                          child: Row(children: [
+                            Icon(LucideIcons.externalLink,
+                                color: ctx.colors.textPrimary),
+                            SizedBox(width: ctx.spacing.s2),
+                            Text('GitHub',
+                                style: ctx.typography.label.copyWith(
+                                    color: ctx.colors.textPrimary)),
+                          ]),
+                        ),
+                      ),
+                      SizedBox(height: ctx.spacing.s2),
+                      GenaiCard.interactive(
+                        onTap: () {},
+                        child: Padding(
+                          padding: EdgeInsets.all(ctx.spacing.s3),
+                          child: Row(children: [
+                            Icon(LucideIcons.bookOpen,
+                                color: ctx.colors.textPrimary),
+                            SizedBox(width: ctx.spacing.s2),
+                            Text('Changelog',
+                                style: ctx.typography.label.copyWith(
+                                    color: ctx.colors.textPrimary)),
+                          ]),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const GenaiNavigationMenuItem.link(
+                  label: 'Enterprise',
+                  onTap: null,
+                  isDisabled: true,
+                ),
+              ],
+            ),
+          ),
+        ),
+        ShowcaseSection(
+          title: 'GenaiMenubar',
+          subtitle:
+              'Menu bar orizzontale stile macOS / VS Code. File · Edit · View · Help. Sinistra/destra per cambiare menu, frecce su/giù per scorrere le voci.',
+          child: GenaiCard.outlined(
+            padding: EdgeInsets.symmetric(
+              horizontal: context.spacing.s2,
+              vertical: context.spacing.s1,
+            ),
+            child: GenaiMenubar(
+              semanticLabel: 'Menu principale dimostrativo',
+              onSelected: (v) =>
+                  showGenaiToast(context, message: 'Selezionato: $v'),
+              menus: const [
+                GenaiMenubarMenu(
+                  label: 'File',
+                  items: [
+                    GenaiContextMenuItem<Object?>(
+                      value: 'file.new',
+                      label: 'Nuovo file',
+                      icon: LucideIcons.filePlus,
+                      shortcut: '⌘N',
+                    ),
+                    GenaiContextMenuItem<Object?>(
+                      value: 'file.open',
+                      label: 'Apri…',
+                      icon: LucideIcons.folderOpen,
+                      shortcut: '⌘O',
+                    ),
+                    GenaiContextMenuItem<Object?>(
+                      value: 'file.save',
+                      label: 'Salva',
+                      icon: LucideIcons.save,
+                      shortcut: '⌘S',
+                    ),
+                    GenaiContextMenuItem<Object?>(
+                      value: 'file.export',
+                      label: 'Esporta…',
+                      icon: LucideIcons.download,
+                    ),
+                  ],
+                ),
+                GenaiMenubarMenu(
+                  label: 'Edit',
+                  items: [
+                    GenaiContextMenuItem<Object?>(
+                      value: 'edit.undo',
+                      label: 'Annulla',
+                      icon: LucideIcons.undo2,
+                      shortcut: '⌘Z',
+                    ),
+                    GenaiContextMenuItem<Object?>(
+                      value: 'edit.redo',
+                      label: 'Ripeti',
+                      icon: LucideIcons.redo2,
+                      shortcut: '⇧⌘Z',
+                    ),
+                    GenaiContextMenuItem<Object?>(
+                      value: 'edit.cut',
+                      label: 'Taglia',
+                      icon: LucideIcons.scissors,
+                      shortcut: '⌘X',
+                    ),
+                    GenaiContextMenuItem<Object?>(
+                      value: 'edit.copy',
+                      label: 'Copia',
+                      icon: LucideIcons.copy,
+                      shortcut: '⌘C',
+                    ),
+                    GenaiContextMenuItem<Object?>(
+                      value: 'edit.delete',
+                      label: 'Elimina selezione',
+                      icon: LucideIcons.trash2,
+                      shortcut: '⌫',
+                      isDestructive: true,
+                    ),
+                  ],
+                ),
+                GenaiMenubarMenu(
+                  label: 'View',
+                  items: [
+                    GenaiContextMenuItem<Object?>(
+                      value: 'view.sidebar',
+                      label: 'Mostra sidebar',
+                      icon: LucideIcons.panelLeft,
+                      shortcut: '⌘B',
+                    ),
+                    GenaiContextMenuItem<Object?>(
+                      value: 'view.zen',
+                      label: 'Modalità Zen',
+                      icon: LucideIcons.maximize2,
+                    ),
+                    GenaiContextMenuItem<Object?>(
+                      value: 'view.fullscreen',
+                      label: 'Schermo intero',
+                      icon: LucideIcons.expand,
+                      shortcut: '⌃⌘F',
+                      isDisabled: true,
+                    ),
+                  ],
+                ),
+                GenaiMenubarMenu(
+                  label: 'Help',
+                  items: [
+                    GenaiContextMenuItem<Object?>(
+                      value: 'help.docs',
+                      label: 'Documentazione',
+                      icon: LucideIcons.bookOpen,
+                    ),
+                    GenaiContextMenuItem<Object?>(
+                      value: 'help.shortcuts',
+                      label: 'Scorciatoie tastiera',
+                      icon: LucideIcons.keyboard,
+                      shortcut: '⌘/',
+                    ),
+                    GenaiContextMenuItem<Object?>(
+                      value: 'help.about',
+                      label: 'Informazioni',
+                      icon: LucideIcons.info,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+        ShowcaseSection(
           title: 'GenaiNotificationCenter',
           child: SizedBox(
             width: 420,
@@ -292,4 +544,53 @@ class _NavigationPageState extends State<NavigationPage> {
       ],
     );
   }
+
+  Widget _navDropdownGrid(BuildContext ctx, List<_NavFeature> features) {
+    return Wrap(
+      spacing: ctx.spacing.s3,
+      runSpacing: ctx.spacing.s3,
+      children: [
+        for (final f in features)
+          SizedBox(
+            width: 220,
+            child: GenaiCard.interactive(
+              onTap: () {},
+              child: Padding(
+                padding: EdgeInsets.all(ctx.spacing.s3),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(f.icon,
+                        size: ctx.sizing.iconInline,
+                        color: ctx.colors.colorPrimary),
+                    SizedBox(height: ctx.spacing.s2),
+                    Text(f.title,
+                        style: ctx.typography.label.copyWith(
+                            color: ctx.colors.textPrimary,
+                            fontWeight: FontWeight.w600)),
+                    SizedBox(height: ctx.spacing.s1),
+                    Text(f.description,
+                        style: ctx.typography.bodySm.copyWith(
+                            color: ctx.colors.textSecondary)),
+                  ],
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _NavFeature {
+  final String title;
+  final String description;
+  final IconData icon;
+
+  const _NavFeature({
+    required this.title,
+    required this.description,
+    required this.icon,
+  });
 }

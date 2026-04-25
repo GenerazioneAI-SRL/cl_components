@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../foundations/animations.dart';
+import '../../foundations/responsive.dart';
 import '../../theme/context_extensions.dart';
 
 /// Container card (§6.3.1).
@@ -14,19 +14,31 @@ class GenaiCard extends StatefulWidget {
   final Widget? child;
   final Widget? header;
   final Widget? footer;
-  final EdgeInsetsGeometry padding;
+
+  /// Interior padding. If null, resolves to `context.spacing.cardPadding`.
+  final EdgeInsetsGeometry? padding;
+
   final VoidCallback? onTap;
   final _GenaiCardVariant _variant;
   final Color? backgroundColor;
+
+  /// When true the card is non-interactive and visually muted. Only relevant
+  /// for [GenaiCard.interactive].
+  final bool isDisabled;
+
+  /// Accessible label for interactive variant.
+  final String? semanticLabel;
 
   const GenaiCard({
     super.key,
     this.child,
     this.header,
     this.footer,
-    this.padding = const EdgeInsets.all(16),
+    this.padding,
     this.backgroundColor,
   })  : onTap = null,
+        isDisabled = false,
+        semanticLabel = null,
         _variant = _GenaiCardVariant.outlined;
 
   const GenaiCard.outlined({
@@ -34,9 +46,11 @@ class GenaiCard extends StatefulWidget {
     this.child,
     this.header,
     this.footer,
-    this.padding = const EdgeInsets.all(16),
+    this.padding,
     this.backgroundColor,
   })  : onTap = null,
+        isDisabled = false,
+        semanticLabel = null,
         _variant = _GenaiCardVariant.outlined;
 
   const GenaiCard.elevated({
@@ -44,9 +58,11 @@ class GenaiCard extends StatefulWidget {
     this.child,
     this.header,
     this.footer,
-    this.padding = const EdgeInsets.all(16),
+    this.padding,
     this.backgroundColor,
   })  : onTap = null,
+        isDisabled = false,
+        semanticLabel = null,
         _variant = _GenaiCardVariant.elevated;
 
   const GenaiCard.filled({
@@ -54,9 +70,11 @@ class GenaiCard extends StatefulWidget {
     this.child,
     this.header,
     this.footer,
-    this.padding = const EdgeInsets.all(16),
+    this.padding,
     this.backgroundColor,
   })  : onTap = null,
+        isDisabled = false,
+        semanticLabel = null,
         _variant = _GenaiCardVariant.filled;
 
   const GenaiCard.interactive({
@@ -64,8 +82,10 @@ class GenaiCard extends StatefulWidget {
     this.child,
     this.header,
     this.footer,
-    this.padding = const EdgeInsets.all(16),
+    this.padding,
     this.backgroundColor,
+    this.isDisabled = false,
+    this.semanticLabel,
     required this.onTap,
   }) : _variant = _GenaiCardVariant.interactive;
 
@@ -76,14 +96,45 @@ class GenaiCard extends StatefulWidget {
 enum _GenaiCardVariant { outlined, elevated, filled, interactive }
 
 class _GenaiCardState extends State<GenaiCard> {
-  bool _hovered = false;
-  bool _pressed = false;
+  final WidgetStatesController _states = WidgetStatesController();
+
+  @override
+  void initState() {
+    super.initState();
+    // Drive a single rebuild per state change — avoids the manual setState
+    // pattern that was prone to dropped transitions.
+    _states.addListener(_onStatesChanged);
+  }
+
+  void _onStatesChanged() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _states.removeListener(_onStatesChanged);
+    _states.dispose();
+    super.dispose();
+  }
+
+  bool get _hovered => _states.value.contains(WidgetState.hovered);
+  bool get _pressed => _states.value.contains(WidgetState.pressed);
+  bool get _focused => _states.value.contains(WidgetState.focused);
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     final radius = context.radius;
     final elevation = context.elevation;
+    final spacing = context.spacing;
+    final sizing = context.sizing;
+    final motion = context.motion;
+    final reduced = GenaiResponsive.reducedMotion(context);
+
+    final effectivePadding =
+        widget.padding ?? EdgeInsets.all(spacing.cardPadding);
+    final disabled =
+        widget._variant == _GenaiCardVariant.interactive && widget.isDisabled;
 
     Color bg;
     Border? border;
@@ -102,14 +153,25 @@ class _GenaiCardState extends State<GenaiCard> {
         bg = widget.backgroundColor ?? colors.surfaceHover;
         break;
       case _GenaiCardVariant.interactive:
-        bg = widget.backgroundColor ?? (_pressed ? colors.surfacePressed : (_hovered ? colors.surfaceHover : colors.surfaceCard));
-        border = Border.all(color: _hovered ? colors.borderStrong : colors.borderDefault);
-        shadows = _hovered ? elevation.shadow(2) : const [];
+        bg = widget.backgroundColor ??
+            (disabled
+                ? colors.surfaceCard
+                : _pressed
+                    ? colors.surfacePressed
+                    : (_hovered ? colors.surfaceHover : colors.surfaceCard));
+        // Keep the painted bounds stable: never swap the border to a wider
+        // focus stroke (would shift layout). Focus ring is rendered above
+        // as a non-layout Stack overlay.
+        border = Border.all(
+          color: _hovered ? colors.borderStrong : colors.borderDefault,
+        );
+        shadows = (!disabled && _hovered) ? elevation.shadow(2) : const [];
         break;
     }
 
     Widget card = AnimatedContainer(
-      duration: GenaiDurations.hover,
+      duration: reduced ? Duration.zero : motion.hover.duration,
+      curve: motion.hover.curve,
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(radius.lg),
@@ -117,23 +179,24 @@ class _GenaiCardState extends State<GenaiCard> {
         boxShadow: shadows,
       ),
       child: Padding(
-        padding: widget.padding,
+        padding: effectivePadding,
         child: LayoutBuilder(
           builder: (context, constraints) {
             final bounded = constraints.maxHeight.isFinite;
             final children = <Widget>[];
             if (widget.header != null) {
               children.add(Padding(
-                padding: const EdgeInsets.only(bottom: 12),
+                padding: EdgeInsets.only(bottom: spacing.s3),
                 child: widget.header!,
               ));
             }
             if (widget.child != null) {
-              children.add(bounded ? Expanded(child: widget.child!) : widget.child!);
+              children.add(
+                  bounded ? Expanded(child: widget.child!) : widget.child!);
             }
             if (widget.footer != null) {
               children.add(Padding(
-                padding: const EdgeInsets.only(top: 12),
+                padding: EdgeInsets.only(top: spacing.s3),
                 child: widget.footer!,
               ));
             }
@@ -148,17 +211,56 @@ class _GenaiCardState extends State<GenaiCard> {
     );
 
     if (widget._variant == _GenaiCardVariant.interactive) {
-      card = MouseRegion(
-        cursor: SystemMouseCursors.click,
-        onEnter: (_) => setState(() => _hovered = true),
-        onExit: (_) => setState(() => _hovered = false),
-        child: GestureDetector(
-          onTapDown: (_) => setState(() => _pressed = true),
-          onTapUp: (_) => setState(() => _pressed = false),
-          onTapCancel: () => setState(() => _pressed = false),
-          onTap: widget.onTap,
-          behavior: HitTestBehavior.opaque,
-          child: card,
+      // Stack the focus ring above the card so it never alters layout bounds.
+      Widget visual = card;
+      if (_focused && !disabled) {
+        visual = Stack(
+          clipBehavior: Clip.none,
+          children: [
+            card,
+            Positioned.fill(
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(radius.lg),
+                    border: Border.all(
+                      color: colors.borderFocus,
+                      width: sizing.focusOutlineWidth,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      }
+      card = Opacity(
+        opacity: disabled ? 0.6 : 1,
+        child: Semantics(
+          button: true,
+          enabled: !disabled,
+          label: widget.semanticLabel,
+          child: FocusableActionDetector(
+            enabled: !disabled,
+            onShowHoverHighlight: (v) => _states.update(WidgetState.hovered, v),
+            onShowFocusHighlight: (v) => _states.update(WidgetState.focused, v),
+            mouseCursor:
+                disabled ? SystemMouseCursors.basic : SystemMouseCursors.click,
+            child: GestureDetector(
+              onTapDown: disabled
+                  ? null
+                  : (_) => _states.update(WidgetState.pressed, true),
+              onTapUp: disabled
+                  ? null
+                  : (_) => _states.update(WidgetState.pressed, false),
+              onTapCancel: disabled
+                  ? null
+                  : () => _states.update(WidgetState.pressed, false),
+              onTap: disabled ? null : widget.onTap,
+              behavior: HitTestBehavior.opaque,
+              child: visual,
+            ),
+          ),
         ),
       );
     }

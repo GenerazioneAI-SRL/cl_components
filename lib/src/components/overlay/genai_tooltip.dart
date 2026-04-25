@@ -1,43 +1,58 @@
 import 'package:flutter/material.dart';
 
-import '../../foundations/animations.dart';
 import '../../theme/context_extensions.dart';
+import '../../tokens/z_index.dart';
 
-/// Tooltip (§6.5.2). Always uses a 400ms wait duration per spec.
+/// Tooltip (§6.5.2). Uses the theme `tooltipDelay` motion token.
 class GenaiTooltip extends StatelessWidget {
   final String message;
   final Widget child;
   final TooltipTriggerMode triggerMode;
+
+  /// How long the tooltip stays visible after it appears. Defaults to 1.5s.
+  final Duration showDuration;
 
   const GenaiTooltip({
     super.key,
     required this.message,
     required this.child,
     this.triggerMode = TooltipTriggerMode.longPress,
+    this.showDuration = const Duration(milliseconds: 1500),
   });
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     final ty = context.typography;
-    final isDark = context.isDark;
+    final radius = context.radius;
+    final spacing = context.spacing;
+    final motion = context.motion;
+
+    // Inverse chip: flipped bg/fg via semantic inverse tokens.
+    final bg = colors.surfaceInverse;
+    final fg = colors.textOnInverse;
 
     return Tooltip(
       message: message,
-      waitDuration: GenaiDurations.tooltipDelay,
-      showDuration: const Duration(milliseconds: 1500),
+      waitDuration: motion.tooltipDelay,
+      showDuration: showDuration,
       preferBelow: true,
-      verticalOffset: 12,
+      verticalOffset: spacing.s3,
       triggerMode: triggerMode,
       decoration: BoxDecoration(
-        color: isDark ? colors.surfaceCard : const Color(0xFF1F2937),
-        borderRadius: BorderRadius.circular(6),
+        color: bg,
+        borderRadius: BorderRadius.circular(radius.xs),
       ),
-      textStyle: ty.bodySm.copyWith(
-        color: isDark ? colors.textPrimary : Colors.white,
+      textStyle: ty.bodySm.copyWith(color: fg),
+      padding: EdgeInsets.symmetric(
+        horizontal: spacing.s2,
+        vertical: spacing.s1 + spacing.s1 / 2,
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       child: child,
     );
   }
 }
+
+// Tooltips render on the overlay z-index layer.
+// ignore: unused_element
+const int _tooltipZ = GenaiZIndex.overlay;

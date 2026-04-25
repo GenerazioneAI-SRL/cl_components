@@ -66,7 +66,8 @@ class _DisplayPageState extends State<DisplayPage> {
   Widget build(BuildContext context) {
     return ShowcaseScaffold(
       title: 'Display',
-      description: 'List · KPICard · Timeline · Calendar · Kanban · TreeView · Table.',
+      description:
+          'List · KPICard · Timeline · Calendar · Kanban · TreeView · Table · Carousel.',
       children: [
         ShowcaseSection(
           title: 'GenaiList & GenaiListItem',
@@ -334,6 +335,54 @@ class _DisplayPageState extends State<DisplayPage> {
           ),
         ),
         ShowcaseSection(
+          title: 'GenaiCarousel',
+          subtitle:
+              'Slider paginato con indicatori, frecce su desktop e auto-play opzionale.',
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              ShowcaseVariant(
+                label: 'indicators + arrows',
+                child: SizedBox(
+                  width: 560,
+                  height: 200,
+                  child: GenaiCarousel(
+                    semanticLabel: 'Carousel prodotti in evidenza',
+                    items: [
+                      for (var i = 0; i < 5; i++)
+                        _CarouselCard(
+                          index: i + 1,
+                          color: _carouselColor(context, i),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              ShowcaseVariant(
+                label: 'auto-play 3s · viewport 0.8',
+                child: SizedBox(
+                  width: 560,
+                  height: 200,
+                  child: GenaiCarousel(
+                    semanticLabel: 'Carousel in auto-play',
+                    autoPlay: true,
+                    autoPlayInterval: const Duration(seconds: 3),
+                    viewportFraction: 0.8,
+                    items: [
+                      for (var i = 0; i < 5; i++)
+                        _CarouselCard(
+                          index: i + 1,
+                          color: _carouselColor(context, i),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        ShowcaseSection(
           title: 'GenaiBarChart',
           subtitle: 'Bar chart basato su fl_chart, integrato con i token Genai.',
           child: SizedBox(
@@ -356,6 +405,47 @@ class _DisplayPageState extends State<DisplayPage> {
           ),
         ),
       ],
+    );
+  }
+}
+
+Color _carouselColor(BuildContext context, int index) {
+  final palette = <Color>[
+    context.colors.colorPrimarySubtle,
+    context.colors.colorInfoSubtle,
+    context.colors.colorSuccessSubtle,
+    context.colors.colorWarningSubtle,
+    context.colors.colorErrorSubtle,
+  ];
+  return palette[index % palette.length];
+}
+
+class _CarouselCard extends StatelessWidget {
+  final int index;
+  final Color color;
+
+  const _CarouselCard({required this.index, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return GenaiCard.outlined(
+      padding: EdgeInsets.zero,
+      child: Container(
+        color: color,
+        alignment: Alignment.center,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Slide $index',
+                style: context.typography.headingSm
+                    .copyWith(color: context.colors.textPrimary)),
+            SizedBox(height: context.spacing.s1),
+            Text('Contenuto dimostrativo',
+                style: context.typography.bodySm
+                    .copyWith(color: context.colors.textSecondary)),
+          ],
+        ),
+      ),
     );
   }
 }

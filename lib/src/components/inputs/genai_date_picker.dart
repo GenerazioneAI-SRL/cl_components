@@ -43,7 +43,8 @@ class GenaiDatePicker extends StatefulWidget {
 }
 
 class _GenaiDatePickerState extends State<GenaiDatePicker> {
-  String _format(DateTime d) => '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+  String _format(DateTime d) =>
+      '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
 
   Future<void> _open() async {
     if (widget.isDisabled) return;
@@ -62,27 +63,36 @@ class _GenaiDatePickerState extends State<GenaiDatePicker> {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final hasValue = widget.value != null;
-    return GestureDetector(
-      onTap: _open,
-      behavior: HitTestBehavior.opaque,
-      child: AbsorbPointer(
-        child: GenaiTextField(
-          label: widget.label,
-          hint: widget.hint,
-          helperText: widget.helperText,
-          errorText: widget.errorText,
-          isDisabled: widget.isDisabled,
-          isReadOnly: true,
-          size: widget.size,
-          controller: TextEditingController(text: hasValue ? _format(widget.value!) : ''),
-          suffix: hasValue && widget.clearable
-              ? GenaiIconButton(
-                  icon: LucideIcons.x,
-                  size: GenaiSize.xs,
-                  semanticLabel: 'Cancella data',
-                  onPressed: () => widget.onChanged?.call(null),
-                )
-              : Icon(LucideIcons.calendar, size: 16, color: colors.textSecondary),
+    return Semantics(
+      button: true,
+      enabled: !widget.isDisabled,
+      label: widget.label ?? 'Seleziona data',
+      value: hasValue ? _format(widget.value!) : '',
+      hint: widget.hint,
+      child: GestureDetector(
+        onTap: _open,
+        behavior: HitTestBehavior.opaque,
+        child: AbsorbPointer(
+          child: GenaiTextField(
+            label: widget.label,
+            hint: widget.hint,
+            helperText: widget.helperText,
+            errorText: widget.errorText,
+            isDisabled: widget.isDisabled,
+            isReadOnly: true,
+            size: widget.size,
+            controller: TextEditingController(
+                text: hasValue ? _format(widget.value!) : ''),
+            suffix: hasValue && widget.clearable
+                ? GenaiIconButton(
+                    icon: LucideIcons.x,
+                    size: GenaiSize.xs,
+                    semanticLabel: 'Cancella data',
+                    onPressed: () => widget.onChanged?.call(null),
+                  )
+                : Icon(LucideIcons.calendar,
+                    size: GenaiSize.xs.iconSize, color: colors.textSecondary),
+          ),
         ),
       ),
     );
@@ -123,7 +133,8 @@ class GenaiDateRangePicker extends StatefulWidget {
 }
 
 class _GenaiDateRangePickerState extends State<GenaiDateRangePicker> {
-  String _f(DateTime d) => '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+  String _f(DateTime d) =>
+      '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
 
   Future<void> _open() async {
     if (widget.isDisabled) return;
@@ -142,28 +153,37 @@ class _GenaiDateRangePickerState extends State<GenaiDateRangePicker> {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final hasValue = widget.value != null;
-    final text = hasValue ? '${_f(widget.value!.start)} - ${_f(widget.value!.end)}' : '';
-    return GestureDetector(
-      onTap: _open,
-      behavior: HitTestBehavior.opaque,
-      child: AbsorbPointer(
-        child: GenaiTextField(
-          label: widget.label,
-          hint: widget.hint,
-          helperText: widget.helperText,
-          errorText: widget.errorText,
-          isDisabled: widget.isDisabled,
-          isReadOnly: true,
-          size: widget.size,
-          controller: TextEditingController(text: text),
-          suffix: hasValue && widget.clearable
-              ? GenaiIconButton(
-                  icon: LucideIcons.x,
-                  size: GenaiSize.xs,
-                  semanticLabel: 'Cancella intervallo',
-                  onPressed: () => widget.onChanged?.call(null),
-                )
-              : Icon(LucideIcons.calendarRange, size: 16, color: colors.textSecondary),
+    final text =
+        hasValue ? '${_f(widget.value!.start)} - ${_f(widget.value!.end)}' : '';
+    return Semantics(
+      button: true,
+      enabled: !widget.isDisabled,
+      label: widget.label ?? 'Seleziona intervallo di date',
+      value: text,
+      hint: widget.hint,
+      child: GestureDetector(
+        onTap: _open,
+        behavior: HitTestBehavior.opaque,
+        child: AbsorbPointer(
+          child: GenaiTextField(
+            label: widget.label,
+            hint: widget.hint,
+            helperText: widget.helperText,
+            errorText: widget.errorText,
+            isDisabled: widget.isDisabled,
+            isReadOnly: true,
+            size: widget.size,
+            controller: TextEditingController(text: text),
+            suffix: hasValue && widget.clearable
+                ? GenaiIconButton(
+                    icon: LucideIcons.x,
+                    size: GenaiSize.xs,
+                    semanticLabel: 'Cancella intervallo',
+                    onPressed: () => widget.onChanged?.call(null),
+                  )
+                : Icon(LucideIcons.calendarRange,
+                    size: GenaiSize.xs.iconSize, color: colors.textSecondary),
+          ),
         ),
       ),
     );
@@ -229,19 +249,28 @@ class _GenaiMonthPickerState extends State<GenaiMonthPicker> {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final text = widget.value == null ? '' : '${_months[widget.value!.month - 1]} ${widget.value!.year}';
-    return GestureDetector(
-      onTap: _open,
-      behavior: HitTestBehavior.opaque,
-      child: AbsorbPointer(
-        child: GenaiTextField(
-          label: widget.label,
-          hint: 'mese / anno',
-          isDisabled: widget.isDisabled,
-          isReadOnly: true,
-          size: widget.size,
-          controller: TextEditingController(text: text),
-          suffix: Icon(LucideIcons.calendar, size: 16, color: colors.textSecondary),
+    final text = widget.value == null
+        ? ''
+        : '${_months[widget.value!.month - 1]} ${widget.value!.year}';
+    return Semantics(
+      button: true,
+      enabled: !widget.isDisabled,
+      label: widget.label ?? 'Seleziona mese',
+      value: text,
+      child: GestureDetector(
+        onTap: _open,
+        behavior: HitTestBehavior.opaque,
+        child: AbsorbPointer(
+          child: GenaiTextField(
+            label: widget.label,
+            hint: 'mese / anno',
+            isDisabled: widget.isDisabled,
+            isReadOnly: true,
+            size: widget.size,
+            controller: TextEditingController(text: text),
+            suffix: Icon(LucideIcons.calendar,
+                size: GenaiSize.xs.iconSize, color: colors.textSecondary),
+          ),
         ),
       ),
     );
@@ -274,11 +303,14 @@ class _CalendarDialogState extends State<_CalendarDialog> {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final spacing = context.spacing;
+    final radius = context.radius;
     return Dialog(
       backgroundColor: colors.surfaceCard,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(radius.lg)),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(spacing.s4),
         child: SizedBox(
           width: 320,
           child: Column(
@@ -286,18 +318,24 @@ class _CalendarDialogState extends State<_CalendarDialog> {
             children: [
               _MonthHeader(
                 visibleMonth: _visibleMonth,
-                onPrev: () => setState(() => _visibleMonth = DateTime(_visibleMonth.year, _visibleMonth.month - 1)),
-                onNext: () => setState(() => _visibleMonth = DateTime(_visibleMonth.year, _visibleMonth.month + 1)),
+                onPrev: () => setState(() => _visibleMonth =
+                    DateTime(_visibleMonth.year, _visibleMonth.month - 1)),
+                onNext: () => setState(() => _visibleMonth =
+                    DateTime(_visibleMonth.year, _visibleMonth.month + 1)),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: spacing.s3),
               _MonthGrid(
                 visibleMonth: _visibleMonth,
-                isSelected: (d) => d.year == _selected.year && d.month == _selected.month && d.day == _selected.day,
+                isSelected: (d) =>
+                    d.year == _selected.year &&
+                    d.month == _selected.month &&
+                    d.day == _selected.day,
                 isInRange: (_) => false,
-                isEnabled: (d) => _isInBounds(d, widget.minDate, widget.maxDate),
+                isEnabled: (d) =>
+                    _isInBounds(d, widget.minDate, widget.maxDate),
                 onTap: (d) => setState(() => _selected = d),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: spacing.s3),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -305,7 +343,7 @@ class _CalendarDialogState extends State<_CalendarDialog> {
                     label: 'Annulla',
                     onPressed: () => Navigator.of(context).pop(),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: spacing.s2),
                   GenaiButton.primary(
                     label: 'Conferma',
                     onPressed: () => Navigator.of(context).pop(_selected),
@@ -360,11 +398,14 @@ class _RangeDialogState extends State<_RangeDialog> {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final spacing = context.spacing;
+    final radius = context.radius;
     return Dialog(
       backgroundColor: colors.surfaceCard,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(radius.lg)),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(spacing.s4),
         child: SizedBox(
           width: 320,
           child: Column(
@@ -372,18 +413,25 @@ class _RangeDialogState extends State<_RangeDialog> {
             children: [
               _MonthHeader(
                 visibleMonth: _visibleMonth,
-                onPrev: () => setState(() => _visibleMonth = DateTime(_visibleMonth.year, _visibleMonth.month - 1)),
-                onNext: () => setState(() => _visibleMonth = DateTime(_visibleMonth.year, _visibleMonth.month + 1)),
+                onPrev: () => setState(() => _visibleMonth =
+                    DateTime(_visibleMonth.year, _visibleMonth.month - 1)),
+                onNext: () => setState(() => _visibleMonth =
+                    DateTime(_visibleMonth.year, _visibleMonth.month + 1)),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: spacing.s3),
               _MonthGrid(
                 visibleMonth: _visibleMonth,
                 isSelected: (d) => _sameDay(d, _start) || _sameDay(d, _end),
-                isInRange: (d) => _start != null && _end != null && d.isAfter(_start!) && d.isBefore(_end!),
-                isEnabled: (d) => _isInBounds(d, widget.minDate, widget.maxDate),
+                isInRange: (d) =>
+                    _start != null &&
+                    _end != null &&
+                    d.isAfter(_start!) &&
+                    d.isBefore(_end!),
+                isEnabled: (d) =>
+                    _isInBounds(d, widget.minDate, widget.maxDate),
                 onTap: _tap,
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: spacing.s3),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -391,10 +439,13 @@ class _RangeDialogState extends State<_RangeDialog> {
                     label: 'Annulla',
                     onPressed: () => Navigator.of(context).pop(),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: spacing.s2),
                   GenaiButton.primary(
                     label: 'Conferma',
-                    onPressed: _start != null && _end != null ? () => Navigator.of(context).pop(DateTimeRange(start: _start!, end: _end!)) : null,
+                    onPressed: _start != null && _end != null
+                        ? () => Navigator.of(context)
+                            .pop(DateTimeRange(start: _start!, end: _end!))
+                        : null,
                   ),
                 ],
               ),
@@ -452,11 +503,14 @@ class _MonthDialogState extends State<_MonthDialog> {
       'Dic',
     ];
 
+    final spacing = context.spacing;
+    final radius = context.radius;
     return Dialog(
       backgroundColor: colors.surfaceCard,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(radius.lg)),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(spacing.s4),
         child: SizedBox(
           width: 280,
           child: Column(
@@ -469,23 +523,28 @@ class _MonthDialogState extends State<_MonthDialog> {
                     icon: LucideIcons.chevronLeft,
                     semanticLabel: 'Anno precedente',
                     size: GenaiSize.sm,
-                    onPressed: _year > widget.minYear ? () => setState(() => _year--) : null,
+                    onPressed: _year > widget.minYear
+                        ? () => setState(() => _year--)
+                        : null,
                   ),
-                  Text('$_year', style: ty.headingSm.copyWith(color: colors.textPrimary)),
+                  Text('$_year',
+                      style: ty.headingSm.copyWith(color: colors.textPrimary)),
                   GenaiIconButton(
                     icon: LucideIcons.chevronRight,
                     semanticLabel: 'Anno successivo',
                     size: GenaiSize.sm,
-                    onPressed: _year < widget.maxYear ? () => setState(() => _year++) : null,
+                    onPressed: _year < widget.maxYear
+                        ? () => setState(() => _year++)
+                        : null,
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: spacing.s3),
               GridView.count(
                 crossAxisCount: 4,
                 shrinkWrap: true,
-                mainAxisSpacing: 8,
-                crossAxisSpacing: 8,
+                mainAxisSpacing: spacing.s2,
+                crossAxisSpacing: spacing.s2,
                 childAspectRatio: 1.6,
                 physics: const NeverScrollableScrollPhysics(),
                 children: [
@@ -494,22 +553,27 @@ class _MonthDialogState extends State<_MonthDialog> {
                       onTap: () => setState(() => _month = i),
                       child: Container(
                         decoration: BoxDecoration(
-                          color: i == _month ? colors.colorPrimary : Colors.transparent,
-                          borderRadius: BorderRadius.circular(6),
+                          color: i == _month
+                              ? colors.colorPrimary
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(radius.sm),
                         ),
                         alignment: Alignment.center,
                         child: Text(
                           months[i - 1],
                           style: ty.bodyMd.copyWith(
-                            color: i == _month ? colors.textOnPrimary : colors.textPrimary,
-                            fontWeight: i == _month ? FontWeight.w600 : FontWeight.w400,
+                            color: i == _month
+                                ? colors.textOnPrimary
+                                : colors.textPrimary,
+                            fontWeight:
+                                i == _month ? FontWeight.w600 : FontWeight.w400,
                           ),
                         ),
                       ),
                     ),
                 ],
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: spacing.s3),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -517,10 +581,11 @@ class _MonthDialogState extends State<_MonthDialog> {
                     label: 'Annulla',
                     onPressed: () => Navigator.of(context).pop(),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: spacing.s2),
                   GenaiButton.primary(
                     label: 'Conferma',
-                    onPressed: () => Navigator.of(context).pop(DateTime(_year, _month)),
+                    onPressed: () =>
+                        Navigator.of(context).pop(DateTime(_year, _month)),
                   ),
                 ],
               ),
@@ -606,6 +671,8 @@ class _MonthGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final ty = context.typography;
+    final radius = context.radius;
+    final spacing = context.spacing;
     final firstOfMonth = DateTime(visibleMonth.year, visibleMonth.month, 1);
     final lastOfMonth = DateTime(visibleMonth.year, visibleMonth.month + 1, 0);
     final firstWeekday = (firstOfMonth.weekday + 6) % 7; // Mon=0
@@ -628,16 +695,20 @@ class _MonthGrid extends StatelessWidget {
       cells.add(GestureDetector(
         onTap: enabled ? () => onTap(date) : null,
         child: Container(
-          margin: const EdgeInsets.all(2),
+          margin: EdgeInsets.all(spacing.s1 / 2),
           decoration: BoxDecoration(
-            color: selected ? colors.colorPrimary : (inRange ? colors.colorPrimarySubtle : Colors.transparent),
-            borderRadius: BorderRadius.circular(6),
+            color: selected
+                ? colors.colorPrimary
+                : (inRange ? colors.colorPrimarySubtle : Colors.transparent),
+            borderRadius: BorderRadius.circular(radius.sm),
           ),
           alignment: Alignment.center,
           child: Text(
             '$d',
             style: ty.bodySm.copyWith(
-              color: !enabled ? colors.textDisabled : (selected ? colors.textOnPrimary : colors.textPrimary),
+              color: !enabled
+                  ? colors.textDisabled
+                  : (selected ? colors.textOnPrimary : colors.textPrimary),
               fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
             ),
           ),
@@ -654,7 +725,8 @@ class _MonthGrid extends StatelessWidget {
   }
 }
 
-bool _sameDay(DateTime a, DateTime? b) => b != null && a.year == b.year && a.month == b.month && a.day == b.day;
+bool _sameDay(DateTime a, DateTime? b) =>
+    b != null && a.year == b.year && a.month == b.month && a.day == b.day;
 
 bool _isInBounds(DateTime d, DateTime? min, DateTime? max) {
   if (min != null && d.isBefore(DateTime(min.year, min.month, min.day))) {

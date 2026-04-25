@@ -11,6 +11,9 @@ class GenaiCircularProgress extends StatelessWidget {
   final double? strokeWidth;
   final Widget? centerChild;
 
+  /// Accessible label. Defaults to a generic "Caricamento" for indeterminate.
+  final String? semanticLabel;
+
   const GenaiCircularProgress({
     super.key,
     this.value,
@@ -18,6 +21,7 @@ class GenaiCircularProgress extends StatelessWidget {
     this.color,
     this.strokeWidth,
     this.centerChild,
+    this.semanticLabel,
   });
 
   @override
@@ -27,24 +31,30 @@ class GenaiCircularProgress extends StatelessWidget {
     final fg = color ?? context.colors.colorPrimary;
     final bg = context.colors.borderDefault;
 
-    return SizedBox(
-      width: dim,
-      height: dim,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          SizedBox(
-            width: dim,
-            height: dim,
-            child: CircularProgressIndicator(
-              value: value,
-              strokeWidth: stroke,
-              valueColor: AlwaysStoppedAnimation(fg),
-              backgroundColor: bg,
+    final pct = value == null ? null : (value!.clamp(0.0, 1.0) * 100).round();
+
+    return Semantics(
+      label: semanticLabel ?? 'Caricamento',
+      value: pct == null ? null : '$pct%',
+      child: SizedBox(
+        width: dim,
+        height: dim,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            SizedBox(
+              width: dim,
+              height: dim,
+              child: CircularProgressIndicator(
+                value: value,
+                strokeWidth: stroke,
+                valueColor: AlwaysStoppedAnimation(fg),
+                backgroundColor: bg,
+              ),
             ),
-          ),
-          if (centerChild != null) centerChild!,
-        ],
+            if (centerChild != null) centerChild!,
+          ],
+        ),
       ),
     );
   }

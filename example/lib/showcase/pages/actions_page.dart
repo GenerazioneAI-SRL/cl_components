@@ -13,6 +13,17 @@ class ActionsPage extends StatefulWidget {
 class _ActionsPageState extends State<ActionsPage> {
   String _toggleValue = 'list';
   List<String> _multiToggle = ['b'];
+  bool _togglePinIcon = false;
+  bool _togglePinIconPressed = true;
+  bool _toggleBoldOutline = false;
+  bool _toggleItalicOutline = true;
+  bool _toggleStarIconOnly = false;
+  bool _toggleMuteIconLabel = true;
+  bool _toggleSizeXs = false;
+  bool _toggleSizeSm = false;
+  bool _toggleSizeMd = true;
+  bool _toggleSizeLg = false;
+  bool _toggleSizeXl = false;
 
   @override
   Widget build(BuildContext context) {
@@ -105,20 +116,134 @@ class _ActionsPageState extends State<ActionsPage> {
         ),
         ShowcaseSection(
           title: 'GenaiCopyButton',
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
+          subtitle: 'Feedback temporaneo via "copiedLabel" e "feedbackDuration".',
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: context.colors.surfaceCard,
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: context.colors.borderDefault),
+              ShowcaseRow(label: 'Default', children: [
+                _Copyable(
+                  value: 'genai_components_v5',
+                  child: GenaiCopyButton(valueToCopy: 'genai_components_v5'),
                 ),
-                child: Text('genai_components_v4', style: context.typography.code.copyWith(color: context.colors.textPrimary)),
-              ),
-              const SizedBox(width: 8),
-              const GenaiCopyButton(valueToCopy: 'genai_components_v4'),
+              ]),
+              ShowcaseRow(label: 'Etichetta custom', children: [
+                _Copyable(
+                  value: 'SK-XXXX-YYYY-ZZZZ',
+                  child: GenaiCopyButton(
+                    valueToCopy: 'SK-XXXX-YYYY-ZZZZ',
+                    copiedLabel: 'Chiave copiata',
+                    semanticLabel: 'Copia chiave API',
+                  ),
+                ),
+              ]),
+              ShowcaseRow(label: 'Feedback lungo (2s)', children: [
+                _Copyable(
+                  value: 'https://genai.it/app',
+                  child: GenaiCopyButton(
+                    valueToCopy: 'https://genai.it/app',
+                    feedbackDuration: Duration(seconds: 2),
+                  ),
+                ),
+              ]),
+            ],
+          ),
+        ),
+        ShowcaseSection(
+          title: 'GenaiToggleButton',
+          subtitle:
+              'Singolo pulsante toggle (shadcn <Toggle>). Mantiene lo stato premuto. Varianti default_ e outline, 5 taglie, icon-only o icon+label.',
+          child: Column(
+            children: [
+              ShowcaseRow(label: 'default_ · icon', children: [
+                GenaiToggleButton(
+                  pressed: _togglePinIcon,
+                  icon: LucideIcons.pin,
+                  tooltip: 'Fissa',
+                  semanticLabel: 'Fissa elemento',
+                  onChanged: (v) => setState(() => _togglePinIcon = v),
+                ),
+                GenaiToggleButton(
+                  pressed: _togglePinIconPressed,
+                  icon: LucideIcons.pin,
+                  tooltip: 'Fissato',
+                  semanticLabel: 'Elemento fissato',
+                  onChanged: (v) => setState(() => _togglePinIconPressed = v),
+                ),
+              ]),
+              ShowcaseRow(label: 'outline · label', children: [
+                GenaiToggleButton(
+                  pressed: _toggleBoldOutline,
+                  label: 'Bold',
+                  variant: GenaiToggleButtonVariant.outline,
+                  onChanged: (v) => setState(() => _toggleBoldOutline = v),
+                ),
+                GenaiToggleButton(
+                  pressed: _toggleItalicOutline,
+                  label: 'Italic',
+                  variant: GenaiToggleButtonVariant.outline,
+                  onChanged: (v) => setState(() => _toggleItalicOutline = v),
+                ),
+              ]),
+              ShowcaseRow(label: 'Icon-only', children: [
+                GenaiToggleButton(
+                  pressed: _toggleStarIconOnly,
+                  icon: LucideIcons.star,
+                  tooltip: 'Preferito',
+                  semanticLabel: 'Aggiungi ai preferiti',
+                  onChanged: (v) => setState(() => _toggleStarIconOnly = v),
+                ),
+              ]),
+              ShowcaseRow(label: 'Icon + label', children: [
+                GenaiToggleButton(
+                  pressed: _toggleMuteIconLabel,
+                  icon: LucideIcons.volumeX,
+                  label: 'Mute',
+                  onChanged: (v) => setState(() => _toggleMuteIconLabel = v),
+                ),
+              ]),
+              ShowcaseRow(label: 'Sizes xs→xl', children: [
+                GenaiToggleButton(
+                  pressed: _toggleSizeXs,
+                  label: 'xs',
+                  size: GenaiSize.xs,
+                  onChanged: (v) => setState(() => _toggleSizeXs = v),
+                ),
+                GenaiToggleButton(
+                  pressed: _toggleSizeSm,
+                  label: 'sm',
+                  size: GenaiSize.sm,
+                  onChanged: (v) => setState(() => _toggleSizeSm = v),
+                ),
+                GenaiToggleButton(
+                  pressed: _toggleSizeMd,
+                  label: 'md',
+                  onChanged: (v) => setState(() => _toggleSizeMd = v),
+                ),
+                GenaiToggleButton(
+                  pressed: _toggleSizeLg,
+                  label: 'lg',
+                  size: GenaiSize.lg,
+                  onChanged: (v) => setState(() => _toggleSizeLg = v),
+                ),
+                GenaiToggleButton(
+                  pressed: _toggleSizeXl,
+                  label: 'xl',
+                  size: GenaiSize.xl,
+                  onChanged: (v) => setState(() => _toggleSizeXl = v),
+                ),
+              ]),
+              const ShowcaseRow(label: 'Disabled', children: [
+                GenaiToggleButton(
+                  pressed: false,
+                  label: 'Off',
+                  isDisabled: true,
+                ),
+                GenaiToggleButton(
+                  pressed: true,
+                  label: 'On',
+                  isDisabled: true,
+                ),
+              ]),
             ],
           ),
         ),
@@ -174,5 +299,32 @@ class _ActionsPageState extends State<ActionsPage> {
         ),
       ],
     );
+  }
+}
+
+class _Copyable extends StatelessWidget {
+  final String value;
+  final Widget child;
+  const _Copyable({required this.value, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(mainAxisSize: MainAxisSize.min, children: [
+      Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: context.spacing.s3,
+          vertical: context.spacing.s1,
+        ),
+        decoration: BoxDecoration(
+          color: context.colors.surfaceCard,
+          borderRadius: BorderRadius.circular(context.radius.sm),
+          border: Border.all(color: context.colors.borderDefault),
+        ),
+        child: Text(value,
+            style: context.typography.code.copyWith(color: context.colors.textPrimary)),
+      ),
+      SizedBox(width: context.spacing.s2),
+      child,
+    ]);
   }
 }

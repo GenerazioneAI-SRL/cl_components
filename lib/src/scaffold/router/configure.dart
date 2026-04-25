@@ -6,23 +6,35 @@ import 'package:go_router/go_router.dart';
 
 import 'module.dart';
 
+/// Short alias for [GoRouterModular] — kept for ergonomic one-line calls.
 typedef Modular = GoRouterModular;
 
+/// Singleton wrapper around [GoRouter] that understands the module system
+/// (see [Module], [ChildRoute], [ModuleRoute], [ShellModularRoute]).
+///
+/// Call [configure] once at app startup; subsequent calls return the existing
+/// router instance.
 class GoRouterModular {
   GoRouterModular._();
 
+  /// The currently configured [GoRouter]. Throws in debug if [configure] has
+  /// not been called yet.
   static GoRouter get routerConfig {
     assert(_router != null, 'Add GoRouterModular.configure in main.dart');
     return _router!;
   }
 
+  /// Whether modular routing is logging diagnostics.
   static bool get debugLogDiagnostics {
-    assert(_debugLogDiagnostics != null, 'Add GoRouterModular.configure in main.dart');
+    assert(_debugLogDiagnostics != null,
+        'Add GoRouterModular.configure in main.dart');
     return _debugLogDiagnostics!;
   }
 
+  /// Default page transition used when a [ChildRoute] doesn't specify one.
   static PageTransition get getDefaultPageTransition {
-    assert(_pageTansition != null, 'Add GoRouterModular.configure in main.dart');
+    assert(
+        _pageTansition != null, 'Add GoRouterModular.configure in main.dart');
     return _pageTansition!;
   }
 
@@ -32,10 +44,18 @@ class GoRouterModular {
 
   static PageTransition? _pageTansition;
 
-  static getCurrentPathOf(BuildContext context) => GoRouterState.of(context).path ?? '';
+  /// Returns the current route path for [context].
+  static getCurrentPathOf(BuildContext context) =>
+      GoRouterState.of(context).path ?? '';
 
-  static GoRouterState stateOf(BuildContext context) => GoRouterState.of(context);
+  /// Returns the current [GoRouterState] for [context].
+  static GoRouterState stateOf(BuildContext context) =>
+      GoRouterState.of(context);
 
+  /// Installs the modular router as a global singleton.
+  ///
+  /// Pass the root [appModule] and the [initialRoute]; all other parameters
+  /// forward to the underlying [GoRouter].
   static Future<FutureOr<GoRouter>> configure({
     required Module appModule,
     required String initialRoute,
@@ -87,15 +107,19 @@ class GoRouterModular {
   }
 }
 
+/// Convenience accessors on [BuildContext] for [GoRouterState].
 extension GoRouterExtension on BuildContext {
+  /// Returns the value of the path parameter named [param] (e.g. `:id`).
   String? getPathParam(String param) {
     return GoRouterState.of(this).pathParameters[param];
   }
 
+  /// Returns the current route path.
   String? get getPath {
     return GoRouterState.of(this).path;
   }
 
+  /// Returns the current [GoRouterState].
   GoRouterState get state {
     return GoRouterState.of(this);
   }

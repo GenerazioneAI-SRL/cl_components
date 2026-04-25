@@ -1,5 +1,10 @@
 import 'genai_survey_option.dart';
 
+/// A single question inside a [GenaiSurvey].
+///
+/// Supports single/multiple choice, numeric input, rating and star-rating
+/// questions via the `isNumeric`, `isRating`, `isStarRating` flags. The raw
+/// JSON shape is preserved for backend compatibility.
 class GenaiSurveyQuestion {
   final String question;
   final bool singleChoice;
@@ -25,7 +30,8 @@ class GenaiSurveyQuestion {
     List<Map<String, String>>? answers,
   }) : answers = answers ?? [];
 
-  factory GenaiSurveyQuestion.fromJson(Map<String, dynamic> json) => GenaiSurveyQuestion(
+  factory GenaiSurveyQuestion.fromJson(Map<String, dynamic> json) =>
+      GenaiSurveyQuestion(
         question: json['question'] as String,
         singleChoice: json['single_choice'] as bool? ?? true,
         isMandatory: json['is_mandatory'] as bool? ?? false,
@@ -34,8 +40,12 @@ class GenaiSurveyQuestion {
         isStarRating: json['isStarRating'] as bool? ?? false,
         errorText: json['error_text'] as String?,
         properties: json['properties'] as Map<String, dynamic>?,
-        answers: (json['answers'] as List<dynamic>?)?.map((e) => Map<String, String>.from(e as Map)).toList(),
-        options: (json['options'] as List<dynamic>? ?? const []).map((e) => GenaiSurveyOption.fromJson(e as Map<String, dynamic>)).toList(),
+        answers: (json['answers'] as List<dynamic>?)
+            ?.map((e) => Map<String, String>.from(e as Map))
+            .toList(),
+        options: (json['options'] as List<dynamic>? ?? const [])
+            .map((e) => GenaiSurveyOption.fromJson(e as Map<String, dynamic>))
+            .toList(),
       );
 
   Map<String, dynamic> toJson() => {

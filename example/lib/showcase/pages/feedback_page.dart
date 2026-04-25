@@ -87,6 +87,7 @@ class FeedbackPage extends StatelessWidget {
         ),
         ShowcaseSection(
           title: 'Toast — showGenaiToast',
+          subtitle: 'Tipi semantici, posizionamento e azione inline con onAction.',
           child: Wrap(spacing: 8, runSpacing: 8, children: [
             GenaiButton.outline(label: 'Info', onPressed: () => showGenaiToast(context, message: 'Operazione completata', type: GenaiToastType.info)),
             GenaiButton.outline(
@@ -98,6 +99,15 @@ class FeedbackPage extends StatelessWidget {
             GenaiButton.ghost(
                 label: 'Top center',
                 onPressed: () => showGenaiToast(context, message: 'Posizionamento alto', position: GenaiToastPosition.topCenter)),
+            GenaiButton.ghost(
+                label: 'Con azione',
+                onPressed: () => showGenaiToast(
+                      context,
+                      message: 'Elemento archiviato',
+                      type: GenaiToastType.success,
+                      actionLabel: 'Annulla',
+                      onAction: () {},
+                    )),
           ]),
         ),
         ShowcaseSection(

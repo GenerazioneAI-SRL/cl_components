@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 
-import '../../foundations/animations.dart';
 import '../../foundations/icons.dart';
 import '../../theme/context_extensions.dart';
 
+/// Node in a [GenaiTreeView] hierarchy.
+///
+/// Carries a generic [value] (used for selection/callbacks) and a nested list
+/// of [children].
 class GenaiTreeNode<T> {
   final T value;
   final String label;
@@ -25,14 +28,14 @@ class GenaiTreeView<T> extends StatefulWidget {
   final List<GenaiTreeNode<T>> nodes;
   final ValueChanged<T>? onNodeTap;
   final T? selectedValue;
-  final double indent;
+  final double? indent;
 
   const GenaiTreeView({
     super.key,
     required this.nodes,
     this.onNodeTap,
     this.selectedValue,
-    this.indent = 20,
+    this.indent,
   });
 
   @override
@@ -58,24 +61,30 @@ class _GenaiTreeViewState<T> extends State<GenaiTreeView<T>> {
 
   @override
   Widget build(BuildContext context) {
+    final indent = widget.indent ?? context.spacing.s5;
     final rows = <Widget>[];
     for (final n in widget.nodes) {
-      _walk(n, 0, rows);
+      _walk(n, 0, rows, indent);
     }
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: rows,
+    return Semantics(
+      container: true,
+      label: 'Tree view',
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: rows,
+      ),
     );
   }
 
-  void _walk(GenaiTreeNode<T> node, int depth, List<Widget> out) {
+  void _walk(
+      GenaiTreeNode<T> node, int depth, List<Widget> out, double indent) {
     final hasChildren = node.children.isNotEmpty;
     final expanded = _expanded.contains(node.value);
     out.add(_TreeRow<T>(
       node: node,
       depth: depth,
-      indent: widget.indent,
+      indent: indent,
       isExpanded: expanded,
       hasChildren: hasChildren,
       isSelected: widget.selectedValue == node.value,
@@ -94,7 +103,7 @@ class _GenaiTreeViewState<T> extends State<GenaiTreeView<T>> {
     ));
     if (expanded) {
       for (final c in node.children) {
-        _walk(c, depth + 1, out);
+        _walk(c, depth + 1, out, indent);
       }
     }
   }
@@ -132,46 +141,77 @@ class _TreeRowState<T> extends State<_TreeRow<T>> {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final ty = context.typography;
-    return MouseRegion(
-      onEnter: (_) => setState(() => _hovered = true),
-      onExit: (_) => setState(() => _hovered = false),
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: widget.onTap,
-        behavior: HitTestBehavior.opaque,
-        child: AnimatedContainer(
-          duration: GenaiDurations.hover,
-          padding: EdgeInsets.only(left: 8 + widget.depth * widget.indent, right: 8, top: 6, bottom: 6),
-          color: widget.isSelected ? colors.colorPrimarySubtle : (_hovered ? colors.surfaceHover : Colors.transparent),
-          child: Row(
-            children: [
-              SizedBox(
-                width: 18,
-                child: widget.hasChildren
-                    ? GestureDetector(
-                        onTap: widget.onToggle,
-                        child: AnimatedRotation(
-                          turns: widget.isExpanded ? 0.25 : 0,
-                          duration: GenaiDurations.accordionOpen,
-                          child: Icon(LucideIcons.chevronRight, size: 16, color: colors.textSecondary),
-                        ),
-                      )
-                    : const SizedBox.shrink(),
-              ),
-              if (widget.node.icon != null) ...[
-                const SizedBox(width: 4),
-                Icon(widget.node.icon, size: 16, color: colors.textSecondary),
+    final spacing = context.spacing;
+    final accordionMotion = context.motion.accordionOpen;
+    final iconSize = context.sizing.iconInline;
+    final chevronBoxWidth = spacing.s5 - 2;
+
+    final bg = widget.isSelected
+        ? colors.colorPrimarySubtle
+        : (_hovered ? colors.surfaceHover : Colors.transparent);
+
+    return Semantics(
+      button: true,
+      selected: widget.isSelected,
+      expanded: widget.hasChildren ? widget.isExpanded : null,
+      label: widget.node.label,
+      child: MouseRegion(
+        opaque: false,
+        hitTestBehavior: HitTestBehavior.opaque,
+        onEnter: (_) {
+          if (!_hovered) setState(() => _hovered = true);
+        },
+        onExit: (_) {
+          if (_hovered) setState(() => _hovered = false);
+        },
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: widget.onTap,
+          behavior: HitTestBehavior.opaque,
+          child: Container(
+            padding: EdgeInsets.only(
+              left: spacing.s2 + widget.depth * widget.indent,
+              right: spacing.s2,
+              top: spacing.s1 + 2,
+              bottom: spacing.s1 + 2,
+            ),
+            color: bg,
+            child: Row(
+              children: [
+                SizedBox(
+                  width: chevronBoxWidth,
+                  child: widget.hasChildren
+                      ? GestureDetector(
+                          onTap: widget.onToggle,
+                          child: AnimatedRotation(
+                            turns: widget.isExpanded ? 0.25 : 0,
+                            duration: accordionMotion.duration,
+                            curve: accordionMotion.curve,
+                            child: Icon(LucideIcons.chevronRight,
+                                size: iconSize + 2,
+                                color: colors.textSecondary),
+                          ),
+                        )
+                      : const SizedBox.shrink(),
+                ),
+                if (widget.node.icon != null) ...[
+                  SizedBox(width: spacing.s1),
+                  Icon(widget.node.icon,
+                      size: iconSize + 2, color: colors.textSecondary),
+                ],
+                SizedBox(width: spacing.s1 + 2),
+                Expanded(
+                  child: Text(widget.node.label,
+                      style: ty.bodySm.copyWith(
+                        color: colors.textPrimary,
+                        fontWeight: widget.isSelected
+                            ? FontWeight.w600
+                            : FontWeight.w400,
+                      ),
+                      overflow: TextOverflow.ellipsis),
+                ),
               ],
-              const SizedBox(width: 6),
-              Expanded(
-                child: Text(widget.node.label,
-                    style: ty.bodySm.copyWith(
-                      color: colors.textPrimary,
-                      fontWeight: widget.isSelected ? FontWeight.w600 : FontWeight.w400,
-                    ),
-                    overflow: TextOverflow.ellipsis),
-              ),
-            ],
+            ),
           ),
         ),
       ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../foundations/animations.dart';
+import '../../foundations/responsive.dart';
 import '../../theme/context_extensions.dart';
 import '../../tokens/sizing.dart';
 import 'genai_button.dart';
@@ -50,77 +51,123 @@ class _GenaiIconButtonState extends State<GenaiIconButton> {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final motion = context.motion;
+    final sizing = context.sizing;
     final radius = widget.size.borderRadius;
     final isCompact = context.isCompact;
     final dim = widget.size.resolveHeight(isCompact: isCompact);
     final disabled = widget._isDisabled || widget.isLoading;
 
     final colorset = _resolveColors(colors);
-    final bg = _pressed ? colorset.bgPressed : (_hovered ? colorset.bgHover : colorset.bg);
+    final bg = _pressed
+        ? colorset.bgPressed
+        : (_hovered ? colorset.bgHover : colorset.bg);
 
     Widget content = widget.isLoading
         ? SizedBox(
             width: widget.size.iconSize,
             height: widget.size.iconSize,
             child: CircularProgressIndicator(
-              strokeWidth: 2,
+              strokeWidth: sizing.focusOutlineWidth,
               valueColor: AlwaysStoppedAnimation(colorset.fg),
             ),
           )
         : Icon(widget.icon, size: widget.size.iconSize, color: colorset.fg);
 
-    Widget button = AnimatedScale(
-      scale: _pressed ? GenaiInteraction.pressScaleStrong : 1.0,
-      duration: _pressed ? GenaiDurations.pressIn : GenaiDurations.pressOut,
-      curve: Curves.easeOut,
-      child: AnimatedContainer(
-        duration: GenaiDurations.hover,
-        width: dim,
-        height: dim,
-        decoration: BoxDecoration(
-          color: bg,
-          borderRadius: BorderRadius.circular(radius),
-          border: colorset.borderColor != null ? Border.all(color: colorset.borderColor!, width: widget.size.borderWidth) : null,
+    // Press scale wraps only the icon content so the layout box (and
+    // therefore the MouseRegion hit-test bounds) stays stable on press.
+    Widget button = AnimatedContainer(
+      duration: motion.hover.duration,
+      curve: motion.hover.curve,
+      width: dim,
+      height: dim,
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(radius),
+        border: colorset.borderColor != null
+            ? Border.all(
+                color: colorset.borderColor!, width: widget.size.borderWidth)
+            : null,
+      ),
+      child: Center(
+        child: AnimatedScale(
+          scale: _pressed ? GenaiInteraction.pressScaleStrong : 1.0,
+          alignment: Alignment.center,
+          duration:
+              _pressed ? motion.pressIn.duration : motion.pressOut.duration,
+          curve: _pressed ? motion.pressIn.curve : motion.pressOut.curve,
+          child: content,
         ),
-        child: Center(child: content),
       ),
     );
 
-    if (_focused && !disabled) {
-      button = Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(radius + 2),
-          border: Border.all(color: colors.borderFocus, width: 2),
-        ),
-        padding: const EdgeInsets.all(2),
-        child: button,
-      );
-    }
-
     if (widget.badge != null) {
+      final badgeOffset = -context.spacing.s1;
       button = Stack(
         clipBehavior: Clip.none,
         children: [
           button,
-          Positioned(top: -4, right: -4, child: widget.badge!),
+          Positioned(
+              top: badgeOffset, right: badgeOffset, child: widget.badge!),
         ],
       );
     }
 
     Widget result = Opacity(
-      opacity: widget._isDisabled ? GenaiInteraction.disabledOpacity : (widget.isLoading ? GenaiInteraction.loadingOpacity : 1.0),
+      opacity: widget._isDisabled
+          ? GenaiInteraction.disabledOpacity
+          : (widget.isLoading ? GenaiInteraction.loadingOpacity : 1.0),
       child: button,
     );
 
-    result = Focus(
-      onFocusChange: (f) => setState(() => _focused = f),
-      child: MouseRegion(
-        cursor: disabled ? SystemMouseCursors.forbidden : SystemMouseCursors.click,
-        onEnter: (_) => setState(() => _hovered = true),
-        onExit: (_) => setState(() {
-          _hovered = false;
-          _pressed = false;
-        }),
+    // Focus ring as a non-layout overlay — appearance never resizes the box.
+    if (_focused && !disabled) {
+      result = Stack(
+        clipBehavior: Clip.none,
+        children: [
+          result,
+          Positioned(
+            left: -sizing.focusOutlineOffset,
+            top: -sizing.focusOutlineOffset,
+            right: -sizing.focusOutlineOffset,
+            bottom: -sizing.focusOutlineOffset,
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius:
+                      BorderRadius.circular(radius + sizing.focusOutlineOffset),
+                  border: Border.all(
+                    color: colors.borderFocus,
+                    width: sizing.focusOutlineWidth,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    result = MouseRegion(
+      cursor:
+          disabled ? SystemMouseCursors.forbidden : SystemMouseCursors.click,
+      opaque: false,
+      hitTestBehavior: HitTestBehavior.opaque,
+      onEnter: (_) {
+        if (!_hovered) setState(() => _hovered = true);
+      },
+      onExit: (_) {
+        if (_hovered || _pressed) {
+          setState(() {
+            _hovered = false;
+            _pressed = false;
+          });
+        }
+      },
+      child: Focus(
+        onFocusChange: (f) {
+          if (_focused != f) setState(() => _focused = f);
+        },
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTapDown: disabled ? null : (_) => setState(() => _pressed = true),
@@ -137,9 +184,19 @@ class _GenaiIconButtonState extends State<GenaiIconButton> {
       ),
     );
 
+    // Expand hit target without changing visual footprint (WCAG 2.2 AA §9.8).
+    if (dim < sizing.minTouchTarget) {
+      result = SizedBox(
+        width: sizing.minTouchTarget,
+        height: sizing.minTouchTarget,
+        child: Center(child: result),
+      );
+    }
+
     result = Semantics(
       button: true,
       enabled: !disabled,
+      focused: _focused,
       label: widget.semanticLabel,
       child: result,
     );
@@ -147,7 +204,7 @@ class _GenaiIconButtonState extends State<GenaiIconButton> {
     if (widget.tooltip != null) {
       result = Tooltip(
         message: widget.tooltip!,
-        waitDuration: GenaiDurations.tooltipDelay,
+        waitDuration: context.motion.tooltipDelay,
         child: result,
       );
     }
@@ -175,15 +232,15 @@ class _GenaiIconButtonState extends State<GenaiIconButton> {
       case GenaiButtonVariant.ghost:
         return _IconButtonColors(
           bg: Colors.transparent,
-          bgHover: colors.surfaceHover,
-          bgPressed: colors.surfacePressed,
+          bgHover: colors.textPrimary.withValues(alpha: 0.06),
+          bgPressed: colors.textPrimary.withValues(alpha: 0.12),
           fg: colors.textSecondary,
         );
       case GenaiButtonVariant.outline:
         return _IconButtonColors(
           bg: Colors.transparent,
-          bgHover: colors.surfaceHover,
-          bgPressed: colors.surfacePressed,
+          bgHover: colors.textPrimary.withValues(alpha: 0.06),
+          bgPressed: colors.textPrimary.withValues(alpha: 0.12),
           fg: colors.textPrimary,
           borderColor: colors.borderStrong,
         );

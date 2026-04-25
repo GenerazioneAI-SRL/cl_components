@@ -68,17 +68,17 @@ class _ActionFeedOverlayState extends State<ActionFeedOverlay>
   }
 
   Widget _avatar() => Container(
-    width: 28,
-    height: 28,
-    decoration: BoxDecoration(
-      shape: BoxShape.circle,
-      gradient: const LinearGradient(colors: [_accent, _glow]),
-      boxShadow: [
-        BoxShadow(color: _accent.withValues(alpha: 0.25), blurRadius: 8),
-      ],
-    ),
-    child: const Icon(Icons.auto_awesome, size: 12, color: Colors.white),
-  );
+        width: 28,
+        height: 28,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: const LinearGradient(colors: [_accent, _glow]),
+          boxShadow: [
+            BoxShadow(color: _accent.withValues(alpha: 0.25), blurRadius: 8),
+          ],
+        ),
+        child: const Icon(Icons.auto_awesome, size: 12, color: Colors.white),
+      );
 
   Widget _feedCard() {
     return ListenableBuilder(
@@ -87,9 +87,8 @@ class _ActionFeedOverlayState extends State<ActionFeedOverlay>
         final progressText = widget.controller.progressText;
         final finalText = widget.controller.finalResponseText;
         final steps = widget.controller.actionSteps;
-        final done = steps
-            .where((s) => s.status == ActionStepStatus.completed)
-            .length;
+        final done =
+            steps.where((s) => s.status == ActionStepStatus.completed).length;
         final total = steps.length;
         final waiting = widget.controller.isWaitingForUserResponse;
 
@@ -208,8 +207,8 @@ class _ActionFeedOverlayState extends State<ActionFeedOverlay>
               color: filled
                   ? _accent
                   : current
-                  ? _accent.withValues(alpha: 0.5)
-                  : _glassBorder,
+                      ? _accent.withValues(alpha: 0.5)
+                      : _glassBorder,
             ),
           );
         }),

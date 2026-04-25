@@ -21,7 +21,8 @@ class GenaiSurveyAnswerChoice extends StatefulWidget {
   });
 
   @override
-  State<GenaiSurveyAnswerChoice> createState() => _GenaiSurveyAnswerChoiceState();
+  State<GenaiSurveyAnswerChoice> createState() =>
+      _GenaiSurveyAnswerChoiceState();
 }
 
 class _GenaiSurveyAnswerChoiceState extends State<GenaiSurveyAnswerChoice> {
@@ -29,12 +30,19 @@ class _GenaiSurveyAnswerChoiceState extends State<GenaiSurveyAnswerChoice> {
   Widget build(BuildContext context) {
     final q = widget.question;
     if (q.options.isNotEmpty) {
-      return q.singleChoice ? _SingleChoice(onChange: widget.onChange, question: q) : _MultipleChoice(onChange: widget.onChange, question: q);
+      return q.singleChoice
+          ? _SingleChoice(onChange: widget.onChange, question: q)
+          : _MultipleChoice(onChange: widget.onChange, question: q);
     }
     if (q.isStarRating) {
-      return _StarRating(key: ObjectKey(q), onChange: widget.onChange, question: q);
+      return _StarRating(
+          key: ObjectKey(q), onChange: widget.onChange, question: q);
     }
-    return _Sentence(key: ObjectKey(q), onChange: widget.onChange, question: q, isNumeric: widget.isNumeric);
+    return _Sentence(
+        key: ObjectKey(q),
+        onChange: widget.onChange,
+        question: q,
+        isNumeric: widget.isNumeric);
   }
 }
 
@@ -91,37 +99,51 @@ class _SingleChoiceState extends State<_SingleChoice> {
     final ty = context.typography;
     final radius = context.radius;
     final spacing = context.spacing;
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: widget.question.options.map((option) {
-        final isSelected = _selected == option.id;
-        return Expanded(
-          child: GestureDetector(
-            onTap: () => _select(option.id),
-            child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 4),
-              padding: EdgeInsets.symmetric(vertical: spacing.s4),
-              decoration: BoxDecoration(
-                color: isSelected ? c.colorPrimary : c.surfaceCard,
-                borderRadius: BorderRadius.circular(radius.md),
-                border: Border.all(
-                  color: isSelected ? c.colorPrimary : c.borderDefault,
-                  width: isSelected ? 2 : 1,
-                ),
-              ),
-              child: Center(
-                child: Text(
-                  option.text,
-                  style: ty.bodyMd.copyWith(
-                    color: isSelected ? c.textOnPrimary : c.textPrimary,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+    final sizing = context.sizing;
+    return Semantics(
+      container: true,
+      label: 'Rating',
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: widget.question.options.map((option) {
+          final isSelected = _selected == option.id;
+          return Expanded(
+            child: Semantics(
+              button: true,
+              selected: isSelected,
+              label: option.text,
+              child: GestureDetector(
+                onTap: () => _select(option.id),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: sizing.minTouchTarget),
+                  child: Container(
+                    margin: EdgeInsets.symmetric(horizontal: spacing.s1),
+                    padding: EdgeInsets.symmetric(vertical: spacing.s4),
+                    decoration: BoxDecoration(
+                      color: isSelected ? c.colorPrimary : c.surfaceCard,
+                      borderRadius: BorderRadius.circular(radius.md),
+                      border: Border.all(
+                        color: isSelected ? c.colorPrimary : c.borderDefault,
+                        width: isSelected ? 2 : 1,
+                      ),
+                    ),
+                    child: Center(
+                      child: Text(
+                        option.text,
+                        style: ty.bodyMd.copyWith(
+                          color: isSelected ? c.textOnPrimary : c.textPrimary,
+                          fontWeight:
+                              isSelected ? FontWeight.bold : FontWeight.normal,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        );
-      }).toList(),
+          );
+        }).toList(),
+      ),
     );
   }
 }
@@ -201,46 +223,63 @@ class _OptionTileState extends State<_OptionTile> {
     final ty = context.typography;
     final radius = context.radius;
     final spacing = context.spacing;
-    return MouseRegion(
-      onEnter: (_) => setState(() => _hover = true),
-      onExit: (_) => setState(() => _hover = false),
-      child: GestureDetector(
-        onTap: widget.onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
-          margin: EdgeInsets.only(bottom: spacing.s2),
-          padding: EdgeInsets.symmetric(horizontal: spacing.s4, vertical: spacing.s2),
-          decoration: BoxDecoration(
-            color: widget.isSelected
-                ? c.colorPrimarySubtle
-                : _hover
-                    ? c.surfaceHover
-                    : c.surfaceCard,
-            borderRadius: BorderRadius.circular(radius.md),
-            border: Border.all(
+    final sizing = context.sizing;
+    final motion = context.motion;
+    return Semantics(
+      button: true,
+      selected: widget.isSelected,
+      label: widget.text,
+      inMutuallyExclusiveGroup: widget.isRadio,
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _hover = true),
+        onExit: (_) => setState(() => _hover = false),
+        child: GestureDetector(
+          onTap: widget.onTap,
+          child: AnimatedContainer(
+            duration: motion.hover.duration,
+            curve: motion.hover.curve,
+            margin: EdgeInsets.only(bottom: spacing.s2),
+            padding: EdgeInsets.symmetric(
+                horizontal: spacing.s4, vertical: spacing.s2),
+            constraints: BoxConstraints(minHeight: sizing.minTouchTarget),
+            decoration: BoxDecoration(
               color: widget.isSelected
-                  ? c.colorPrimary
+                  ? c.colorPrimarySubtle
                   : _hover
-                      ? c.colorPrimary.withValues(alpha: 0.5)
-                      : c.borderDefault,
-              width: widget.isSelected ? 1.5 : 1,
+                      ? c.surfaceHover
+                      : c.surfaceCard,
+              borderRadius: BorderRadius.circular(radius.md),
+              border: Border.all(
+                color: widget.isSelected
+                    ? c.colorPrimary
+                    : _hover
+                        ? c.colorPrimary.withValues(alpha: 0.5)
+                        : c.borderDefault,
+                width: widget.isSelected ? 1.5 : 1,
+              ),
             ),
-          ),
-          child: Row(
-            children: [
-              widget.isRadio ? _radio(c) : _checkbox(c, radius),
-              SizedBox(width: spacing.s4),
-              Expanded(
-                child: Text(
-                  widget.text,
-                  style: ty.bodyMd.copyWith(
-                    color: widget.isSelected ? c.colorPrimary : c.textPrimary,
-                    fontWeight: widget.isSelected ? FontWeight.w600 : FontWeight.normal,
+            child: Row(
+              children: [
+                ExcludeSemantics(
+                  child: widget.isRadio ? _radio(c) : _checkbox(c, radius),
+                ),
+                SizedBox(width: spacing.s4),
+                Expanded(
+                  child: Text(
+                    widget.text,
+                    style: ty.bodyMd.copyWith(
+                      color: widget.isSelected ? c.colorPrimary : c.textPrimary,
+                      fontWeight: widget.isSelected
+                          ? FontWeight.w600
+                          : FontWeight.normal,
+                    ),
                   ),
                 ),
-              ),
-              if (widget.isSelected) Icon(LucideIcons.circleCheck, size: 20, color: c.colorPrimary),
-            ],
+                if (widget.isSelected)
+                  Icon(LucideIcons.circleCheck,
+                      size: 20, color: c.colorPrimary),
+              ],
+            ),
           ),
         ),
       ),
@@ -253,7 +292,10 @@ class _OptionTileState extends State<_OptionTile> {
         child: Radio<bool>(
           value: true,
           activeColor: c.colorPrimary,
-          fillColor: WidgetStateProperty.resolveWith((states) => states.contains(WidgetState.selected) ? c.colorPrimary : c.borderDefault),
+          fillColor: WidgetStateProperty.resolveWith((states) =>
+              states.contains(WidgetState.selected)
+                  ? c.colorPrimary
+                  : c.borderDefault),
         ),
       );
 
@@ -265,11 +307,14 @@ class _OptionTileState extends State<_OptionTile> {
         checkColor: c.textOnPrimary,
         side: WidgetStateBorderSide.resolveWith(
           (states) => BorderSide(
-            color: states.contains(WidgetState.selected) ? c.colorPrimary : c.borderDefault,
+            color: states.contains(WidgetState.selected)
+                ? c.colorPrimary
+                : c.borderDefault,
             width: 1,
           ),
         ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius.sm)),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(radius.sm)),
         onChanged: (_) => widget.onTap(),
       );
 }
@@ -298,7 +343,9 @@ class _SentenceState extends State<_Sentence> {
   void initState() {
     super.initState();
     _ctrl = TextEditingController(
-      text: widget.question.answers.isNotEmpty ? widget.question.answers.first.values.first : '',
+      text: widget.question.answers.isNotEmpty
+          ? widget.question.answers.first.values.first
+          : '',
     );
   }
 
@@ -334,7 +381,8 @@ class _SentenceState extends State<_Sentence> {
 class _StarRating extends StatefulWidget {
   final void Function(List<Map<String, String>>) onChange;
   final GenaiSurveyQuestion question;
-  const _StarRating({super.key, required this.onChange, required this.question});
+  const _StarRating(
+      {super.key, required this.onChange, required this.question});
 
   @override
   State<_StarRating> createState() => _StarRatingState();
@@ -357,48 +405,58 @@ class _StarRatingState extends State<_StarRating> {
     final ty = context.typography;
     final radius = context.radius;
     final spacing = context.spacing;
-    final rating = _selected == null ? 0.0 : (double.tryParse(_selected!.values.first) ?? 0);
+    final rating = _selected == null
+        ? 0.0
+        : (double.tryParse(_selected!.values.first) ?? 0);
 
-    return Container(
-      padding: EdgeInsets.all(spacing.s4),
-      decoration: BoxDecoration(
-        color: c.surfacePage,
-        borderRadius: BorderRadius.circular(radius.md),
-      ),
-      child: Column(
-        children: [
-          StarRating(
-            mainAxisAlignment: MainAxisAlignment.center,
-            length: 5,
-            rating: rating,
-            between: 12,
-            starSize: 40,
-            color: c.colorPrimary,
-            onRaitingTap: (newRating) {
-              setState(() {
-                _selected = {'': newRating.toString()};
-              });
-              widget.onChange([_selected!]);
-            },
-          ),
-          if (_selected != null) ...[
-            SizedBox(height: spacing.s4),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: spacing.s4, vertical: spacing.s2),
-              decoration: BoxDecoration(
-                color: c.colorPrimarySubtle,
-                borderRadius: BorderRadius.circular(radius.md),
-              ),
-              child: Text(
-                '${_selected!.values.first}/5 stelle',
-                style: ty.bodyMd.copyWith(
-                  color: c.colorPrimary,
-                  fontWeight: FontWeight.bold,
+    return Semantics(
+      container: true,
+      label: 'Valutazione a stelle',
+      value: _selected == null
+          ? 'Non valutato'
+          : '${_selected!.values.first} su 5',
+      child: Container(
+        padding: EdgeInsets.all(spacing.cardPadding),
+        decoration: BoxDecoration(
+          color: c.surfacePage,
+          borderRadius: BorderRadius.circular(radius.md),
+        ),
+        child: Column(
+          children: [
+            StarRating(
+              mainAxisAlignment: MainAxisAlignment.center,
+              length: 5,
+              rating: rating,
+              between: spacing.s3,
+              starSize: spacing.s10,
+              color: c.colorPrimary,
+              onRaitingTap: (newRating) {
+                setState(() {
+                  _selected = {'': newRating.toString()};
+                });
+                widget.onChange([_selected!]);
+              },
+            ),
+            if (_selected != null) ...[
+              SizedBox(height: spacing.s4),
+              Container(
+                padding: EdgeInsets.symmetric(
+                    horizontal: spacing.s4, vertical: spacing.s2),
+                decoration: BoxDecoration(
+                  color: c.colorPrimarySubtle,
+                  borderRadius: BorderRadius.circular(radius.md),
+                ),
+                child: Text(
+                  '${_selected!.values.first}/5 stelle',
+                  style: ty.bodyMd.copyWith(
+                    color: c.colorPrimary,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-            ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }

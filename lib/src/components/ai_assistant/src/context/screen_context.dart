@@ -24,17 +24,17 @@ class ScreenContext {
 
   /// Whether there is more content below the current viewport.
   bool get canScrollDown => elements.any(
-    (e) =>
-        e.type == UiElementType.scrollable &&
-        e.availableActions.contains('scrollDown'),
-  );
+        (e) =>
+            e.type == UiElementType.scrollable &&
+            e.availableActions.contains('scrollDown'),
+      );
 
   /// Whether there is more content above the current viewport.
   bool get canScrollUp => elements.any(
-    (e) =>
-        e.type == UiElementType.scrollable &&
-        e.availableActions.contains('scrollUp'),
-  );
+        (e) =>
+            e.type == UiElementType.scrollable &&
+            e.availableActions.contains('scrollUp'),
+      );
 
   /// Format all elements as a human-readable prompt section for the LLM.
   ///

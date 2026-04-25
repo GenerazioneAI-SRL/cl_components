@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../module.dart';
 import 'modular_route.dart';
 
+/// A route that mounts a whole [Module] under a path. The module's own
+/// [Module.routes] are flattened beneath this entry.
 class ModuleRoute extends ModularRoute {
   late final String path;
   final Module module;

@@ -17,8 +17,8 @@ class RouteDiscovery {
   RouteDiscovery({
     List<String> knownRoutes = const [],
     Map<String, String> routeDescriptions = const {},
-  }) : _knownRoutes = knownRoutes,
-       _routeDescriptions = routeDescriptions;
+  })  : _knownRoutes = knownRoutes,
+        _routeDescriptions = routeDescriptions;
 
   /// Get all known routes, combining developer-provided and discovered routes.
   List<RouteInfo> getAvailableRoutes() {
@@ -34,7 +34,8 @@ class RouteDiscovery {
         description: _routeDescriptions[name] ?? _inferDescription(name),
         cachedContext: AiNavigatorObserver.screenKnowledge[name],
       );
-    }).toList()..sort((a, b) => a.name.compareTo(b.name));
+    }).toList()
+      ..sort((a, b) => a.name.compareTo(b.name));
   }
 
   /// Try to infer a human-readable description from the route name.

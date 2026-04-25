@@ -252,8 +252,8 @@ class ConversationMemory {
 
     // If the trim point would land between a tool call and its result,
     // move forward past the result.
-    while (trimTo < _messages.length &&
-        _messages[trimTo].role == LlmRole.tool) {
+    while (
+        trimTo < _messages.length && _messages[trimTo].role == LlmRole.tool) {
       trimTo++;
     }
 
@@ -319,10 +319,9 @@ class ConversationMemory {
           msg.content != null &&
           msg.content!.isNotEmpty) {
         // Include assistant status/thought text for better context.
-        final text =
-            msg.content!.length > 80
-                ? '${msg.content!.substring(0, 80)}…'
-                : msg.content!;
+        final text = msg.content!.length > 80
+            ? '${msg.content!.substring(0, 80)}…'
+            : msg.content!;
         actions.add('  → $text');
       }
     }

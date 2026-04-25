@@ -23,10 +23,12 @@ enum GenaiWindowSize {
 class GenaiResponsive {
   GenaiResponsive._();
 
-  static GenaiWindowSize sizeOf(BuildContext context) => GenaiWindowSize.fromWidth(MediaQuery.sizeOf(context).width);
+  static GenaiWindowSize sizeOf(BuildContext context) =>
+      GenaiWindowSize.fromWidth(MediaQuery.sizeOf(context).width);
 
   /// True if the user's accessibility settings request reduced motion.
-  static bool reducedMotion(BuildContext context) => MediaQuery.disableAnimationsOf(context);
+  static bool reducedMotion(BuildContext context) =>
+      MediaQuery.disableAnimationsOf(context);
 }
 
 /// Picks one of N builders based on the current [GenaiWindowSize].

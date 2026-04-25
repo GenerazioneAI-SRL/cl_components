@@ -70,7 +70,7 @@ class AiTool {
   final Map<String, ToolParameter> parameters;
   final List<String> required;
   final Future<Map<String, dynamic>> Function(Map<String, dynamic> args)
-  handler;
+      handler;
 
   const AiTool({
     required this.name,

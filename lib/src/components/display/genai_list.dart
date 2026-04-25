@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../foundations/animations.dart';
 import '../../theme/context_extensions.dart';
 
 /// Vertical list of items (§6.7.1).
@@ -22,12 +21,15 @@ class GenaiList extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final radius = context.radius;
+    final sizing = context.sizing;
     final list = Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         for (var i = 0; i < children.length; i++) ...[
-          if (i > 0 && showDividers) Container(height: 1, color: colors.borderDefault),
+          if (i > 0 && showDividers)
+            Container(
+                height: sizing.dividerThickness, color: colors.borderDefault),
           children[i],
         ],
       ],
@@ -42,7 +44,8 @@ class GenaiList extends StatelessWidget {
         decoration: BoxDecoration(
           color: colors.surfaceCard,
           borderRadius: BorderRadius.circular(radius.md),
-          border: Border.all(color: colors.borderDefault),
+          border: Border.all(
+              color: colors.borderDefault, width: sizing.dividerThickness),
         ),
         clipBehavior: Clip.antiAlias,
         child: list,
@@ -61,6 +64,9 @@ class GenaiListItem extends StatefulWidget {
   final VoidCallback? onTap;
   final bool isSelected;
 
+  /// Accessibility label — defaults to [title].
+  final String? semanticLabel;
+
   const GenaiListItem({
     super.key,
     this.leading,
@@ -70,6 +76,7 @@ class GenaiListItem extends StatefulWidget {
     this.trailing,
     this.onTap,
     this.isSelected = false,
+    this.semanticLabel,
   });
 
   @override
@@ -83,51 +90,74 @@ class _GenaiListItemState extends State<GenaiListItem> {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final ty = context.typography;
+    final spacing = context.spacing;
+    final sizing = context.sizing;
+    final hoverMotion = context.motion.hover;
 
-    final bg = widget.isSelected ? colors.colorPrimarySubtle : (_hovered && widget.onTap != null ? colors.surfaceHover : Colors.transparent);
+    final bg = widget.isSelected
+        ? colors.colorPrimarySubtle
+        : (_hovered && widget.onTap != null
+            ? colors.surfaceHover
+            : Colors.transparent);
 
-    return MouseRegion(
-      onEnter: (_) => setState(() => _hovered = true),
-      onExit: (_) => setState(() => _hovered = false),
-      cursor: widget.onTap != null ? SystemMouseCursors.click : MouseCursor.defer,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: widget.onTap,
-        child: AnimatedContainer(
-          duration: GenaiDurations.hover,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          color: bg,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              if (widget.leading != null) ...[
-                widget.leading!,
-                const SizedBox(width: 12),
-              ],
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(widget.title, style: ty.label.copyWith(color: colors.textPrimary, fontWeight: FontWeight.w500)),
-                    if (widget.subtitle != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 2),
-                        child: Text(widget.subtitle!, style: ty.bodySm.copyWith(color: colors.textSecondary)),
-                      ),
-                    if (widget.description != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Text(widget.description!, style: ty.caption.copyWith(color: colors.textSecondary)),
-                      ),
-                  ],
+    return Semantics(
+      button: widget.onTap != null,
+      selected: widget.isSelected,
+      label: widget.semanticLabel ?? widget.title,
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _hovered = true),
+        onExit: (_) => setState(() => _hovered = false),
+        cursor:
+            widget.onTap != null ? SystemMouseCursors.click : MouseCursor.defer,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: widget.onTap,
+          child: AnimatedContainer(
+            duration: hoverMotion.duration,
+            curve: hoverMotion.curve,
+            constraints: BoxConstraints(minHeight: sizing.minTouchTarget),
+            padding: EdgeInsets.symmetric(
+                horizontal: spacing.s4, vertical: spacing.s3),
+            color: bg,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                if (widget.leading != null) ...[
+                  widget.leading!,
+                  SizedBox(width: spacing.s3),
+                ],
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(widget.title,
+                          style: ty.label.copyWith(
+                              color: colors.textPrimary,
+                              fontWeight: FontWeight.w500)),
+                      if (widget.subtitle != null)
+                        Padding(
+                          padding: EdgeInsets.only(top: spacing.s1 / 2),
+                          child: Text(widget.subtitle!,
+                              style: ty.bodySm
+                                  .copyWith(color: colors.textSecondary)),
+                        ),
+                      if (widget.description != null)
+                        Padding(
+                          padding: EdgeInsets.only(top: spacing.s1),
+                          child: Text(widget.description!,
+                              style: ty.caption
+                                  .copyWith(color: colors.textSecondary)),
+                        ),
+                    ],
+                  ),
                 ),
-              ),
-              if (widget.trailing != null) ...[
-                const SizedBox(width: 12),
-                widget.trailing!,
+                if (widget.trailing != null) ...[
+                  SizedBox(width: spacing.s3),
+                  widget.trailing!,
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
@@ -155,6 +185,7 @@ class GenaiVirtualList<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final sizing = context.sizing;
     if (itemExtent != null) {
       return ListView.builder(
         padding: padding,
@@ -167,7 +198,10 @@ class GenaiVirtualList<T> extends StatelessWidget {
       padding: padding,
       itemCount: items.length,
       itemBuilder: (ctx, i) => itemBuilder(ctx, items[i], i),
-      separatorBuilder: (_, __) => showDividers ? Container(height: 1, color: colors.borderDefault) : const SizedBox.shrink(),
+      separatorBuilder: (_, __) => showDividers
+          ? Container(
+              height: sizing.dividerThickness, color: colors.borderDefault)
+          : const SizedBox.shrink(),
     );
   }
 }

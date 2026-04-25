@@ -7,4 +7,3 @@ abstract class GenaiTenant {
   /// Dati raw completi (per accesso a campi custom)
   Map<String, dynamic> get rawData => {};
 }
-

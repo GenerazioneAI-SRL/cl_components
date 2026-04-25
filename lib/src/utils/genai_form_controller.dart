@@ -78,7 +78,8 @@ class GenaiFormController extends ChangeNotifier {
 
   T? value<T>(String name) => _fields[name]?.value as T?;
 
-  Map<String, dynamic> get values => {for (final e in _fields.entries) e.key: e.value.value};
+  Map<String, dynamic> get values =>
+      {for (final e in _fields.entries) e.key: e.value.value};
 
   void setValue<T>(String name, T? value, {bool markTouched = false}) {
     final f = _fields[name];
