@@ -73,7 +73,7 @@ class _OrgChartPageState extends State<OrgChartPage> {
         ShowcaseSection(
           title: 'GenaiOrgChart',
           subtitle:
-              'Visualizzazione albero gerarchico con drag & drop, hide/show e zoom.',
+              'Visualizzazione albero gerarchico. Pan: trascina sullo sfondo. Zoom: rotellina/pinch.',
           child: SizedBox(
             height: 520,
             child: ClipRRect(
@@ -82,7 +82,7 @@ class _OrgChartPageState extends State<OrgChartPage> {
                 color: c.surfaceCard,
                 child: GenaiOrgChart<_Employee>(
                   controller: _controller,
-                  isDraggable: false,
+                  isDraggable: true,
                   builder: (details) {
                     return Container(
                       decoration: BoxDecoration(
