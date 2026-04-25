@@ -101,7 +101,6 @@ class _GenaiFabState extends State<GenaiFab> {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final elevation = context.elevation;
-    final motion = context.motion;
     final ty = context.typography;
     final sizing = context.sizing;
     final h = widget._dimension;
@@ -122,9 +121,7 @@ class _GenaiFabState extends State<GenaiFab> {
       );
     }
 
-    Widget btn = AnimatedContainer(
-      duration: motion.hover.duration,
-      curve: motion.hover.curve,
+    Widget btn = Container(
       height: h,
       constraints: BoxConstraints(minWidth: h),
       padding: widget.label == null

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../foundations/responsive.dart';
 import '../../theme/context_extensions.dart';
 
 /// Formation / training type card — v3 design system (§4.5).
@@ -71,17 +70,11 @@ class _GenaiFormationCardState extends State<GenaiFormationCard> {
     final radius = context.radius;
     final sizing = context.sizing;
     final elevation = context.elevation;
-    final reduced = GenaiResponsive.reducedMotion(context);
-    final motion = context.motion.hover;
 
     final isInteractive = widget.onTap != null;
-    final border = _focused
-        ? colors.borderFocus
-        : (isInteractive && _hovered
-            ? colors.borderStrong
-            : colors.borderDefault);
-    final borderWidth =
-        _focused ? sizing.focusOutlineWidth : sizing.dividerThickness;
+    final border = isInteractive && _hovered
+        ? colors.borderStrong
+        : colors.borderDefault;
 
     final a11y = widget.semanticLabel ??
         [
@@ -134,14 +127,12 @@ class _GenaiFormationCardState extends State<GenaiFormationCard> {
       ],
     );
 
-    final card = AnimatedContainer(
-      duration: reduced ? Duration.zero : motion.duration,
-      curve: motion.curve,
+    Widget card = Container(
       padding: EdgeInsets.all(spacing.cardPadding),
       decoration: BoxDecoration(
         color: colors.surfaceCard,
         borderRadius: BorderRadius.circular(radius.xl),
-        border: Border.all(color: border, width: borderWidth),
+        border: Border.all(color: border, width: sizing.dividerThickness),
         boxShadow: isInteractive && _hovered
             ? elevation.shadow(2)
             : elevation.shadow(1),
@@ -199,6 +190,28 @@ class _GenaiFormationCardState extends State<GenaiFormationCard> {
       ),
     );
 
+    if (_focused && isInteractive) {
+      card = Stack(
+        clipBehavior: Clip.none,
+        children: [
+          card,
+          Positioned.fill(
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(radius.xl),
+                  border: Border.all(
+                    color: colors.borderFocus,
+                    width: sizing.focusOutlineWidth,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
     final semanticsNode = Semantics(
       container: true,
       button: isInteractive,
@@ -209,8 +222,12 @@ class _GenaiFormationCardState extends State<GenaiFormationCard> {
     if (!isInteractive) return semanticsNode;
 
     return FocusableActionDetector(
-      onShowFocusHighlight: (v) => setState(() => _focused = v),
-      onShowHoverHighlight: (v) => setState(() => _hovered = v),
+      onShowFocusHighlight: (v) {
+        if (_focused != v) setState(() => _focused = v);
+      },
+      onShowHoverHighlight: (v) {
+        if (_hovered != v) setState(() => _hovered = v);
+      },
       mouseCursor: SystemMouseCursors.click,
       actions: <Type, Action<Intent>>{
         ActivateIntent: CallbackAction<ActivateIntent>(

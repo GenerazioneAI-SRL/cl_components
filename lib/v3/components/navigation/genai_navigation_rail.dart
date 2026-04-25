@@ -148,7 +148,6 @@ class _RailTileState extends State<_RailTile> {
     final spacing = context.spacing;
     final sizing = context.sizing;
     final radius = context.radius;
-    final motion = context.motion.hover;
 
     Color bg = Colors.transparent;
     Color fg = colors.textSecondary;
@@ -170,51 +169,70 @@ class _RailTileState extends State<_RailTile> {
       label: widget.item.semanticLabel ?? widget.item.label,
       child: MouseRegion(
         cursor: SystemMouseCursors.click,
-        onEnter: (_) => setState(() => _hover = true),
-        onExit: (_) => setState(() => _hover = false),
+        opaque: false,
+        hitTestBehavior: HitTestBehavior.opaque,
+        onEnter: (_) {
+          if (!_hover) setState(() => _hover = true);
+        },
+        onExit: (_) {
+          if (_hover) setState(() => _hover = false);
+        },
         child: Focus(
-          onFocusChange: (v) => setState(() => _focused = v),
+          onFocusChange: (v) {
+            if (_focused != v) setState(() => _focused = v);
+          },
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: widget.onTap,
-            child: AnimatedContainer(
-              duration: motion.duration,
-              curve: motion.curve,
-              height: widget.height,
-              decoration: BoxDecoration(
-                color: bg,
-                borderRadius: BorderRadius.circular(radius.md),
-                border: _focused
-                    ? Border.all(
-                        color: colors.borderFocus,
-                        width: sizing.focusRingWidth,
-                      )
-                    : null,
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Stack(
-                    clipBehavior: Clip.none,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  height: widget.height,
+                  decoration: BoxDecoration(
+                    color: bg,
+                    borderRadius: BorderRadius.circular(radius.md),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(icon, size: sizing.iconSidebar, color: fg),
-                      if (widget.item.badgeCount != null)
-                        Positioned(
-                          right: -6,
-                          top: -4,
-                          child: _RailBadge(count: widget.item.badgeCount!),
-                        ),
+                      Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Icon(icon, size: sizing.iconSidebar, color: fg),
+                          if (widget.item.badgeCount != null)
+                            Positioned(
+                              right: -6,
+                              top: -4,
+                              child: _RailBadge(count: widget.item.badgeCount!),
+                            ),
+                        ],
+                      ),
+                      SizedBox(height: spacing.s2),
+                      Text(
+                        widget.item.label,
+                        style: ty.labelSm.copyWith(color: fg),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ],
                   ),
-                  SizedBox(height: spacing.s2),
-                  Text(
-                    widget.item.label,
-                    style: ty.labelSm.copyWith(color: fg),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                ),
+                if (_focused)
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(radius.md),
+                          border: Border.all(
+                            color: colors.borderFocus,
+                            width: sizing.focusRingWidth,
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
-                ],
-              ),
+              ],
             ),
           ),
         ),

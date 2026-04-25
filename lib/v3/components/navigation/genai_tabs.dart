@@ -263,7 +263,6 @@ class _TabCellState extends State<_TabCell> {
     final spacing = context.spacing;
     final sizing = context.sizing;
     final radius = context.radius;
-    final motion = context.motion.hover;
 
     final disabled = widget.item.isDisabled;
     final selected = widget.selected;
@@ -343,9 +342,7 @@ class _TabCellState extends State<_TabCell> {
           )
         : null;
 
-    Widget content = AnimatedContainer(
-      duration: motion.duration,
-      curve: motion.curve,
+    Widget content = Container(
       constraints: BoxConstraints(minHeight: sizing.minTouchTarget),
       padding: EdgeInsets.symmetric(
         horizontal: spacing.s12,

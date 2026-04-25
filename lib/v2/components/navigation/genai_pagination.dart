@@ -140,7 +140,6 @@ class _PaginationCellState extends State<_PaginationCell> {
     final ty = context.typography;
     final sizing = context.sizing;
     final radius = context.radius;
-    final motion = context.motion.hover;
 
     final cell = sizing.minTouchTarget - 12; // visual cell inside hit area
     Color bg = Colors.transparent;
@@ -162,10 +161,18 @@ class _PaginationCellState extends State<_PaginationCell> {
         cursor: widget.onTap == null
             ? SystemMouseCursors.basic
             : SystemMouseCursors.click,
-        onEnter: (_) => setState(() => _hover = true),
-        onExit: (_) => setState(() => _hover = false),
+        opaque: false,
+        hitTestBehavior: HitTestBehavior.opaque,
+        onEnter: (_) {
+          if (!_hover) setState(() => _hover = true);
+        },
+        onExit: (_) {
+          if (_hover) setState(() => _hover = false);
+        },
         child: Focus(
-          onFocusChange: (v) => setState(() => _focused = v),
+          onFocusChange: (v) {
+            if (_focused != v) setState(() => _focused = v);
+          },
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: widget.onTap,
@@ -175,26 +182,37 @@ class _PaginationCellState extends State<_PaginationCell> {
                 minHeight: sizing.minTouchTarget,
               ),
               child: Center(
-                child: AnimatedContainer(
-                  duration: motion.duration,
-                  curve: motion.curve,
-                  width: cell,
-                  height: cell,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: bg,
-                    borderRadius: BorderRadius.circular(radius.sm),
-                    border: _focused
-                        ? Border.all(
-                            color: colors.borderFocus,
-                            width: sizing.focusRingWidth,
-                          )
-                        : null,
-                  ),
-                  child: Text(
-                    '${widget.page}',
-                    style: ty.monoMd.copyWith(color: fg),
-                  ),
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Container(
+                      width: cell,
+                      height: cell,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: bg,
+                        borderRadius: BorderRadius.circular(radius.sm),
+                      ),
+                      child: Text(
+                        '${widget.page}',
+                        style: ty.monoMd.copyWith(color: fg),
+                      ),
+                    ),
+                    if (_focused)
+                      Positioned.fill(
+                        child: IgnorePointer(
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(radius.sm),
+                              border: Border.all(
+                                color: colors.borderFocus,
+                                width: sizing.focusRingWidth,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ),
@@ -232,7 +250,6 @@ class _PaginationNavState extends State<_PaginationNav> {
     final colors = context.colors;
     final sizing = context.sizing;
     final radius = context.radius;
-    final motion = context.motion.hover;
 
     final cell = sizing.minTouchTarget - 12;
     final fg = widget.enabled
@@ -249,11 +266,19 @@ class _PaginationNavState extends State<_PaginationNav> {
         cursor: widget.enabled
             ? SystemMouseCursors.click
             : SystemMouseCursors.forbidden,
-        onEnter: (_) => setState(() => _hover = true),
-        onExit: (_) => setState(() => _hover = false),
+        opaque: false,
+        hitTestBehavior: HitTestBehavior.opaque,
+        onEnter: (_) {
+          if (!_hover) setState(() => _hover = true);
+        },
+        onExit: (_) {
+          if (_hover) setState(() => _hover = false);
+        },
         child: Focus(
           canRequestFocus: widget.enabled,
-          onFocusChange: (v) => setState(() => _focused = v),
+          onFocusChange: (v) {
+            if (_focused != v) setState(() => _focused = v);
+          },
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: widget.onPressed,
@@ -263,23 +288,34 @@ class _PaginationNavState extends State<_PaginationNav> {
                 minHeight: sizing.minTouchTarget,
               ),
               child: Center(
-                child: AnimatedContainer(
-                  duration: motion.duration,
-                  curve: motion.curve,
-                  width: cell,
-                  height: cell,
-                  decoration: BoxDecoration(
-                    color: bg,
-                    borderRadius: BorderRadius.circular(radius.sm),
-                    border: _focused && widget.enabled
-                        ? Border.all(
-                            color: colors.borderFocus,
-                            width: sizing.focusRingWidth,
-                          )
-                        : null,
-                  ),
-                  alignment: Alignment.center,
-                  child: Icon(widget.icon, size: sizing.iconSize, color: fg),
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Container(
+                      width: cell,
+                      height: cell,
+                      decoration: BoxDecoration(
+                        color: bg,
+                        borderRadius: BorderRadius.circular(radius.sm),
+                      ),
+                      alignment: Alignment.center,
+                      child: Icon(widget.icon, size: sizing.iconSize, color: fg),
+                    ),
+                    if (_focused && widget.enabled)
+                      Positioned.fill(
+                        child: IgnorePointer(
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(radius.sm),
+                              border: Border.all(
+                                color: colors.borderFocus,
+                                width: sizing.focusRingWidth,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ),

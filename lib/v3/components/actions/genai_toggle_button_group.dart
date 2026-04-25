@@ -239,7 +239,6 @@ class _SegmentedTileState extends State<_SegmentedTile> {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final motion = context.motion;
     final sizing = context.sizing;
     final radius = context.radius.sm;
     final elevation = context.elevation;
@@ -267,9 +266,7 @@ class _SegmentedTileState extends State<_SegmentedTile> {
       );
     }
 
-    Widget tile = AnimatedContainer(
-      duration: motion.hover.duration,
-      curve: motion.hover.curve,
+    Widget tile = Container(
       height:
           widget.height < sizing.minTouchTarget ? widget.height : widget.height,
       padding: EdgeInsets.symmetric(horizontal: widget.spec.paddingH),
@@ -290,8 +287,14 @@ class _SegmentedTileState extends State<_SegmentedTile> {
       cursor: widget.disabled
           ? SystemMouseCursors.forbidden
           : SystemMouseCursors.click,
-      onEnter: (_) => setState(() => _hovered = true),
-      onExit: (_) => setState(() => _hovered = false),
+      opaque: false,
+      hitTestBehavior: HitTestBehavior.opaque,
+      onEnter: (_) {
+        if (!_hovered) setState(() => _hovered = true);
+      },
+      onExit: (_) {
+        if (_hovered) setState(() => _hovered = false);
+      },
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: widget.onTap,

@@ -125,7 +125,6 @@ class _BottomNavCellState extends State<_BottomNavCell> {
     final ty = context.typography;
     final spacing = context.spacing;
     final sizing = context.sizing;
-    final motion = context.motion.hover;
 
     final color = widget.selected
         ? colors.colorPrimary
@@ -143,53 +142,69 @@ class _BottomNavCellState extends State<_BottomNavCell> {
       label: widget.item.semanticLabel ?? widget.item.label,
       child: MouseRegion(
         cursor: SystemMouseCursors.click,
-        onEnter: (_) => setState(() => _hover = true),
-        onExit: (_) => setState(() => _hover = false),
+        opaque: false,
+        hitTestBehavior: HitTestBehavior.opaque,
+        onEnter: (_) {
+          if (!_hover) setState(() => _hover = true);
+        },
+        onExit: (_) {
+          if (_hover) setState(() => _hover = false);
+        },
         child: Focus(
-          onFocusChange: (v) => setState(() => _focused = v),
+          onFocusChange: (v) {
+            if (_focused != v) setState(() => _focused = v);
+          },
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: widget.onTap,
             child: ConstrainedBox(
               constraints: BoxConstraints(minHeight: sizing.minTouchTarget),
-              child: AnimatedContainer(
-                duration: motion.duration,
-                curve: motion.curve,
-                decoration: BoxDecoration(
-                  color: bg,
-                  border: _focused
-                      ? Border.all(
-                          color: colors.borderFocus,
-                          width: sizing.focusRingWidth,
-                        )
-                      : null,
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Stack(
-                      clipBehavior: Clip.none,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    decoration: BoxDecoration(color: bg),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(icon, size: sizing.iconSidebar, color: color),
-                        if (widget.item.badgeCount != null)
-                          Positioned(
-                            right: -4,
-                            top: -2,
-                            child: _BottomNavBadge(
-                              count: widget.item.badgeCount!,
-                            ),
-                          ),
+                        Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            Icon(icon, size: sizing.iconSidebar, color: color),
+                            if (widget.item.badgeCount != null)
+                              Positioned(
+                                right: -4,
+                                top: -2,
+                                child: _BottomNavBadge(
+                                  count: widget.item.badgeCount!,
+                                ),
+                              ),
+                          ],
+                        ),
+                        SizedBox(height: spacing.s2),
+                        Text(
+                          widget.item.label,
+                          style: ty.labelSm.copyWith(color: color),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ],
                     ),
-                    SizedBox(height: spacing.s2),
-                    Text(
-                      widget.item.label,
-                      style: ty.labelSm.copyWith(color: color),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                  ),
+                  if (_focused)
+                    Positioned.fill(
+                      child: IgnorePointer(
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: colors.borderFocus,
+                              width: sizing.focusRingWidth,
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
-                  ],
-                ),
+                ],
               ),
             ),
           ),

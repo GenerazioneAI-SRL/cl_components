@@ -63,7 +63,6 @@ class _GenaiItemState extends State<GenaiItem> {
     final spacing = context.spacing;
     final sizing = context.sizing;
     final radius = context.radius;
-    final motion = context.motion.hover;
 
     final bg = widget.isSelected
         ? colors.colorPrimarySubtle
@@ -88,8 +87,12 @@ class _GenaiItemState extends State<GenaiItem> {
         enabled: _interactive,
         mouseCursor:
             _interactive ? SystemMouseCursors.click : MouseCursor.defer,
-        onShowHoverHighlight: (h) => setState(() => _hovered = h),
-        onShowFocusHighlight: (f) => setState(() => _focused = f),
+        onShowHoverHighlight: (h) {
+          if (_hovered != h) setState(() => _hovered = h);
+        },
+        onShowFocusHighlight: (f) {
+          if (_focused != f) setState(() => _focused = f);
+        },
         actions: <Type, Action<Intent>>{
           ActivateIntent: CallbackAction<ActivateIntent>(
             onInvoke: (_) {
@@ -101,13 +104,9 @@ class _GenaiItemState extends State<GenaiItem> {
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: _interactive ? widget.onTap : null,
-          child: AnimatedOpacity(
+          child: Opacity(
             opacity: widget.isDisabled ? 0.5 : 1,
-            duration: motion.duration,
-            curve: motion.curve,
-            child: AnimatedContainer(
-              duration: motion.duration,
-              curve: motion.curve,
+            child: Container(
               constraints: BoxConstraints(minHeight: sizing.minTouchTarget),
               padding: padding,
               decoration: BoxDecoration(

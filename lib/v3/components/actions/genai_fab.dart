@@ -90,7 +90,6 @@ class _GenaiFabState extends State<GenaiFab> {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final elevation = context.elevation;
-    final motion = context.motion;
     final ty = context.typography;
     final spacing = context.spacing;
     final sizing = context.sizing;
@@ -119,9 +118,7 @@ class _GenaiFabState extends State<GenaiFab> {
       children.add(Text(widget.label!, style: ty.label.copyWith(color: fg)));
     }
 
-    Widget btn = AnimatedContainer(
-      duration: motion.hover.duration,
-      curve: motion.hover.curve,
+    Widget btn = Container(
       height: h,
       constraints: BoxConstraints(minWidth: h),
       padding: widget.label == null

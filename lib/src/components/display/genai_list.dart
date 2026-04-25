@@ -92,7 +92,6 @@ class _GenaiListItemState extends State<GenaiListItem> {
     final ty = context.typography;
     final spacing = context.spacing;
     final sizing = context.sizing;
-    final hoverMotion = context.motion.hover;
 
     final bg = widget.isSelected
         ? colors.colorPrimarySubtle
@@ -105,16 +104,20 @@ class _GenaiListItemState extends State<GenaiListItem> {
       selected: widget.isSelected,
       label: widget.semanticLabel ?? widget.title,
       child: MouseRegion(
-        onEnter: (_) => setState(() => _hovered = true),
-        onExit: (_) => setState(() => _hovered = false),
+        opaque: false,
+        hitTestBehavior: HitTestBehavior.opaque,
+        onEnter: (_) {
+          if (!_hovered) setState(() => _hovered = true);
+        },
+        onExit: (_) {
+          if (_hovered) setState(() => _hovered = false);
+        },
         cursor:
             widget.onTap != null ? SystemMouseCursors.click : MouseCursor.defer,
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: widget.onTap,
-          child: AnimatedContainer(
-            duration: hoverMotion.duration,
-            curve: hoverMotion.curve,
+          child: Container(
             constraints: BoxConstraints(minHeight: sizing.minTouchTarget),
             padding: EdgeInsets.symmetric(
                 horizontal: spacing.s4, vertical: spacing.s3),

@@ -83,7 +83,6 @@ class _GenaiToggleButtonState extends State<GenaiToggleButton> {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final sizing = context.sizing;
-    final motion = context.motion;
     final radius = context.radius.sm;
     final spec = GenaiButtonSpec.resolve(context, widget.size);
     final hasLabel = widget.label != null;
@@ -133,9 +132,7 @@ class _GenaiToggleButtonState extends State<GenaiToggleButton> {
       );
     }
 
-    Widget button = AnimatedContainer(
-      duration: motion.hover.duration,
-      curve: motion.hover.curve,
+    Widget button = Container(
       height: spec.height,
       constraints: BoxConstraints(minWidth: spec.height),
       padding: EdgeInsets.symmetric(

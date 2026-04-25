@@ -150,9 +150,7 @@ class _GenaiToggleButtonState extends State<GenaiToggleButton> {
     // AnimatedScale wraps only the inner content so press shrink doesn't
     // shift the MouseRegion hit-test bounds (kept the layout container
     // size-stable).
-    Widget button = AnimatedContainer(
-      duration: reduced ? Duration.zero : motion.hover.duration,
-      curve: motion.hover.curve,
+    Widget button = Container(
       height: height,
       constraints: BoxConstraints(
         minWidth: hasLabel ? height : height,

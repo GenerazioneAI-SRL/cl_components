@@ -88,16 +88,12 @@ class _GenaiKpiCardState extends State<GenaiKpiCard> {
     final spacing = context.spacing;
     final radius = context.radius;
     final sizing = context.sizing;
-    final motion = context.motion.hover;
 
     final isInteractive = widget.onTap != null;
 
-    final borderColor = _focused
-        ? colors.borderFocus
-        : (isInteractive && _hovered
-            ? colors.borderStrong
-            : colors.borderDefault);
-    final borderWidth = _focused ? sizing.focusRingWidth : 1.0;
+    final borderColor = isInteractive && _hovered
+        ? colors.borderStrong
+        : colors.borderDefault;
 
     // Compose label if not overridden.
     final composedLabel = widget.semanticLabel ??
@@ -214,20 +210,40 @@ class _GenaiKpiCardState extends State<GenaiKpiCard> {
       ],
     );
 
-    final card = AnimatedContainer(
-      duration: motion.duration,
-      curve: motion.curve,
+    Widget card = Container(
       padding: EdgeInsets.all(spacing.cardPadding),
       decoration: BoxDecoration(
         color: colors.surfaceCard,
         borderRadius: BorderRadius.circular(radius.xl),
-        border: Border.all(color: borderColor, width: borderWidth),
+        border: Border.all(color: borderColor, width: 1.0),
         boxShadow: isInteractive && _hovered
             ? context.elevation.layer1Hover
             : context.elevation.layer1,
       ),
       child: body,
     );
+
+    if (_focused && isInteractive) {
+      card = Stack(
+        clipBehavior: Clip.none,
+        children: [
+          card,
+          Positioned.fill(
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(radius.xl),
+                  border: Border.all(
+                    color: colors.borderFocus,
+                    width: sizing.focusRingWidth,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
 
     final semanticsNode = Semantics(
       container: true,
@@ -239,8 +255,12 @@ class _GenaiKpiCardState extends State<GenaiKpiCard> {
     if (!isInteractive) return semanticsNode;
 
     return FocusableActionDetector(
-      onShowFocusHighlight: (v) => setState(() => _focused = v),
-      onShowHoverHighlight: (v) => setState(() => _hovered = v),
+      onShowFocusHighlight: (v) {
+        if (_focused != v) setState(() => _focused = v);
+      },
+      onShowHoverHighlight: (v) {
+        if (_hovered != v) setState(() => _hovered = v);
+      },
       mouseCursor: SystemMouseCursors.click,
       actions: <Type, Action<Intent>>{
         ActivateIntent: CallbackAction<ActivateIntent>(

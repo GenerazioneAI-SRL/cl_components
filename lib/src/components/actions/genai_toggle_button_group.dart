@@ -246,7 +246,6 @@ class _SegmentedTileState extends State<_SegmentedTile> {
       children.add(Text(widget.label!, style: base.copyWith(color: fg)));
     }
 
-    final motion = context.motion;
     final sizing = context.sizing;
     return Semantics(
       button: true,
@@ -257,14 +256,18 @@ class _SegmentedTileState extends State<_SegmentedTile> {
         cursor: widget.disabled
             ? SystemMouseCursors.forbidden
             : SystemMouseCursors.click,
-        onEnter: (_) => setState(() => _hovered = true),
-        onExit: (_) => setState(() => _hovered = false),
+        opaque: false,
+        hitTestBehavior: HitTestBehavior.opaque,
+        onEnter: (_) {
+          if (!_hovered) setState(() => _hovered = true);
+        },
+        onExit: (_) {
+          if (_hovered) setState(() => _hovered = false);
+        },
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: widget.onTap,
-          child: AnimatedContainer(
-            duration: motion.hover.duration,
-            curve: motion.hover.curve,
+          child: Container(
             height: widget.height < sizing.minTouchTarget
                 ? sizing.minTouchTarget
                 : widget.height,

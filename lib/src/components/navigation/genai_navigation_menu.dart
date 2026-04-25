@@ -401,9 +401,7 @@ class _NavTriggerState extends State<_NavTrigger> {
 
     final Color fg = item.isDisabled ? colors.textDisabled : colors.textPrimary;
 
-    final trigger = AnimatedContainer(
-      duration: reduced ? Duration.zero : motion.duration,
-      curve: motion.curve,
+    Widget trigger = Container(
       padding: EdgeInsets.symmetric(
         horizontal: spacing.s3,
         vertical: spacing.s2,
@@ -411,12 +409,6 @@ class _NavTriggerState extends State<_NavTrigger> {
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(radius.xs),
-        border: _focused && !item.isDisabled
-            ? Border.all(
-                color: colors.borderFocus,
-                width: sizing.focusOutlineWidth,
-              )
-            : null,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -446,6 +438,28 @@ class _NavTriggerState extends State<_NavTrigger> {
       ),
     );
 
+    if (_focused && !item.isDisabled) {
+      trigger = Stack(
+        clipBehavior: Clip.none,
+        children: [
+          trigger,
+          Positioned.fill(
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(radius.xs),
+                  border: Border.all(
+                    color: colors.borderFocus,
+                    width: sizing.focusOutlineWidth,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
     return Semantics(
       button: true,
       enabled: !item.isDisabled,
@@ -453,18 +467,22 @@ class _NavTriggerState extends State<_NavTrigger> {
       label: item.label,
       child: Focus(
         focusNode: widget.focusNode,
-        onFocusChange: (f) => setState(() => _focused = f),
+        onFocusChange: (f) {
+          if (_focused != f) setState(() => _focused = f);
+        },
         onKeyEvent: widget.onKey,
         child: MouseRegion(
           cursor: item.isDisabled
               ? SystemMouseCursors.forbidden
               : SystemMouseCursors.click,
+          opaque: false,
+          hitTestBehavior: HitTestBehavior.opaque,
           onEnter: (_) {
-            setState(() => _hovered = true);
+            if (!_hovered) setState(() => _hovered = true);
             widget.onHover();
           },
           onExit: (_) {
-            setState(() => _hovered = false);
+            if (_hovered) setState(() => _hovered = false);
             widget.onHoverExit();
           },
           child: GestureDetector(

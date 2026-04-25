@@ -169,7 +169,6 @@ class _GenaiTabsState extends State<GenaiTabs> {
     final spacing = context.spacing;
     final radius = context.radius;
     final sizing = context.sizing;
-    final tabMotion = context.motion.tabSwitch;
 
     Color fg;
     Color? bg;
@@ -239,9 +238,7 @@ class _GenaiTabsState extends State<GenaiTabs> {
       selected: selected,
       enabled: !item.isDisabled,
       label: item.semanticLabel ?? item.label,
-      child: AnimatedContainer(
-        duration: tabMotion.duration,
-        curve: tabMotion.curve,
+      child: Container(
         decoration: BoxDecoration(
           color: bg,
           border: border,

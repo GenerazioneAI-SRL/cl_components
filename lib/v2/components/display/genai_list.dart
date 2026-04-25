@@ -126,7 +126,6 @@ class _GenaiListItemState extends State<GenaiListItem> {
     final ty = context.typography;
     final spacing = context.spacing;
     final sizing = context.sizing;
-    final hover = context.motion.hover;
 
     final bg = widget.isSelected
         ? colors.colorPrimarySubtle
@@ -134,23 +133,13 @@ class _GenaiListItemState extends State<GenaiListItem> {
             ? colors.surfaceHover
             : Colors.transparent);
 
-    final row = AnimatedContainer(
-      duration: hover.duration,
-      curve: hover.curve,
+    Widget row = Container(
       constraints: BoxConstraints(minHeight: sizing.minTouchTarget),
       padding: EdgeInsets.symmetric(
         horizontal: spacing.s16,
         vertical: spacing.s8,
       ),
-      decoration: BoxDecoration(
-        color: bg,
-        border: _focused
-            ? Border.all(
-                color: colors.borderFocus,
-                width: sizing.focusRingWidth,
-              )
-            : null,
-      ),
+      decoration: BoxDecoration(color: bg),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -194,6 +183,27 @@ class _GenaiListItemState extends State<GenaiListItem> {
       ),
     );
 
+    if (_focused && widget.onTap != null) {
+      row = Stack(
+        clipBehavior: Clip.none,
+        children: [
+          row,
+          Positioned.fill(
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: colors.borderFocus,
+                    width: sizing.focusRingWidth,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
     final semanticsChild = Semantics(
       button: widget.onTap != null,
       selected: widget.isSelected,
@@ -204,8 +214,12 @@ class _GenaiListItemState extends State<GenaiListItem> {
     if (widget.onTap == null) return semanticsChild;
 
     return FocusableActionDetector(
-      onShowHoverHighlight: (v) => setState(() => _hovered = v),
-      onShowFocusHighlight: (v) => setState(() => _focused = v),
+      onShowHoverHighlight: (v) {
+        if (_hovered != v) setState(() => _hovered = v);
+      },
+      onShowFocusHighlight: (v) {
+        if (_focused != v) setState(() => _focused = v);
+      },
       mouseCursor: SystemMouseCursors.click,
       actions: <Type, Action<Intent>>{
         ActivateIntent: CallbackAction<ActivateIntent>(

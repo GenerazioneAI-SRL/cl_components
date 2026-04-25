@@ -76,9 +76,8 @@ class _GenaiIconButtonState extends State<GenaiIconButton> {
 
     // Press scale wraps only the icon content so the layout box (and
     // therefore the MouseRegion hit-test bounds) stays stable on press.
-    Widget button = AnimatedContainer(
-      duration: motion.hover.duration,
-      curve: motion.hover.curve,
+    final reduced = GenaiResponsive.reducedMotion(context);
+    Widget button = Container(
       width: dim,
       height: dim,
       decoration: BoxDecoration(
@@ -93,8 +92,9 @@ class _GenaiIconButtonState extends State<GenaiIconButton> {
         child: AnimatedScale(
           scale: _pressed ? GenaiInteraction.pressScaleStrong : 1.0,
           alignment: Alignment.center,
-          duration:
-              _pressed ? motion.pressIn.duration : motion.pressOut.duration,
+          duration: reduced
+              ? Duration.zero
+              : (_pressed ? motion.pressIn.duration : motion.pressOut.duration),
           curve: _pressed ? motion.pressIn.curve : motion.pressOut.curve,
           child: content,
         ),

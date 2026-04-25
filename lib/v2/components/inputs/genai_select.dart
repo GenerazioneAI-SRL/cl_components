@@ -278,20 +278,18 @@ class _GenaiSelectState<T> extends State<GenaiSelect<T>> {
     final spacing = context.spacing;
     final sizing = context.sizing;
     final radius = context.radius;
-    final motion = context.motion;
 
     final selected = _selected;
     final height = _triggerHeight(sizing.density);
 
+    // Resting border kept 1 px so layout never reflows on focus / open.
+    // Focus ring rendered as a non-layout overlay below.
     final borderColor = widget.isDisabled
         ? colors.borderSubtle
         : _hasError
             ? colors.colorDanger
-            : (_focused || _isOpen)
-                ? colors.borderFocus
-                : colors.borderDefault;
-    final borderWidth =
-        (_focused || _isOpen || _hasError) ? sizing.focusRingWidth : 1.0;
+            : colors.borderDefault;
+    const borderWidth = 1.0;
 
     final trigger = CompositedTransformTarget(
       link: _link,
@@ -316,54 +314,77 @@ class _GenaiSelectState<T> extends State<GenaiSelect<T>> {
               cursor: widget.isDisabled
                   ? SystemMouseCursors.forbidden
                   : SystemMouseCursors.click,
+              opaque: false,
+              hitTestBehavior: HitTestBehavior.opaque,
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTap: _toggleOverlay,
-                child: AnimatedContainer(
-                  duration: motion.hover.duration,
-                  curve: motion.hover.curve,
-                  height: height,
-                  padding: EdgeInsets.symmetric(horizontal: spacing.s12),
-                  decoration: BoxDecoration(
-                    color: widget.isDisabled
-                        ? colors.surfaceHover
-                        : colors.surfaceInput,
-                    borderRadius: BorderRadius.circular(radius.sm),
-                    border: Border.all(color: borderColor, width: borderWidth),
-                  ),
-                  child: Row(
-                    children: [
-                      if (selected?.icon != null) ...[
-                        Icon(selected!.icon,
-                            size: sizing.iconSize,
-                            color: widget.isDisabled
-                                ? colors.textDisabled
-                                : colors.textSecondary),
-                        SizedBox(width: spacing.iconLabelGap),
-                      ],
-                      Expanded(
-                        child: Text(
-                          selected?.label ?? widget.hintText ?? '',
-                          style: ty.bodyMd.copyWith(
-                            color: selected == null
-                                ? colors.textTertiary
-                                : (widget.isDisabled
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Container(
+                      height: height,
+                      padding: EdgeInsets.symmetric(horizontal: spacing.s12),
+                      decoration: BoxDecoration(
+                        color: widget.isDisabled
+                            ? colors.surfaceHover
+                            : colors.surfaceInput,
+                        borderRadius: BorderRadius.circular(radius.sm),
+                        border:
+                            Border.all(color: borderColor, width: borderWidth),
+                      ),
+                      child: Row(
+                        children: [
+                          if (selected?.icon != null) ...[
+                            Icon(selected!.icon,
+                                size: sizing.iconSize,
+                                color: widget.isDisabled
                                     ? colors.textDisabled
-                                    : colors.textPrimary),
+                                    : colors.textSecondary),
+                            SizedBox(width: spacing.iconLabelGap),
+                          ],
+                          Expanded(
+                            child: Text(
+                              selected?.label ?? widget.hintText ?? '',
+                              style: ty.bodyMd.copyWith(
+                                color: selected == null
+                                    ? colors.textTertiary
+                                    : (widget.isDisabled
+                                        ? colors.textDisabled
+                                        : colors.textPrimary),
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                          overflow: TextOverflow.ellipsis,
+                          SizedBox(width: spacing.iconLabelGap),
+                          Icon(
+                            _isOpen
+                                ? LucideIcons.chevronUp
+                                : LucideIcons.chevronDown,
+                            size: sizing.iconSize,
+                            color: colors.textTertiary,
+                          ),
+                        ],
+                      ),
+                    ),
+                    if ((_focused || _isOpen || _hasError) &&
+                        !widget.isDisabled)
+                      Positioned.fill(
+                        child: IgnorePointer(
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(radius.sm),
+                              border: Border.all(
+                                color: _hasError
+                                    ? colors.colorDanger
+                                    : colors.borderFocus,
+                                width: sizing.focusRingWidth,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                      SizedBox(width: spacing.iconLabelGap),
-                      Icon(
-                        _isOpen
-                            ? LucideIcons.chevronUp
-                            : LucideIcons.chevronDown,
-                        size: sizing.iconSize,
-                        color: colors.textTertiary,
-                      ),
-                    ],
-                  ),
+                  ],
                 ),
               ),
             ),
@@ -437,8 +458,14 @@ class _OptionRowState extends State<_OptionRow> {
         cursor: widget.disabled
             ? SystemMouseCursors.forbidden
             : SystemMouseCursors.click,
-        onEnter: (_) => setState(() => _hovered = true),
-        onExit: (_) => setState(() => _hovered = false),
+        opaque: false,
+        hitTestBehavior: HitTestBehavior.opaque,
+        onEnter: (_) {
+          if (!_hovered) setState(() => _hovered = true);
+        },
+        onExit: (_) {
+          if (_hovered) setState(() => _hovered = false);
+        },
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: widget.onTap,

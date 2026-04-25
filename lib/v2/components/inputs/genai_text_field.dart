@@ -262,7 +262,10 @@ class _GenaiTextFieldState extends State<GenaiTextField> {
     super.dispose();
   }
 
-  void _handleFocus() => setState(() => _focused = _focusNode.hasFocus);
+  void _handleFocus() {
+    final v = _focusNode.hasFocus;
+    if (_focused != v) setState(() => _focused = v);
+  }
   void _handleChanged() => setState(() {}); // refresh counter / clear button
 
   bool get _hasError =>
@@ -288,22 +291,21 @@ class _GenaiTextFieldState extends State<GenaiTextField> {
     final spacing = context.spacing;
     final sizing = context.sizing;
     final radius = context.radius;
-    final motion = context.motion;
 
     final hasText = _controller.text.isNotEmpty;
     final height = _fieldHeight(sizing.density);
 
+    // Resting border: 1 px so layout never reflows on focus / hover.
+    // Focus ring rendered as a non-layout overlay below.
     final borderColor = widget.isDisabled
         ? colors.borderSubtle
         : _hasError
             ? colors.colorDanger
-            : _focused
-                ? colors.borderFocus
-                : _hovered
-                    ? colors.borderStrong
-                    : colors.borderDefault;
+            : _hovered
+                ? colors.borderStrong
+                : colors.borderDefault;
 
-    final borderWidth = (_focused || _hasError) ? sizing.focusRingWidth : 1.0;
+    const borderWidth = 1.0;
 
     final bg = switch (widget.variant) {
       GenaiTextFieldVariant.outline => widget.isDisabled
@@ -417,9 +419,7 @@ class _GenaiTextFieldState extends State<GenaiTextField> {
       ),
     );
 
-    final body = AnimatedContainer(
-      duration: motion.hover.duration,
-      curve: motion.hover.curve,
+    Widget body = Container(
       height: height,
       padding: EdgeInsets.symmetric(horizontal: spacing.s12),
       decoration: BoxDecoration(
@@ -445,6 +445,28 @@ class _GenaiTextFieldState extends State<GenaiTextField> {
       ),
     );
 
+    if ((_focused || _hasError) && !widget.isDisabled) {
+      body = Stack(
+        clipBehavior: Clip.none,
+        children: [
+          body,
+          Positioned.fill(
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(radius.sm),
+                  border: Border.all(
+                    color: _hasError ? colors.colorDanger : colors.borderFocus,
+                    width: sizing.focusRingWidth,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
     // Counter — reserved space even when no maxLength, for layout stability.
     final counter = widget.maxLength == null
         ? null
@@ -465,8 +487,14 @@ class _GenaiTextFieldState extends State<GenaiTextField> {
       obscured: _isPassword && _obscured,
       focused: _focused,
       child: MouseRegion(
-        onEnter: (_) => setState(() => _hovered = true),
-        onExit: (_) => setState(() => _hovered = false),
+        opaque: false,
+        hitTestBehavior: HitTestBehavior.opaque,
+        onEnter: (_) {
+          if (!_hovered) setState(() => _hovered = true);
+        },
+        onExit: (_) {
+          if (_hovered) setState(() => _hovered = false);
+        },
         child: FieldFrame(
           label: widget.label,
           isRequired: widget.isRequired,

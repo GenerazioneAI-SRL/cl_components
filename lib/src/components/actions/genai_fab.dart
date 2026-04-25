@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../foundations/animations.dart';
+import '../../foundations/responsive.dart';
 import '../../theme/context_extensions.dart';
 import '../../tokens/sizing.dart';
 
@@ -64,9 +65,8 @@ class _GenaiFABState extends State<GenaiFAB> {
     // AnimatedScale wraps only the Row content — never the layout container —
     // so the press shrink doesn't move the MouseRegion hit-test bounds and
     // can't trigger an exit/enter blink loop.
-    Widget btn = AnimatedContainer(
-      duration: motion.hover.duration,
-      curve: motion.hover.curve,
+    final reduced = GenaiResponsive.reducedMotion(context);
+    Widget btn = Container(
       height: h,
       constraints: BoxConstraints(minWidth: h),
       padding: widget.label == null
@@ -83,8 +83,9 @@ class _GenaiFABState extends State<GenaiFAB> {
         child: AnimatedScale(
           scale: _pressed ? GenaiInteraction.pressScale : 1.0,
           alignment: Alignment.center,
-          duration:
-              _pressed ? motion.pressIn.duration : motion.pressOut.duration,
+          duration: reduced
+              ? Duration.zero
+              : (_pressed ? motion.pressIn.duration : motion.pressOut.duration),
           curve: _pressed ? motion.pressIn.curve : motion.pressOut.curve,
           child: Row(
             mainAxisSize: MainAxisSize.min,

@@ -182,22 +182,35 @@ class _BreadcrumbSegmentState extends State<_BreadcrumbSegment> {
       ],
     );
 
-    final wrapped = Container(
+    Widget wrapped = Padding(
       padding: EdgeInsets.symmetric(
         horizontal: spacing.s4,
         vertical: spacing.s2,
       ),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(radius.xs),
-        border: _focused && interactive
-            ? Border.all(
-                color: colors.borderFocus,
-                width: sizing.focusRingWidth,
-              )
-            : null,
-      ),
       child: body,
     );
+
+    if (_focused && interactive) {
+      wrapped = Stack(
+        clipBehavior: Clip.none,
+        children: [
+          wrapped,
+          Positioned.fill(
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(radius.xs),
+                  border: Border.all(
+                    color: colors.borderFocus,
+                    width: sizing.focusRingWidth,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
 
     if (!interactive) {
       return Semantics(
@@ -212,10 +225,18 @@ class _BreadcrumbSegmentState extends State<_BreadcrumbSegment> {
       label: widget.item.semanticLabel ?? widget.item.label,
       child: MouseRegion(
         cursor: SystemMouseCursors.click,
-        onEnter: (_) => setState(() => _hover = true),
-        onExit: (_) => setState(() => _hover = false),
+        opaque: false,
+        hitTestBehavior: HitTestBehavior.opaque,
+        onEnter: (_) {
+          if (!_hover) setState(() => _hover = true);
+        },
+        onExit: (_) {
+          if (_hover) setState(() => _hover = false);
+        },
         child: Focus(
-          onFocusChange: (v) => setState(() => _focused = v),
+          onFocusChange: (v) {
+            if (_focused != v) setState(() => _focused = v);
+          },
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: widget.item.onTap,

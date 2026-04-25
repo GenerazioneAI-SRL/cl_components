@@ -269,7 +269,8 @@ class _GenaiTextFieldState extends State<GenaiTextField> {
   }
 
   void _handleFocus() {
-    setState(() => _focused = _focusNode.hasFocus);
+    final v = _focusNode.hasFocus;
+    if (_focused != v) setState(() => _focused = v);
     if (!_focused && widget.validateOn == GenaiValidateOn.blur) {
       _runValidation();
     }
@@ -303,18 +304,16 @@ class _GenaiTextFieldState extends State<GenaiTextField> {
     final ty = context.typography;
     final spacing = context.spacing;
     final sizing = context.sizing;
-    final motion = context.motion;
     final isCompact = context.isCompact;
     final h = widget.maxLines != null && widget.maxLines! > 1
         ? null
         : widget.size.resolveHeight(isCompact: isCompact);
 
-    final borderColor = _hasError
-        ? colors.borderError
-        : (_focused ? colors.borderFocus : colors.borderDefault);
-    final borderWidth = _focused || _hasError
-        ? sizing.focusOutlineWidth
-        : widget.size.borderWidth;
+    // Resting border: 1 px so layout never reflows on focus / hover.
+    // Focus / error ring rendered as a non-layout overlay below.
+    final borderColor =
+        _hasError ? colors.borderError : colors.borderDefault;
+    final borderWidth = widget.size.borderWidth;
 
     final bg = widget.isDisabled
         ? colors.surfaceHover
@@ -420,9 +419,7 @@ class _GenaiTextFieldState extends State<GenaiTextField> {
       ),
     );
 
-    Widget container = AnimatedContainer(
-      duration: motion.hover.duration,
-      curve: motion.hover.curve,
+    Widget container = Container(
       height: h,
       decoration: BoxDecoration(
         color: bg,
@@ -446,6 +443,29 @@ class _GenaiTextFieldState extends State<GenaiTextField> {
         ],
       ),
     );
+
+    if ((_focused || _hasError) && !widget.isDisabled) {
+      container = Stack(
+        clipBehavior: Clip.none,
+        children: [
+          container,
+          Positioned.fill(
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius:
+                      BorderRadius.circular(widget.size.borderRadius),
+                  border: Border.all(
+                    color: _hasError ? colors.borderError : colors.borderFocus,
+                    width: sizing.focusOutlineWidth,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
 
     final children = <Widget>[];
     if (widget.label != null) {

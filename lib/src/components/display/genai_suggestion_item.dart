@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../foundations/responsive.dart';
 import '../../theme/context_extensions.dart';
 
 /// AI-suggested shortcut card — v3 design system (§4.2).
@@ -57,8 +56,6 @@ class _GenaiSuggestionItemState extends State<GenaiSuggestionItem> {
     final spacing = context.spacing;
     final radius = context.radius;
     final sizing = context.sizing;
-    final reduced = GenaiResponsive.reducedMotion(context);
-    final motion = context.motion.hover;
 
     final isInteractive = widget.onTap != null;
     final a11y = widget.semanticLabel ??
@@ -68,17 +65,11 @@ class _GenaiSuggestionItemState extends State<GenaiSuggestionItem> {
           if (widget.metaRight != null) widget.metaRight!,
         ].join(' — ');
 
-    final border = _focused
-        ? colors.borderFocus
-        : (isInteractive && _hovered
-            ? colors.textPrimary
-            : colors.borderDefault);
-    final borderWidth =
-        _focused ? sizing.focusOutlineWidth : sizing.dividerThickness;
+    final border = isInteractive && _hovered
+        ? colors.textPrimary
+        : colors.borderDefault;
 
-    final card = AnimatedContainer(
-      duration: reduced ? Duration.zero : motion.duration,
-      curve: motion.curve,
+    Widget card = Container(
       padding: EdgeInsets.symmetric(
         horizontal: spacing.s3,
         vertical: spacing.s2,
@@ -86,7 +77,7 @@ class _GenaiSuggestionItemState extends State<GenaiSuggestionItem> {
       decoration: BoxDecoration(
         color: colors.surfaceCard,
         borderRadius: BorderRadius.circular(radius.lg),
-        border: Border.all(color: border, width: borderWidth),
+        border: Border.all(color: border, width: sizing.dividerThickness),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -138,6 +129,28 @@ class _GenaiSuggestionItemState extends State<GenaiSuggestionItem> {
       ),
     );
 
+    if (_focused && isInteractive) {
+      card = Stack(
+        clipBehavior: Clip.none,
+        children: [
+          card,
+          Positioned.fill(
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(radius.lg),
+                  border: Border.all(
+                    color: colors.borderFocus,
+                    width: sizing.focusOutlineWidth,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
     final semanticsNode = Semantics(
       container: true,
       button: isInteractive,
@@ -148,8 +161,12 @@ class _GenaiSuggestionItemState extends State<GenaiSuggestionItem> {
     if (!isInteractive) return semanticsNode;
 
     return FocusableActionDetector(
-      onShowFocusHighlight: (v) => setState(() => _focused = v),
-      onShowHoverHighlight: (v) => setState(() => _hovered = v),
+      onShowFocusHighlight: (v) {
+        if (_focused != v) setState(() => _focused = v);
+      },
+      onShowHoverHighlight: (v) {
+        if (_hovered != v) setState(() => _hovered = v);
+      },
       mouseCursor: SystemMouseCursors.click,
       actions: <Type, Action<Intent>>{
         ActivateIntent: CallbackAction<ActivateIntent>(

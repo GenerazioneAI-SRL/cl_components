@@ -86,8 +86,14 @@ class _GenaiLinkButtonState extends State<GenaiLinkButton> {
     result = MouseRegion(
       cursor:
           disabled ? SystemMouseCursors.forbidden : SystemMouseCursors.click,
-      onEnter: (_) => setState(() => _hovered = true),
-      onExit: (_) => setState(() => _hovered = false),
+      opaque: false,
+      hitTestBehavior: HitTestBehavior.opaque,
+      onEnter: (_) {
+        if (!_hovered) setState(() => _hovered = true);
+      },
+      onExit: (_) {
+        if (_hovered) setState(() => _hovered = false);
+      },
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: disabled ? null : widget.onPressed,
