@@ -7,7 +7,7 @@ import 'routes/modular_route.dart';
 import 'routes/module_route.dart';
 import 'routes/shell_modular_route.dart';
 import 'transition.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show defaultTargetPlatform, kIsWeb, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'go_router_modular_configure.dart';
@@ -374,7 +374,13 @@ abstract class Module {
     final pageTransition =
         route.pageTransition ?? Modular.getDefaultPageTransition;
 
-    if (kIsWeb || pageTransition == PageTransition.noTransition) {
+    // Desktop + web ship without route transitions to keep nav instant on
+    // platforms where the fade adds perceptible mini-freezes.
+    final isDesktop = !kIsWeb &&
+        (defaultTargetPlatform == TargetPlatform.macOS ||
+            defaultTargetPlatform == TargetPlatform.windows ||
+            defaultTargetPlatform == TargetPlatform.linux);
+    if (kIsWeb || isDesktop || pageTransition == PageTransition.noTransition) {
       return NoTransitionPage(
         key: state.pageKey,
         child: route.child(context, state),

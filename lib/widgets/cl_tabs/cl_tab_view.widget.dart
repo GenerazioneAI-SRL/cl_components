@@ -25,6 +25,12 @@ class CLTabView extends StatefulWidget {
 class _CLTabViewState extends State<CLTabView> with SingleTickerProviderStateMixin {
   late TabController _controller;
 
+  // Tracks which tab indexes have been visited at least once. Inactive,
+  // never-visited tabs render as `SizedBox.shrink()` so their (potentially
+  // expensive) subtree — e.g. PagedDataTable — isn't built on first paint.
+  // Once a tab is visited it stays mounted thanks to maintainState: true.
+  final Set<int> _builtIndexes = {0};
+
   static const Duration _kAnimDuration = Duration(milliseconds: 200);
   static const Curve _kAnimCurve = Curves.easeOutCubic;
   static const double _kActiveUnderline = 3.0;
@@ -49,7 +55,10 @@ class _CLTabViewState extends State<CLTabView> with SingleTickerProviderStateMix
   }
 
   void _onTabChanged() {
-    if (!_controller.indexIsChanging) setState(() {});
+    if (!_controller.indexIsChanging) {
+      _builtIndexes.add(_controller.index);
+      setState(() {});
+    }
   }
 
   @override
@@ -113,11 +122,20 @@ class _CLTabViewState extends State<CLTabView> with SingleTickerProviderStateMix
 
         const SizedBox(height: CLSizes.gapLg),
 
-        // Contenuto (IndexedStack per mantenere lo stato)
+        // Contenuto: lazy-mount per evitare di costruire tutti i tab al primo
+        // paint. Tabs non ancora visitati renderizzano come SizedBox.shrink()
+        // — una volta visitati restano in memoria via maintainState: true.
         IndexedStack(
           index: _controller.index,
           children: List.generate(widget.clTabItems.length, (index) {
-            return Visibility(visible: _controller.index == index, maintainState: true, child: widget.clTabItems[index].tabContent);
+            if (!_builtIndexes.contains(index)) {
+              return const SizedBox.shrink();
+            }
+            return Visibility(
+              visible: _controller.index == index,
+              maintainState: true,
+              child: widget.clTabItems[index].tabContent,
+            );
           }),
         ),
       ],

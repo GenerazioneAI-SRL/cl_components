@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../cl_theme.dart';
 import '../layout/constants/sizes.constant.dart';
+import 'cl_popup_surface.widget.dart';
 
 /// Elemento di un [CLPopupMenu].
 class CLPopupMenuItem {
@@ -129,19 +130,8 @@ class CLPopupMenu extends StatefulWidget {
       barrierColor: Colors.black12,
       barrierDismissible: true,
       barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
-      transitionDuration: const Duration(milliseconds: 200),
-      transitionBuilder: (context, animation, secondaryAnimation, child) {
-        return FadeTransition(
-          opacity: CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
-          child: SlideTransition(
-            position: Tween<Offset>(
-              begin: Offset(0, openUpwards ? 0.05 : -0.05),
-              end: Offset.zero,
-            ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
-            child: child,
-          ),
-        );
-      },
+      transitionDuration: const Duration(milliseconds: 180),
+      transitionBuilder: (context, animation, secondaryAnimation, child) => child,
       pageBuilder: (context, animation, secondaryAnimation) {
         return Stack(
           children: [
@@ -150,66 +140,55 @@ class CLPopupMenu extends StatefulWidget {
               right: right,
               top: !openUpwards ? position.dy + anchorSize.height + gap : null,
               bottom: openUpwards ? screenSize.height - position.dy + gap : null,
-              child: Material(
-                color: Colors.transparent,
-                child: Container(
-                  constraints: BoxConstraints(minWidth: minWidth, maxWidth: maxWidth),
-                  decoration: BoxDecoration(
-                    color: theme.secondaryBackground,
-                    borderRadius: BorderRadius.circular(Sizes.radiusLg),
-                    border: Border.all(color: theme.borderColor, width: 1),
-                    boxShadow: [
-                      BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 24, offset: const Offset(0, 10), spreadRadius: -4),
-                      BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 6, offset: const Offset(0, 2)),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(Sizes.radiusLg),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        // Header con gradient
-                        if (title != null || titleWidget != null)
-                          Container(
-                            padding: const EdgeInsets.fromLTRB(Sizes.padding, Sizes.padding * 0.75, Sizes.padding, Sizes.padding * 0.75),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                  theme.primary.withValues(alpha: 0.10),
-                                  theme.secondary.withValues(alpha: 0.05),
-                                ],
-                              ),
-                              border: Border(bottom: BorderSide(color: theme.borderColor, width: 1)),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minWidth: minWidth, maxWidth: maxWidth),
+                child: CLPopupSurface(
+                  borderRadius: BorderRadius.circular(Sizes.radiusLg),
+                  animateUpward: openUpwards,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Header con gradient
+                      if (title != null || titleWidget != null)
+                        Container(
+                          padding: const EdgeInsets.fromLTRB(Sizes.padding, Sizes.padding * 0.75, Sizes.padding, Sizes.padding * 0.75),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                theme.primary.withValues(alpha: 0.10),
+                                theme.secondary.withValues(alpha: 0.05),
+                              ],
                             ),
-                            child: titleWidget ??
-                                Text(
-                                  title!,
-                                  style: theme.bodyLabel.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 13,
-                                  ),
+                            border: Border(bottom: BorderSide(color: theme.borderColor, width: 1)),
+                          ),
+                          child: titleWidget ??
+                              Text(
+                                title!,
+                                style: theme.bodyLabel.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 13,
                                 ),
-                          ),
-                        // Items
-                        Padding(
-                          padding: const EdgeInsets.all(Sizes.sm),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: items.asMap().entries.map((entry) {
-                              final item = entry.value;
-                              final isLast = entry.key == items.length - 1;
-                              return Padding(
-                                padding: EdgeInsets.only(bottom: isLast ? 0 : Sizes.sm * 0.5),
-                                child: _CLPopupMenuItemWidget(item: item),
-                              );
-                            }).toList(),
-                          ),
+                              ),
                         ),
-                      ],
-                    ),
+                      // Items
+                      Padding(
+                        padding: const EdgeInsets.all(Sizes.sm),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: items.asMap().entries.map((entry) {
+                            final item = entry.value;
+                            final isLast = entry.key == items.length - 1;
+                            return Padding(
+                              padding: EdgeInsets.only(bottom: isLast ? 0 : Sizes.sm * 0.5),
+                              child: _CLPopupMenuItemWidget(item: item),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),

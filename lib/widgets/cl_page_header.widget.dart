@@ -65,6 +65,17 @@ class _CLPageHeaderState extends State<CLPageHeader> {
   final GlobalKey _cardKey = GlobalKey();
   bool _isVisible = true;
 
+  // Per-build memoization. Both values depend only on NavigationState.breadcrumbs
+  // (and GoRouter location, for accent fallback). Recomputed when the
+  // breadcrumbs reference (or its length / last element) changes.
+  List<dynamic>? _lastBreadcrumbs;
+  int _lastBreadcrumbsLength = -1;
+  Object? _lastBreadcrumbsTail;
+  String? _lastRouterLocation;
+  List<String>? _cachedCrumbLabels;
+  Color? _cachedAccent;
+  bool _accentComputed = false;
+
   @override
   void initState() {
     super.initState();
@@ -116,6 +127,15 @@ class _CLPageHeaderState extends State<CLPageHeader> {
     final theme = CLTheme.of(context);
     final isMobile = !isDesktop;
 
+    // Resolve NavigationState once per build and refresh memoization.
+    NavigationState? nav;
+    try {
+      nav = context.read<NavigationState>();
+    } catch (_) {
+      nav = null;
+    }
+    _refreshCaches(context, nav);
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final isNarrow = constraints.maxWidth < _narrowBreakpoint;
@@ -137,6 +157,38 @@ class _CLPageHeaderState extends State<CLPageHeader> {
         return inner;
       },
     );
+  }
+
+  /// Invalidates `_cachedCrumbLabels` / `_cachedAccent` when the
+  /// breadcrumbs reference (or its length / last element) or the GoRouter
+  /// location have changed since the previous build.
+  void _refreshCaches(BuildContext context, NavigationState? nav) {
+    final breadcrumbs = nav?.breadcrumbs;
+    final length = breadcrumbs?.length ?? 0;
+    final tail = (breadcrumbs != null && breadcrumbs.isNotEmpty)
+        ? breadcrumbs.last
+        : null;
+
+    final router = GoRouter.maybeOf(context);
+    final location = router?.routeInformationProvider.value.uri.toString();
+
+    final crumbsChanged = !identical(_lastBreadcrumbs, breadcrumbs) ||
+        _lastBreadcrumbsLength != length ||
+        !identical(_lastBreadcrumbsTail, tail);
+    final locationChanged = _lastRouterLocation != location;
+
+    if (crumbsChanged) {
+      _cachedCrumbLabels = null;
+      _accentComputed = false;
+    }
+    if (locationChanged) {
+      _accentComputed = false;
+    }
+
+    _lastBreadcrumbs = breadcrumbs;
+    _lastBreadcrumbsLength = length;
+    _lastBreadcrumbsTail = tail;
+    _lastRouterLocation = location;
   }
 
   Widget _buildHeader({
@@ -240,11 +292,15 @@ class _CLPageHeaderState extends State<CLPageHeader> {
   }
 
   List<String> _moduleCrumbLabels(BuildContext context) {
+    final cached = _cachedCrumbLabels;
+    if (cached != null) return cached;
     try {
       final nav = context.read<NavigationState>();
-      final crumbs = nav.breadcrumbs.where((b) => b.isModule).map((b) => b.name).toList();
+      final crumbs = nav.breadcrumbs.where((b) => b.isModule).map((b) => b.name).toList(growable: false);
+      _cachedCrumbLabels = crumbs;
       return crumbs;
     } catch (_) {
+      _cachedCrumbLabels = const [];
       return const [];
     }
   }
@@ -252,20 +308,29 @@ class _CLPageHeaderState extends State<CLPageHeader> {
   /// Cerca la tinta del modulo corrente: prima nel breadcrumb (path del modulo
   /// più recente), poi sulla location di GoRouter.
   Color? _moduleAccent(BuildContext context) {
+    if (_accentComputed) return _cachedAccent;
+    Color? result;
     try {
       final nav = context.read<NavigationState>();
       final modulePaths = nav.breadcrumbs.where((b) => b.isModule).map((b) => b.path).toList();
       for (final path in modulePaths.reversed) {
         final c = ModuleColorRegistry.colorFor(path);
-        if (c != null) return c;
+        if (c != null) {
+          result = c;
+          break;
+        }
       }
     } catch (_) {}
-    try {
-      final location = GoRouterState.of(context).matchedLocation;
-      return ModuleColorRegistry.colorForLocation(location);
-    } catch (_) {
-      return null;
+    if (result == null) {
+      final router = GoRouter.maybeOf(context);
+      if (router != null) {
+        final location = router.routeInformationProvider.value.uri.toString();
+        result = ModuleColorRegistry.colorForLocation(location);
+      }
     }
+    _cachedAccent = result;
+    _accentComputed = true;
+    return result;
   }
 
   Widget? _buildTitle({required CLTheme theme, required bool isMobile, required Color accent}) {

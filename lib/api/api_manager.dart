@@ -361,15 +361,28 @@ class ApiManager {
     return allHeaders;
   }
 
-  String? getAuthBearerToken(BuildContext context) {
-    final authState = Provider.of<CLAuthState>(context, listen: false);
-    return authState.accessToken;
+  /// Cached AuthState reference. Populated on the first successful Provider
+  /// lookup; reused when subsequent calls happen from a deactivated widget's
+  /// context (e.g. when a page is popped while an API request is in flight).
+  /// AuthState is registered once at app boot and lives for the whole app
+  /// lifetime, so caching the reference is safe.
+  static CLAuthState? _cachedAuthState;
+
+  CLAuthState? _readAuthState(BuildContext context) {
+    try {
+      final authState = Provider.of<CLAuthState>(context, listen: false);
+      _cachedAuthState = authState;
+      return authState;
+    } catch (_) {
+      return _cachedAuthState;
+    }
   }
 
-  String? getCurrentTenantId(BuildContext context) {
-    final authState = Provider.of<CLAuthState>(context, listen: false);
-    return authState.currentTenant?.id;
-  }
+  String? getAuthBearerToken(BuildContext context) =>
+      _readAuthState(context)?.accessToken;
+
+  String? getCurrentTenantId(BuildContext context) =>
+      _readAuthState(context)?.currentTenant?.id;
 
   Map<String, dynamic> convertSearchBy(Map<String, dynamic> body) {
     Map<String, dynamic> searchBy = {};
@@ -495,6 +508,13 @@ class ApiManager {
     bool replaceApiUrl = false,
     String? completeApiUrl,
   }) async {
+    // Short-circuit if the calling widget's context has been deactivated
+    // (e.g. user navigated away while an init chain was about to fire).
+    // Avoids wasted HTTP traffic + JSON decode + downstream Provider lookups
+    // that would throw on a dead Element.
+    if (!context.mounted) {
+      return const ApiCallResponse(null, null, null, {}, 0);
+    }
     headers = await initHeader(headers, needAuth, needTenant, context);
 
     // Se replaceApiUrl è true e c'è completeApiUrl, usa quello

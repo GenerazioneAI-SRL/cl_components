@@ -9,7 +9,17 @@ class NavigationState extends ChangeNotifier {
   final List<BreadcrumbItem> _breadcrumbs = [];
   bool _disposed = false;
 
-  List<BreadcrumbItem> get breadcrumbs => List.unmodifiable(_breadcrumbs);
+  // Cached unmodifiable view, refreshed only when `_breadcrumbs` mutates.
+  // Returning a fresh `List.unmodifiable(...)` per call broke downstream
+  // memoization (CLPageHeader) because every read produced a new reference.
+  List<BreadcrumbItem>? _breadcrumbsView;
+
+  List<BreadcrumbItem> get breadcrumbs =>
+      _breadcrumbsView ??= List.unmodifiable(_breadcrumbs);
+
+  void _invalidateBreadcrumbsView() {
+    _breadcrumbsView = null;
+  }
 
   String pageName = "";
 
@@ -158,6 +168,9 @@ class NavigationState extends ChangeNotifier {
   @override
   void notifyListeners() {
     if (_disposed) return;
+    // Every mutation routes through notifyListeners — invalidate the cached
+    // view here so reads after the change reflect the new list.
+    _invalidateBreadcrumbsView();
     super.notifyListeners();
   }
 
