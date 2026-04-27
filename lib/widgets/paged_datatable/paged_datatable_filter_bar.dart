@@ -351,30 +351,20 @@ class _PagedDataTableFilterTab<TKey extends Comparable, TResultId extends Compar
                 width: menuWidth,
                 child: TapRegion(
                   onTapOutside: (_) => close(),
-                  child: Material(
-                    color: theme.secondaryBackground,
-                    elevation: 4,
-                    borderRadius: BorderRadius.circular(CLSizes.radiusSurface),
-                    clipBehavior: Clip.antiAlias,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(CLSizes.radiusSurface),
-                        border: Border.all(color: theme.cardBorder, width: 1),
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          for (var i = 0; i < extraMenus.length; i++)
-                            _ExtraMenuRow(
-                              content: extraMenus[i].content,
-                              onTap: () {
-                                close();
-                                extraMenus[i].onTap();
-                              },
-                            ),
-                        ],
-                      ),
+                  child: CLPopupSurface(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        for (var i = 0; i < extraMenus.length; i++)
+                          _ExtraMenuRow(
+                            content: extraMenus[i].content,
+                            onTap: () {
+                              close();
+                              extraMenus[i].onTap();
+                            },
+                          ),
+                      ],
                     ),
                   ),
                 ),
@@ -447,19 +437,8 @@ class _PagedDataTableFilterTab<TKey extends Comparable, TResultId extends Compar
       barrierColor: Colors.black12,
       barrierDismissible: true,
       barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
-      transitionDuration: const Duration(milliseconds: 200),
-      transitionBuilder: (context, animation, secondaryAnimation, child) {
-        return FadeTransition(
-          opacity: CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
-          child: SlideTransition(
-            position: Tween<Offset>(
-              begin: Offset(0, openUpwards ? 0.02 : -0.02),
-              end: Offset.zero,
-            ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
-            child: child,
-          ),
-        );
-      },
+      transitionDuration: const Duration(milliseconds: 100),
+      transitionBuilder: (context, animation, secondaryAnimation, child) => child,
       pageBuilder: (context, animation, secondaryAnimation) {
         return _FiltersDialog<TKey, TResultId, TResult>(
           left: dx,
@@ -467,6 +446,7 @@ class _PagedDataTableFilterTab<TKey extends Comparable, TResultId extends Compar
           bottom: openUpwards ? screenHeight - position.dy + 8 : null,
           width: menuWidth,
           state: state,
+          openUpward: openUpwards,
         );
       },
     );
@@ -602,8 +582,16 @@ class _FiltersDialog<TKey extends Comparable, TResultId extends Comparable, TRes
   final double? bottom;
   final double width;
   final _PagedDataTableState<TKey, TResultId, TResult> state;
+  final bool openUpward;
 
-  const _FiltersDialog({required this.left, this.top, this.bottom, required this.width, required this.state});
+  const _FiltersDialog({
+    required this.left,
+    this.top,
+    this.bottom,
+    required this.width,
+    required this.state,
+    this.openUpward = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -615,90 +603,78 @@ class _FiltersDialog<TKey extends Comparable, TResultId extends Comparable, TRes
           left: left,
           top: top,
           bottom: bottom,
-          child: Material(
-            color: Colors.transparent,
-            child: Container(
-              width: width,
-              constraints: const BoxConstraints(maxWidth: 420),
-              decoration: BoxDecoration(
-                color: theme.secondaryBackground,
-                borderRadius: BorderRadius.circular(Sizes.borderRadius),
-                border: Border.all(color: theme.borderColor, width: 1),
-                boxShadow: [
-                  BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 20, offset: const Offset(0, 8), spreadRadius: -4),
-                  BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 6, offset: const Offset(0, 2)),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(Sizes.borderRadius),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Header
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: Sizes.padding, vertical: Sizes.padding * 0.65),
-                      decoration: BoxDecoration(
-                        color: theme.primaryBackground,
-                        border: Border(bottom: BorderSide(color: theme.borderColor, width: 1)),
-                      ),
-                      child: Text(
-                        'Filtra con...',
-                        style: theme.smallLabel.copyWith(color: theme.secondaryText, fontWeight: FontWeight.w600, fontSize: 11, letterSpacing: 0.5),
-                      ),
+          width: width,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: CLPopupSurface(
+              animateUpward: openUpward,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Header
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: Sizes.padding, vertical: Sizes.padding * 0.65),
+                    decoration: BoxDecoration(
+                      color: theme.primaryBackground,
+                      border: Border(bottom: BorderSide(color: theme.borderColor, width: 1)),
                     ),
-                    // Filters
-                    Padding(
-                      padding: const EdgeInsets.all(Sizes.padding),
-                      child: Form(
-                        key: state.filtersFormKey,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            ...state.filters.entries
-                                .where((element) => element.value._filter.visible && element.value._filter.isMainFilter == false)
-                                .map(
-                                  (entry) => Padding(
-                                    padding: const EdgeInsets.symmetric(vertical: 6),
-                                    child: entry.value._filter.buildPicker(context, entry.value),
-                                  ),
-                                ),
-                          ],
-                        ),
-                      ),
+                    child: Text(
+                      'Filtra con...',
+                      style: theme.smallLabel.copyWith(color: theme.secondaryText, fontWeight: FontWeight.w600, fontSize: 11, letterSpacing: 0.5),
                     ),
-                    // Footer buttons
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: Sizes.padding, vertical: Sizes.padding * 0.65),
-                      decoration: BoxDecoration(border: Border(top: BorderSide(color: theme.borderColor, width: 1))),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  ),
+                  // Filters
+                  Padding(
+                    padding: const EdgeInsets.all(Sizes.padding),
+                    child: Form(
+                      key: state.filtersFormKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          CLButton(
-                            textStyle: theme.bodyLabel,
-                            iconAlignment: IconAlignment.start,
-                            backgroundColor: theme.primaryBackground,
-                            text: "Ripristina",
-                            onTap: () {
-                              Navigator.pop(context);
-                              state.resetFilterSort();
-                            },
-                            context: context,
-                          ),
-                          CLButton.primary(
-                            text: "Applica",
-                            onTap: () {
-                              state.filtersFormKey.currentState!.save();
-                              Navigator.pop(context);
-                              state.applyFilters();
-                            },
-                            context: context,
-                          ),
+                          ...state.filters.entries
+                              .where((element) => element.value._filter.visible && element.value._filter.isMainFilter == false)
+                              .map(
+                                (entry) => Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 6),
+                                  child: entry.value._filter.buildPicker(context, entry.value),
+                                ),
+                              ),
                         ],
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                  // Footer buttons
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: Sizes.padding, vertical: Sizes.padding * 0.65),
+                    decoration: BoxDecoration(border: Border(top: BorderSide(color: theme.borderColor, width: 1))),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        CLButton(
+                          textStyle: theme.bodyLabel,
+                          iconAlignment: IconAlignment.start,
+                          backgroundColor: theme.primaryBackground,
+                          text: "Ripristina",
+                          onTap: () {
+                            Navigator.pop(context);
+                            state.resetFilterSort();
+                          },
+                          context: context,
+                        ),
+                        CLButton.primary(
+                          text: "Applica",
+                          onTap: () {
+                            state.filtersFormKey.currentState!.save();
+                            Navigator.pop(context);
+                            state.applyFilters();
+                          },
+                          context: context,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           ),

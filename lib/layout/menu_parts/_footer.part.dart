@@ -144,16 +144,21 @@ class _MenuAiButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final appState = context.watch<AppState>();
-    if (!appState.showAiButton || appState.aiButtonPosition != AiButtonPosition.menu) {
+    // Sottoscrizioni mirate: solo i campi che decidono visibilità/render del pulsante.
+    // Evita rebuild del footer su ogni notify di AppState non correlato.
+    final showAiButton = context.select<AppState, bool>((s) => s.showAiButton);
+    final aiButtonPosition = context.select<AppState, AiButtonPosition>((s) => s.aiButtonPosition);
+    if (!showAiButton || aiButtonPosition != AiButtonPosition.menu) {
       return const SizedBox.shrink();
     }
+    final aiButtonBuilder = context.select<AppState, Widget Function(BuildContext, VoidCallback)?>((s) => s.aiButtonBuilder);
+    final appState = context.read<AppState>();
     final theme = CLTheme.of(context);
     onPressed() => appState.toggleAiChat();
-    if (appState.aiButtonBuilder != null) {
+    if (aiButtonBuilder != null) {
       return Padding(
         padding: EdgeInsets.fromLTRB(Sizes.padding * 0.6, 0, Sizes.padding * 0.6, 8),
-        child: appState.aiButtonBuilder!(context, onPressed),
+        child: aiButtonBuilder(context, onPressed),
       );
     }
     return Padding(
@@ -206,17 +211,20 @@ class _MenuUserProfile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final appState = context.watch<AppState>();
-    final authState = context.watch<CLAuthState>();
-    if (appState.profilePosition != ProfilePosition.menu) {
+    // Sottoscrizione mirata: solo profilePosition decide la visibilità del widget.
+    final profilePosition = context.select<AppState, ProfilePosition>((s) => s.profilePosition);
+    if (profilePosition != ProfilePosition.menu) {
       return const SizedBox.shrink();
     }
+    // CLAuthState: solo currentUserInfo è letto qui — sottoscrizione mirata.
+    final currentUserInfo = context.select<CLAuthState, CLUserInfo?>((s) => s.currentUserInfo);
+    final authState = context.read<CLAuthState>();
     final theme = CLTheme.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final firstName = authState.currentUserInfo?.firstName ?? '';
-    final lastName = authState.currentUserInfo?.lastName ?? '';
-    final email = authState.currentUserInfo?.email ?? '';
-    final fullName = authState.currentUserInfo?.fullName ?? '';
+    final firstName = currentUserInfo?.firstName ?? '';
+    final lastName = currentUserInfo?.lastName ?? '';
+    final email = currentUserInfo?.email ?? '';
+    final fullName = currentUserInfo?.fullName ?? '';
     final displayName = '$firstName $lastName'.trim().isNotEmpty ? '$firstName $lastName'.trim() : email;
 
     return Padding(

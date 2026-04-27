@@ -54,16 +54,7 @@ class _ActionButton<TResultId extends Comparable, TResult extends Object> extend
       barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
       transitionDuration: const Duration(milliseconds: 200),
       transitionBuilder: (context, animation, secondaryAnimation, child) {
-        return FadeTransition(
-          opacity: CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
-          child: SlideTransition(
-            position: Tween<Offset>(
-              begin: Offset(0, openUpwards ? 0.05 : -0.05),
-              end: Offset.zero,
-            ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
-            child: child,
-          ),
-        );
+        return child;
       },
       pageBuilder: (context, animation, secondaryAnimation) {
         return Stack(
@@ -72,61 +63,40 @@ class _ActionButton<TResultId extends Comparable, TResult extends Object> extend
               right: 50,
               top: !openUpwards ? position.dy + 40 : null,
               bottom: openUpwards ? screenHeight - position.dy + 40 - renderBox.size.height : null,
-              child: Material(
-                color: Colors.transparent,
-                child: Container(
-                  constraints: const BoxConstraints(minWidth: 200, maxWidth: 280),
-                  decoration: BoxDecoration(
-                    color: theme.secondaryBackground,
-                    borderRadius: BorderRadius.circular(Sizes.borderRadius),
-                    border: Border.all(color: theme.borderColor, width: 1),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.06),
-                        blurRadius: 20,
-                        offset: const Offset(0, 8),
-                        spreadRadius: -4,
-                      ),
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.04),
-                        blurRadius: 6,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(Sizes.borderRadius),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: Sizes.padding, vertical: Sizes.padding * 0.65),
-                          decoration: BoxDecoration(
-                            color: theme.primaryBackground,
-                            border: Border(bottom: BorderSide(color: theme.borderColor, width: 1)),
-                          ),
-                          child: Text(
-                            actionsTitle?.call(model.item) ?? 'Azioni',
-                            style: theme.smallLabel.copyWith(
-                              color: theme.secondaryText,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 11,
-                              letterSpacing: 0.5,
-                            ),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(minWidth: 200, maxWidth: 280),
+                child: CLPopupSurface(
+                  animateUpward: openUpwards,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: Sizes.padding, vertical: Sizes.padding * 0.65),
+                        decoration: BoxDecoration(
+                          color: theme.primaryBackground,
+                          border: Border(bottom: BorderSide(color: theme.borderColor, width: 1)),
+                        ),
+                        child: Text(
+                          actionsTitle?.call(model.item) ?? 'Azioni',
+                          style: theme.smallLabel.copyWith(
+                            color: theme.secondaryText,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 11,
+                            letterSpacing: 0.5,
                           ),
                         ),
-                        ...actions.asMap().entries.map((entry) {
-                          final action = entry.value;
-                          final isLast = entry.key == actions.length - 1;
-                          return _ActionMenuItem(
-                            action: action,
-                            model: model,
-                            isLast: isLast,
-                          );
-                        }),
-                      ],
-                    ),
+                      ),
+                      ...actions.asMap().entries.map((entry) {
+                        final action = entry.value;
+                        final isLast = entry.key == actions.length - 1;
+                        return _ActionMenuItem(
+                          action: action,
+                          model: model,
+                          isLast: isLast,
+                        );
+                      }),
+                    ],
                   ),
                 ),
               ),

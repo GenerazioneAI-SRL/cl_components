@@ -29,59 +29,63 @@ class _MenuTileState extends State<_MenuTile> {
     final theme = CLTheme.of(context);
     final h = widget.isMobile ? 42.0 : 40.0;
 
-    return MouseRegion(
-      onEnter: (_) => _safeSetState(() => _hovered = true),
-      onExit: (_) => _safeSetState(() => _hovered = false),
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: widget.onTap,
-        child: SizedBox(
-          height: h,
-          child: Stack(
-            children: [
-              // Box colorato con margine sinistro dal bordo del menu
-              Positioned.fill(
-                top: 1.5,
-                bottom: 1.5,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 160),
-                  decoration: BoxDecoration(
-                    color: widget.selected
-                        ? theme.primary.withValues(alpha: 0.12)
-                        : _hovered
-                            ? theme.primary.withValues(alpha: 0.05)
-                            : Colors.transparent,
-                    borderRadius: BorderRadius.circular(10),
+    // RepaintBoundary: ogni tile mantiene la propria cache raster, così
+    // hover/selected di una tile non forza ripaint delle sorelle.
+    return RepaintBoundary(
+      child: MouseRegion(
+        onEnter: (_) => _safeSetState(() => _hovered = true),
+        onExit: (_) => _safeSetState(() => _hovered = false),
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: widget.onTap,
+          child: SizedBox(
+            height: h,
+            child: Stack(
+              children: [
+                // Box colorato con margine sinistro dal bordo del menu
+                Positioned.fill(
+                  top: 1.5,
+                  bottom: 1.5,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 160),
+                    decoration: BoxDecoration(
+                      color: widget.selected
+                          ? theme.primary.withValues(alpha: 0.12)
+                          : _hovered
+                              ? theme.primary.withValues(alpha: 0.05)
+                              : Colors.transparent,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
                 ),
-              ),
-              // Contenuto: icona e testo restano alla posizione originale (left: 12)
-              Padding(
-                padding: const EdgeInsets.only(left: 12),
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 20,
-                      child: widget.icon != null ? Center(child: widget.icon!) : null,
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        widget.label,
-                        style: theme.bodyLabel.override(
-                          color: widget.selected ? theme.primary : theme.secondaryText,
-                          fontWeight: widget.selected ? FontWeight.w600 : FontWeight.w500,
-                          fontSize: widget.isMobile ? 13 : 13.5,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
+                // Contenuto: icona e testo restano alla posizione originale (left: 12)
+                Padding(
+                  padding: const EdgeInsets.only(left: 12),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 20,
+                        child: widget.icon != null ? Center(child: widget.icon!) : null,
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                  ],
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          widget.label,
+                          style: theme.bodyLabel.override(
+                            color: widget.selected ? theme.primary : theme.secondaryText,
+                            fontWeight: widget.selected ? FontWeight.w600 : FontWeight.w500,
+                            fontSize: widget.isMobile ? 13 : 13.5,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -114,42 +118,45 @@ class _MenuSubTileState extends State<_MenuSubTile> {
     // Identico a _MenuTile e _MenuGroup header (12 + 20 + 10 = 42px)
     const double boxLeftMargin = 32.0;
 
-    return MouseRegion(
-      onEnter: (_) {
-        if (mounted) setState(() => _hovered = true);
-      },
-      onExit: (_) {
-        if (mounted) setState(() => _hovered = false);
-      },
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: widget.onTap,
-        child: SizedBox(
-          height: h,
-          child: Padding(
-            padding: EdgeInsets.only(left: boxLeftMargin, top: 1, bottom: 1),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 160),
-              padding: const EdgeInsets.only(left: 10),
-              decoration: BoxDecoration(
-                color: widget.selected
-                    ? theme.primary.withValues(alpha: 0.1)
-                    : _hovered
-                        ? theme.primary.withValues(alpha: 0.04)
-                        : Colors.transparent,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              alignment: Alignment.centerLeft,
-              child: Text(
-                widget.label,
-                style: theme.bodyText.copyWith(
-                  color: widget.selected ? theme.primary : theme.secondaryText,
-                  fontWeight: widget.selected ? FontWeight.w600 : FontWeight.w400,
-                  fontSize: widget.isMobile ? 13 : 13.5,
+    // RepaintBoundary: stesso razionale di _MenuTile.
+    return RepaintBoundary(
+      child: MouseRegion(
+        onEnter: (_) {
+          if (mounted) setState(() => _hovered = true);
+        },
+        onExit: (_) {
+          if (mounted) setState(() => _hovered = false);
+        },
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: widget.onTap,
+          child: SizedBox(
+            height: h,
+            child: Padding(
+              padding: EdgeInsets.only(left: boxLeftMargin, top: 1, bottom: 1),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 160),
+                padding: const EdgeInsets.only(left: 10),
+                decoration: BoxDecoration(
+                  color: widget.selected
+                      ? theme.primary.withValues(alpha: 0.1)
+                      : _hovered
+                          ? theme.primary.withValues(alpha: 0.04)
+                          : Colors.transparent,
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  widget.label,
+                  style: theme.bodyText.copyWith(
+                    color: widget.selected ? theme.primary : theme.secondaryText,
+                    fontWeight: widget.selected ? FontWeight.w600 : FontWeight.w400,
+                    fontSize: widget.isMobile ? 13 : 13.5,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
               ),
             ),
           ),

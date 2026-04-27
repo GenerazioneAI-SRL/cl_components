@@ -5,6 +5,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../cl_theme.dart';
 import '../layout/constants/sizes.constant.dart';
+import 'cl_popup_surface.widget.dart';
 
 /// Group item descriptor for [CLInputGroup].
 ///
@@ -254,7 +255,6 @@ class _DropdownSegmentState<T> extends State<_DropdownSegment<T>> {
   }
 
   void _open() {
-    final theme = CLTheme.of(context);
     final box = context.findRenderObject() as RenderBox?;
     if (box == null) return;
     final size = box.size;
@@ -268,35 +268,24 @@ class _DropdownSegmentState<T> extends State<_DropdownSegment<T>> {
             showWhenUnlinked: false,
             targetAnchor: Alignment.bottomLeft,
             followerAnchor: Alignment.topLeft,
-            offset: const Offset(0, 1),
+            offset: const Offset(0, 2),
             child: TapRegion(
               onTapOutside: (_) => _close(),
-              child: Material(
-                color: theme.secondaryBackground,
-                borderRadius: BorderRadius.circular(CLSizes.radiusSurface),
-                elevation: 4,
-                shadowColor: Colors.black.withValues(alpha: 0.10),
-                clipBehavior: Clip.antiAlias,
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(CLSizes.radiusSurface),
-                    border: Border.all(color: theme.cardBorder),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    mainAxisSize: MainAxisSize.min,
-                    children: widget.items.map((it) {
-                      final isSelected = it.value == widget.selected.value;
-                      return _MenuItem<T>(
-                        item: it,
-                        isSelected: isSelected,
-                        onTap: () {
-                          _close();
-                          if (!isSelected) widget.onChanged?.call(it.value);
-                        },
-                      );
-                    }).toList(),
-                  ),
+              child: CLPopupSurface(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisSize: MainAxisSize.min,
+                  children: widget.items.map((it) {
+                    final isSelected = it.value == widget.selected.value;
+                    return _MenuItem<T>(
+                      item: it,
+                      isSelected: isSelected,
+                      onTap: () {
+                        _close();
+                        if (!isSelected) widget.onChanged?.call(it.value);
+                      },
+                    );
+                  }).toList(),
                 ),
               ),
             ),

@@ -20,6 +20,7 @@ export 'widgets/buttons/cl_confirm_dialog.dart';
 export 'widgets/cl_card.widget.dart';
 export 'widgets/cl_container.widget.dart';
 export 'widgets/cl_input_group.widget.dart';
+export 'widgets/cl_popup_surface.widget.dart';
 export 'widgets/layout/cl_page_container.widget.dart';
 export 'widgets/layout/cl_responsive_stack.widget.dart';
 export 'widgets/layout/cl_responsive_grid_shadcn.widget.dart';

@@ -6,7 +6,7 @@ import 'package:hugeicons/hugeicons.dart';
 
 import '../../cl_theme.dart';
 import '../../layout/constants/sizes.constant.dart';
-import '../cl_container.widget.dart';
+import '../cl_popup_surface.widget.dart';
 import '../cl_text_field.widget.dart';
 import 'cl_dropdown_registry.dart';
 
@@ -358,9 +358,8 @@ class DropdownState<T extends Object> extends ChangeNotifier implements ISelecta
               followerAnchor:
                   openUpward ? Alignment.bottomLeft : Alignment.topLeft,
               offset: openUpward ? const Offset(0, -gap) : const Offset(0, gap),
-              child: CLContainer(
-                contentMargin: EdgeInsets.zero,
-                showShadow: true,
+              child: CLPopupSurface(
+                animateUpward: openUpward,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [

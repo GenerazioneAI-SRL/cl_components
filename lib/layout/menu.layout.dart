@@ -106,36 +106,41 @@ class _CLMenuLayoutState extends State<CLMenuLayout> {
           ),
 
           // ── Voci menu ────────────────────────────────────────
+          // RepaintBoundary: isola la cache raster delle tiles. Anche se la
+          // colonna rebuilda al cambio pageName, le tiles invariate non
+          // ripaint — meno carico GPU su nav rapida.
           Expanded(
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              padding: EdgeInsets.fromLTRB(Sizes.padding * 0.6, 0, Sizes.padding * 0.6, Sizes.padding),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  for (var route in widget.routes)
-                    if (route is ChildRoute && route.isVisible)
-                      _buildChildRoute(navigationState, route)
-                    else if (route is ModuleRoute && route.isVisible && route.showInSideMenu && !route.onlyShowLabel)
-                      _buildVisibleModuleRoute(navigationState, route)
-                    else if (route is ModuleRoute && route.isVisible && (route.onlyShowLabel || !route.showInSideMenu))
-                      ..._buildSectionModule(navigationState, route)
-                    else if (route is ShellModularRoute)
-                      for (var subRoute in route.routes)
-                        if (subRoute is ChildRoute && subRoute.isVisible)
-                          _buildChildRoute(navigationState, subRoute)
-                        else if (subRoute is ModuleRoute && subRoute.isVisible && subRoute.showInSideMenu && !subRoute.onlyShowLabel)
-                          _buildVisibleModuleRoute(navigationState, subRoute)
-                        else if (subRoute is ModuleRoute && subRoute.isVisible && (subRoute.onlyShowLabel || !subRoute.showInSideMenu))
-                          ..._buildSectionModule(navigationState, subRoute),
+            child: RepaintBoundary(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                padding: EdgeInsets.fromLTRB(Sizes.padding * 0.6, 0, Sizes.padding * 0.6, Sizes.padding),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (var route in widget.routes)
+                      if (route is ChildRoute && route.isVisible)
+                        _buildChildRoute(navigationState, route)
+                      else if (route is ModuleRoute && route.isVisible && route.showInSideMenu && !route.onlyShowLabel)
+                        _buildVisibleModuleRoute(navigationState, route)
+                      else if (route is ModuleRoute && route.isVisible && (route.onlyShowLabel || !route.showInSideMenu))
+                        ..._buildSectionModule(navigationState, route)
+                      else if (route is ShellModularRoute)
+                        for (var subRoute in route.routes)
+                          if (subRoute is ChildRoute && subRoute.isVisible)
+                            _buildChildRoute(navigationState, subRoute)
+                          else if (subRoute is ModuleRoute && subRoute.isVisible && subRoute.showInSideMenu && !subRoute.onlyShowLabel)
+                            _buildVisibleModuleRoute(navigationState, subRoute)
+                          else if (subRoute is ModuleRoute && subRoute.isVisible && (subRoute.onlyShowLabel || !subRoute.showInSideMenu))
+                            ..._buildSectionModule(navigationState, subRoute),
 
-                  // ── Mobile: Profilo + Logout + Versione ──────────
-                  if (isMobile) ...[
-                    const SizedBox(height: 12),
-                    // Versione (scorre con il menu su mobile)
-                    const _MenuVersionLabel(bottomPadding: 4.0),
+                    // ── Mobile: Profilo + Logout + Versione ──────────
+                    if (isMobile) ...[
+                      const SizedBox(height: 12),
+                      // Versione (scorre con il menu su mobile)
+                      const _MenuVersionLabel(bottomPadding: 4.0),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
           ),
@@ -227,17 +232,27 @@ class _CLMenuLayoutState extends State<CLMenuLayout> {
           // ── Footer custom (es. card utente con logout) ──────
           if (widget.menuFooterBuilder != null) widget.menuFooterBuilder!(context),
 
-          // ── Pulsante AI (se posizione = menu) ──────────────
-          const _MenuAiButton(),
+          // RepaintBoundary: isola il footer (AI button, profilo, toggle tema, versione)
+          // dal repaint indotto dal cambio pageName sulle voci sopra.
+          RepaintBoundary(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // ── Pulsante AI (se posizione = menu) ──────────────
+                const _MenuAiButton(),
 
-          // ── Profilo utente (se posizione = menu) ───────────────
-          const _MenuUserProfile(),
+                // ── Profilo utente (se posizione = menu) ───────────────
+                const _MenuUserProfile(),
 
-          // ── Footer: Toggle tema (solo desktop — su mobile è nell'intestazione drawer) ──
-          if (!isMobile) const _MenuThemeToggle(),
+                // ── Footer: Toggle tema (solo desktop — su mobile è nell'intestazione drawer) ──
+                if (!isMobile) const _MenuThemeToggle(),
 
-          // ── Versione app (solo desktop — su mobile scorre con le voci) ──
-          if (!isMobile) const _MenuVersionLabel(bottomPadding: 8.0),
+                // ── Versione app (solo desktop — su mobile scorre con le voci) ──
+                if (!isMobile) const _MenuVersionLabel(bottomPadding: 8.0),
+              ],
+            ),
+          ),
 
           // ── Header ──────────────────────────────────────────
         ],
