@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hugeicons/hugeicons.dart';
@@ -36,6 +38,7 @@ class DropdownState<T extends Object> extends ChangeNotifier implements ISelecta
   final FocusNode focusNode;
   final String? searchColumn;
   bool isOverlayOpen = false;
+  Timer? _searchDebounce;
 
   /// The hint text for this dropdown — used as key in [CLDropdownRegistry].
   final String? hint;
@@ -532,6 +535,13 @@ class DropdownState<T extends Object> extends ChangeNotifier implements ISelecta
   }
 
   Future<void> onSearch(String? searchColumn, String query) async {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 300), () {
+      _performSearch(searchColumn, query);
+    });
+  }
+
+  Future<void> _performSearch(String? searchColumn, String query) async {
     if (asyncSearchCallback != null) {
       try {
         loading = true;
@@ -575,10 +585,13 @@ class DropdownState<T extends Object> extends ChangeNotifier implements ISelecta
 
   @override
   void dispose() {
+    // §2.2.7 — cancel pending debounced search before disposing.
+    _searchDebounce?.cancel();
     if (hint != null) {
       CLDropdownRegistry.instance.unregister(hint!);
     }
     closeOverlay();
+    textEditingController.dispose();
     searchController.dispose();
     super.dispose();
   }

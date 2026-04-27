@@ -3,27 +3,32 @@ import '../../cl_theme.dart';
 import '../../layout/constants/sizes.constant.dart';
 import 'cl_tab_item.model.dart';
 
-/// Tab view moderna con stile segmentato basata su [TabBar] nativo di Flutter.
+/// Tab view in stile editoriale: nessun chrome a bottone, label sottolineata
+/// quando attiva. Divider 1px continuo sotto la riga delle tab; l'indicatore
+/// 3px del tab attivo sovrascrive il divider creando l'effetto "active rail".
 ///
-/// [showDivider] → mostra/nasconde la linea sotto la tab bar
+/// API pubblica invariata:
+/// - [clTabItems] elenco tab
+/// - [title] titolo opzionale sopra la tab bar
+/// - [showDivider] mostra/nasconde un secondo divider sotto la tab bar
 class CLTabView extends StatefulWidget {
   final List<CLTabItem> clTabItems;
   final String? title;
   final bool showDivider;
 
-  const CLTabView(
-      {super.key,
-      required this.clTabItems,
-      this.title,
-      this.showDivider = false});
+  const CLTabView({super.key, required this.clTabItems, this.title, this.showDivider = false});
 
   @override
   State<CLTabView> createState() => _CLTabViewState();
 }
 
-class _CLTabViewState extends State<CLTabView>
-    with SingleTickerProviderStateMixin {
+class _CLTabViewState extends State<CLTabView> with SingleTickerProviderStateMixin {
   late TabController _controller;
+
+  static const Duration _kAnimDuration = Duration(milliseconds: 200);
+  static const Curve _kAnimCurve = Curves.easeOutCubic;
+  static const double _kActiveUnderline = 3.0;
+  static const double _kTabHeight = 40.0;
 
   @override
   void initState() {
@@ -38,8 +43,7 @@ class _CLTabViewState extends State<CLTabView>
     if (oldWidget.clTabItems.length != widget.clTabItems.length) {
       _controller.removeListener(_onTabChanged);
       _controller.dispose();
-      _controller =
-          TabController(length: widget.clTabItems.length, vsync: this);
+      _controller = TabController(length: widget.clTabItems.length, vsync: this);
       _controller.addListener(_onTabChanged);
     }
   }
@@ -55,101 +59,169 @@ class _CLTabViewState extends State<CLTabView>
     super.dispose();
   }
 
+  void _selectIndex(int index) {
+    if (_controller.index == index) return;
+    _controller.animateTo(index, duration: Duration.zero);
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = CLTheme.of(context);
-    final containerRadius = BorderRadius.circular(Sizes.borderRadius + 2);
-    final indicatorRadius = BorderRadius.circular(Sizes.borderRadius);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        // ── Titolo opzionale ──
+        // Titolo opzionale
         if (widget.title != null) ...[
           Padding(
-              padding: const EdgeInsets.only(bottom: Sizes.borderRadius),
-              child: Text(widget.title!, style: theme.bodyLabel)),
+            padding: const EdgeInsets.only(bottom: CLSizes.gapSm),
+            child: Text(widget.title!, style: theme.bodyLabel),
+          ),
         ],
 
-        // ── Tab bar ──
-        Container(
-          decoration: BoxDecoration(
-            color: theme.secondaryBackground,
-            borderRadius: containerRadius,
-            border: Border.all(color: theme.cardBorder.withValues(alpha: 0.8)),
-          ),
-          padding: const EdgeInsets.all(4),
-          child: Theme(
-            data: Theme.of(context)
-                .copyWith(splashFactory: NoSplash.splashFactory),
-            child: TabBar(
-              controller: _controller,
-              indicatorSize: TabBarIndicatorSize.tab,
-              indicatorPadding: EdgeInsets.zero,
-              indicator: BoxDecoration(
-                color: theme.primaryBackground,
-                borderRadius: indicatorRadius,
-                border:
-                    Border.all(color: theme.cardBorder.withValues(alpha: 0.65)),
-                boxShadow: [
-                  BoxShadow(
-                    color: theme.primaryText.withValues(alpha: 0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+        // Tab row — solo underline del tab attivo, nessun rail continuo
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: List.generate(widget.clTabItems.length, (index) {
+            final item = widget.clTabItems[index];
+            final isActive = _controller.index == index;
+            return Padding(
+              padding: EdgeInsets.only(
+                right: index == widget.clTabItems.length - 1 ? 0 : CLSizes.gapLg,
               ),
-              overlayColor: WidgetStateProperty.all(Colors.transparent),
-              labelColor: theme.primaryText,
-              unselectedLabelColor: theme.mutedForeground,
-              labelStyle: theme.bodyText.override(fontWeight: FontWeight.w600),
-              unselectedLabelStyle:
-                  theme.bodyText.override(fontWeight: FontWeight.w500),
-              dividerColor: Colors.transparent,
-              dividerHeight: 0,
-              padding: EdgeInsets.zero,
-              labelPadding: const EdgeInsets.symmetric(horizontal: 14),
-              tabs: widget.clTabItems
-                  .map(
-                    (item) => Tab(
-                      height: 40,
-                      child: item.icon != null
-                          ? Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(item.icon, size: 16),
-                                const SizedBox(width: 6),
-                                Text(item.tabName),
-                              ],
-                            )
-                          : Text(item.tabName),
-                    ),
-                  )
-                  .toList(),
-            ),
-          ),
+              child: _CLTabUnderlineItem(
+                item: item,
+                isActive: isActive,
+                onTap: () => _selectIndex(index),
+                theme: theme,
+                animDuration: _kAnimDuration,
+                animCurve: _kAnimCurve,
+                activeUnderline: _kActiveUnderline,
+                height: _kTabHeight,
+                showRail: widget.showDivider,
+              ),
+            );
+          }),
         ),
 
-        // ── Divider opzionale ──
+        // Divider opzionale sotto la tab bar (oltre a quello di default)
         if (widget.showDivider) ...[
-          const SizedBox(height: Sizes.borderRadius),
-          Divider(color: theme.cardBorder, height: 1)
+          const SizedBox(height: CLSizes.gapSm),
+          Divider(color: theme.borderColor, height: 1),
         ],
 
-        const SizedBox(height: Sizes.borderRadius),
+        const SizedBox(height: CLSizes.gapLg),
 
-        // ── Contenuto (IndexedStack per mantenere lo stato) ──
+        // Contenuto (IndexedStack per mantenere lo stato)
         IndexedStack(
           index: _controller.index,
           children: List.generate(widget.clTabItems.length, (index) {
-            return Visibility(
-                visible: _controller.index == index,
-                maintainState: true,
-                child: widget.clTabItems[index].tabContent);
+            return Visibility(visible: _controller.index == index, maintainState: true, child: widget.clTabItems[index].tabContent);
           }),
         ),
       ],
+    );
+  }
+}
+
+/// Singolo tab in stile underline. Stateful per gestire l'hover senza
+/// rebuildare l'intera tab bar.
+class _CLTabUnderlineItem extends StatefulWidget {
+  final CLTabItem item;
+  final bool isActive;
+  final VoidCallback onTap;
+  final CLTheme theme;
+  final Duration animDuration;
+  final Curve animCurve;
+  final double activeUnderline;
+  final double height;
+  final bool showRail;
+
+  const _CLTabUnderlineItem({
+    required this.item,
+    required this.isActive,
+    required this.onTap,
+    required this.theme,
+    required this.animDuration,
+    required this.animCurve,
+    required this.activeUnderline,
+    required this.height,
+    required this.showRail,
+  });
+
+  @override
+  State<_CLTabUnderlineItem> createState() => _CLTabUnderlineItemState();
+}
+
+class _CLTabUnderlineItemState extends State<_CLTabUnderlineItem> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = widget.theme;
+
+    final Color textColor = widget.isActive ? theme.primaryText : (_hovered ? theme.primaryText : theme.mutedForeground);
+
+    // Underline:
+    // - active: 3px primary
+    // - inactive + hover: 1px borderColor SOLO se showRail (divider attivo)
+    // - inactive: trasparente
+    // Quando showRail=false: ZERO linee tranne tab attivo.
+    final Color underlineColor = widget.isActive ? theme.primary : (widget.showRail && _hovered ? theme.borderColor : Colors.transparent);
+    final double underlineThickness = widget.isActive ? widget.activeUnderline : 1.0;
+
+    final TextStyle baseStyle = theme.title.override(
+      fontSize: 14,
+      fontWeight: FontWeight.w500,
+      color: textColor,
+    );
+
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: widget.animDuration,
+          curve: widget.animCurve,
+          height: widget.height,
+          padding: const EdgeInsets.symmetric(horizontal: CLSizes.gapLg),
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: underlineColor,
+                width: underlineThickness,
+              ),
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (widget.item.icon != null) ...[
+                AnimatedSwitcher(
+                  duration: widget.animDuration,
+                  child: Icon(
+                    widget.item.icon,
+                    key: ValueKey<Color>(textColor),
+                    size: CLSizes.iconSizeCompact,
+                    color: textColor,
+                  ),
+                ),
+                const SizedBox(width: CLSizes.gapSm),
+              ],
+              AnimatedDefaultTextStyle(
+                duration: widget.animDuration,
+                curve: widget.animCurve,
+                style: baseStyle,
+                child: Text(widget.item.tabName),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

@@ -34,14 +34,14 @@ class _PagedDataTableFilterTab<TKey extends Comparable, TResultId extends Compar
         final activeExtraFilters = state.filters.entries.where((e) => !e.value._filter.isMainFilter && e.value.hasValue).toList();
 
         Widget child = Container(
-            decoration: BoxDecoration(
-              color: CLTheme.of(context).primaryBackground,
-              borderRadius: isFilterBarRounded
-                  ? BorderRadius.only(topLeft: Radius.circular(Sizes.borderRadius), topRight: Radius.circular(Sizes.borderRadius))
-                  : null,
-            ),
-            padding: EdgeInsets.all(ResponsiveBreakpoints.of(context).isDesktop ? Sizes.padding : 0),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
+          decoration: BoxDecoration(
+            color: CLTheme.of(context).secondaryBackground,
+          ),
+          padding: EdgeInsets.all(ResponsiveBreakpoints.of(context).isDesktop ? Sizes.padding : 0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -88,23 +88,19 @@ class _PagedDataTableFilterTab<TKey extends Comparable, TResultId extends Compar
                               }
 
                               if (isDesktop) {
-                                // Desktop: CLButton con testo + icona + badge
+                                // Desktop: CLOutlineButton con testo + icona + badge
                                 return Stack(
                                   clipBehavior: Clip.none,
                                   children: [
-                                    CLButton(
+                                    KeyedSubtree(
                                       key: buttonKey,
-                                      text: "Filtri",
-                                      iconAlignment: IconAlignment.start,
-                                      backgroundColor: CLTheme.of(context).secondaryBackground,
-                                      textStyle: CLTheme.of(context).bodyLabel.copyWith(fontWeight: FontWeight.w500),
-                                      hugeIcon: HugeIcon(
-                                        icon: HugeIcons.strokeRoundedFilterHorizontal,
-                                        color: CLTheme.of(context).secondaryText,
-                                        size: 16,
+                                      child: CLGhostButton.primary(
+                                        text: "Filtri",
+                                        iconAlignment: IconAlignment.start,
+                                        icon: LucideIcons.slidersHorizontal,
+                                        onTap: isDisabled ? () {} : onTap,
+                                        context: context,
                                       ),
-                                      onTap: isDisabled ? () {} : onTap,
-                                      context: context,
                                     ),
                                     if (activeCount > 0)
                                       Positioned(
@@ -135,8 +131,8 @@ class _PagedDataTableFilterTab<TKey extends Comparable, TResultId extends Compar
                                   children: [
                                     IconButton(
                                       key: buttonKey,
-                                      icon: HugeIcon(
-                                        icon: HugeIcons.strokeRoundedFilterHorizontal,
+                                      icon: Icon(
+                                        LucideIcons.slidersHorizontal,
                                         color: CLTheme.of(context).primaryText,
                                         size: Sizes.medium,
                                       ),
@@ -180,10 +176,10 @@ class _PagedDataTableFilterTab<TKey extends Comparable, TResultId extends Compar
                       if (header != null) ...[Flexible(child: header!), const SizedBox(width: Sizes.padding)],
 
                       // Download button
-                      if (this.downloadPage != null) ...[
+                      if (downloadPage != null) ...[
                         CLButton.secondary(
-                          text: this.downloadButtonText ?? "Download",
-                          icon: this.downloadButtonIcon,
+                          text: downloadButtonText ?? "Download",
+                          icon: downloadButtonIcon,
                           onTap: () async {
                             await state._dispatchDownloadCallback();
                           },
@@ -192,22 +188,29 @@ class _PagedDataTableFilterTab<TKey extends Comparable, TResultId extends Compar
                         const SizedBox(width: Sizes.padding),
                       ],
 
-                      // Main menus
-                      if (mainMenus.isNotEmpty) ...mainMenus,
+                      // Main menus (with horizontal spacing between buttons)
+                      if (mainMenus.isNotEmpty)
+                        for (var i = 0; i < mainMenus.length; i++) ...[
+                          if (i > 0) const SizedBox(width: CLSizes.gapMd),
+                          mainMenus[i],
+                        ],
 
-                      // Extra menu
-                      if (extraMenus.isNotEmpty)
-                        IconButton(
+                      // Extra menu (icon-only ghost button)
+                      if (extraMenus.isNotEmpty) ...[
+                        if (mainMenus.isNotEmpty) const SizedBox(width: CLSizes.gapMd),
+                        KeyedSubtree(
                           key: buttonExtraMenuKey,
-                          splashColor: Colors.transparent,
-                          highlightColor: Colors.transparent,
-                          hoverColor: Colors.transparent,
-                          padding: const EdgeInsets.only(left: Sizes.small),
-                          icon: Icon(Icons.more_vert, color: theme.buttonsColor),
-                          onPressed: () async {
-                            _showExtraMenuOverlay(context, state, buttonExtraMenuKey);
-                          },
+                          child: CLGhostButton.primary(
+                            text: '',
+                            iconAlignment: IconAlignment.start,
+                            icon: LucideIcons.ellipsisVertical400,
+                            onTap: () async {
+                              _showExtraMenuOverlay(context, state, buttonExtraMenuKey);
+                            },
+                            context: context,
+                          ),
                         ),
+                      ],
 
                       // Checkbox (solo mobile)
                       if (rowsSelectable && !ResponsiveBreakpoints.of(context).isDesktop)
@@ -309,44 +312,69 @@ class _PagedDataTableFilterTab<TKey extends Comparable, TResultId extends Compar
   }
 
   Future<void> _showExtraMenuOverlay(BuildContext context, _PagedDataTableState<TKey, TResultId, TResult> state, GlobalKey buttonExtraMenuKey) async {
-    final RenderBox renderBox = buttonExtraMenuKey.currentContext!.findRenderObject() as RenderBox;
-    final Offset position = renderBox.localToGlobal(Offset.zero);
+    final theme = CLTheme.of(context);
+
     if (ResponsiveBreakpoints.of(context).isDesktop) {
-      await showDialog(
-        context: context,
-        barrierColor: Colors.transparent,
-        builder: (BuildContext context) {
+      final buttonCtx = buttonExtraMenuKey.currentContext;
+      if (buttonCtx == null) return;
+      final overlayState = Overlay.of(context);
+      final RenderBox button = buttonCtx.findRenderObject() as RenderBox;
+      final RenderBox overlay = overlayState.context.findRenderObject() as RenderBox;
+      final buttonPos = button.localToGlobal(Offset.zero, ancestor: overlay);
+      final buttonSize = button.size;
+      const double menuWidth = 240;
+      final screenSize = overlay.size;
+      double left = buttonPos.dx + buttonSize.width - menuWidth;
+      if (left < 8) left = 8;
+      if (left + menuWidth > screenSize.width - 8) left = screenSize.width - menuWidth - 8;
+      final double top = buttonPos.dy + buttonSize.height + 4;
+
+      OverlayEntry? entry;
+      void close() {
+        entry?.remove();
+        entry = null;
+      }
+
+      entry = OverlayEntry(
+        builder: (ctx) {
           return Stack(
-            children: <Widget>[
+            children: [
+              Positioned.fill(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onTap: close,
+                ),
+              ),
               Positioned(
-                left: MediaQuery.of(context).size.width - 362,
-                top: position.dy + 50,
-                child: Material(
-                  color: Colors.transparent,
-                  child: Container(
-                    padding: const EdgeInsets.all(Sizes.padding),
-                    width: 320.0,
-                    decoration: BoxDecoration(
-                      color: CLTheme.of(context).secondaryBackground,
-                      border: Border.all(color: CLTheme.of(context).borderColor, width: 1),
-                      borderRadius: BorderRadius.circular(Sizes.padding),
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.max,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("Azioni generali", style: CLTheme.of(context).bodyLabel),
-                        Divider(thickness: 1, color: CLTheme.of(context).borderColor),
-                        ...extraMenus.map(
-                          (menu) => GestureDetector(
-                            onTap: () {
-                              Navigator.of(context).pop();
-                              menu.onTap();
-                            },
-                            child: menu.content,
-                          ),
-                        ),
-                      ],
+                left: left,
+                top: top,
+                width: menuWidth,
+                child: TapRegion(
+                  onTapOutside: (_) => close(),
+                  child: Material(
+                    color: theme.secondaryBackground,
+                    elevation: 4,
+                    borderRadius: BorderRadius.circular(CLSizes.radiusSurface),
+                    clipBehavior: Clip.antiAlias,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(CLSizes.radiusSurface),
+                        border: Border.all(color: theme.cardBorder, width: 1),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          for (var i = 0; i < extraMenus.length; i++)
+                            _ExtraMenuRow(
+                              content: extraMenus[i].content,
+                              onTap: () {
+                                close();
+                                extraMenus[i].onTap();
+                              },
+                            ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -355,33 +383,40 @@ class _PagedDataTableFilterTab<TKey extends Comparable, TResultId extends Compar
           );
         },
       );
+
+      overlayState.insert(entry!);
     } else {
       await showModalBottomSheet(
         context: context,
-        barrierColor: Colors.transparent,
-        builder: (BuildContext context) {
-          return Container(
-            padding: const EdgeInsets.all(Sizes.padding),
-            decoration: BoxDecoration(
-              color: CLTheme.of(context).secondaryBackground,
-              border: Border.all(color: CLTheme.of(context).borderColor, width: 1),
-              borderRadius: BorderRadius.circular(Sizes.padding),
-            ),
+        backgroundColor: theme.secondaryBackground,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(CLSizes.radiusModal)),
+        ),
+        builder: (BuildContext ctx) {
+          return SafeArea(
             child: Column(
-              mainAxisSize: MainAxisSize.max,
-              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text("Azioni generali", style: CLTheme.of(context).bodyLabel),
-                Divider(thickness: 1, color: CLTheme.of(context).borderColor),
-                ...extraMenus.map(
-                  (menu) => GestureDetector(
-                    onTap: () {
-                      menu.onTap.call();
-                      Navigator.of(context).pop();
-                    },
-                    child: menu.content,
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: CLSizes.gapSm),
+                  child: Center(
+                    child: Container(
+                      width: 36,
+                      height: 4,
+                      decoration: BoxDecoration(color: theme.borderColor, borderRadius: BorderRadius.circular(2)),
+                    ),
                   ),
                 ),
+                for (final menu in extraMenus)
+                  _ExtraMenuRow(
+                    content: menu.content,
+                    onTap: () {
+                      Navigator.of(ctx).pop();
+                      menu.onTap();
+                    },
+                  ),
+                const SizedBox(height: CLSizes.gapSm),
               ],
             ),
           );
@@ -669,6 +704,44 @@ class _FiltersDialog<TKey extends Comparable, TResultId extends Comparable, TRes
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Single row inside extra-menu popup. Hover bg + 36px height + horizontal
+/// padding consistent with `tableActions` row context menu UX.
+class _ExtraMenuRow extends StatefulWidget {
+  final Widget content;
+  final VoidCallback onTap;
+
+  const _ExtraMenuRow({required this.content, required this.onTap});
+
+  @override
+  State<_ExtraMenuRow> createState() => _ExtraMenuRowState();
+}
+
+class _ExtraMenuRowState extends State<_ExtraMenuRow> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = CLTheme.of(context);
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: widget.onTap,
+        child: Container(
+          height: 40,
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: CLSizes.gapMd),
+          color: _hovered ? theme.muted : Colors.transparent,
+          alignment: Alignment.centerLeft,
+          child: widget.content,
+        ),
+      ),
     );
   }
 }

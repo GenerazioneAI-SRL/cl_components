@@ -8,7 +8,7 @@ import '../cl_text_field.widget.dart';
 import 'dropdown_state.dart';
 
 class CLDropdown<T extends Object> extends StatefulWidget {
-  CLDropdown({
+  const CLDropdown({
     super.key,
     required this.controller,
     required this.itemBuilder,
@@ -195,6 +195,11 @@ class CLDropdown<T extends Object> extends StatefulWidget {
 }
 
 class _CLDropdownState<T extends Object> extends State<CLDropdown<T>> {
+  // §2.2.6 — lazy FocusNode so it is created in build (where context exists)
+  // and disposed exactly once. Allocating in initState would race with overlay
+  // wiring; allocating in build without a guard would leak a node per rebuild.
+  FocusNode? _focusNode;
+
   // Tracks whether the parent widget explicitly changed selectedValues.
   // We only call syncExternalSelectedItems on actual parent-driven changes,
   // NOT on every notifyListeners() rebuild — otherwise AI-driven selections
@@ -207,6 +212,12 @@ class _CLDropdownState<T extends Object> extends State<CLDropdown<T>> {
   }
 
   @override
+  void dispose() {
+    _focusNode?.dispose();
+    super.dispose();
+  }
+
+  @override
   void didUpdateWidget(CLDropdown<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (!listEquals(oldWidget.selectedValues, widget.selectedValues)) {
@@ -216,14 +227,14 @@ class _CLDropdownState<T extends Object> extends State<CLDropdown<T>> {
 
   @override
   Widget build(BuildContext context) {
-    FocusNode focusNode = FocusNode();
+    _focusNode ??= FocusNode();
     return ChangeNotifierProvider<DropdownState<T>>(
       create: (context) => DropdownState(
         items: widget.items,
         asyncSearchCallback: widget.asyncSearchCallback,
         syncSearchCallback: widget.syncSearchCallback,
         context: context,
-        focusNode: focusNode,
+        focusNode: _focusNode!,
         itemBuilder: widget.itemBuilder,
         isMultiple: widget.isMultiple,
         valueToShow: widget.valueToShow,
