@@ -147,7 +147,7 @@ class _MenuGroupState extends State<_MenuGroup> with SingleTickerProviderStateMi
                         bottom: 0,
                         child: Container(
                           width: 1.5,
-                          color: theme.borderColor.withValues(alpha: 0.6),
+                          color: theme.borderColor,
                         ),
                       ),
                       Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: widget.children),
