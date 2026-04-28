@@ -20,10 +20,7 @@ class _ShimmerRows<TKey extends Comparable, TResultId extends Comparable, TResul
       shrinkWrap: true,
       padding: EdgeInsets.zero,
       itemCount: itemCount,
-      separatorBuilder: (_, __) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: Sizes.padding * 0.5),
-        child: Divider(height: 0, color: clTheme.borderColor, thickness: 1),
-      ),
+      separatorBuilder: (_, __) => Divider(height: 0, color: clTheme.borderColor, thickness: 1),
       itemBuilder: (context, index) {
         final widthMultiplier = [0.7, 0.5, 0.85, 0.6, 0.75][index % 5];
         return Container(

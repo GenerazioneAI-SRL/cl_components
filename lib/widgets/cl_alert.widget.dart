@@ -220,10 +220,20 @@ class _AlertBodyState extends State<_AlertBody> {
             ),
           ];
 
+    // Blend the tinted background over the theme surface so the alert is
+    // fully opaque on top of arbitrary page content (otherwise the page
+    // bleeds through the 10% tint).
+    final baseDeco = widget.decoration ?? const BoxDecoration();
+    final tintedColor = baseDeco.color ?? Colors.transparent;
+    final opaqueColor = tintedColor.a >= 1.0
+        ? tintedColor
+        : Color.alphaBlend(tintedColor, theme.secondaryBackground);
+
     Widget container = AnimatedContainer(
       duration: const Duration(milliseconds: 180),
       curve: Curves.easeOut,
-      decoration: (widget.decoration ?? const BoxDecoration()).copyWith(
+      decoration: baseDeco.copyWith(
+        color: opaqueColor,
         boxShadow: shadow,
       ),
       padding: const EdgeInsets.symmetric(
