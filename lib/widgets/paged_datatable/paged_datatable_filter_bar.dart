@@ -110,7 +110,7 @@ class _PagedDataTableFilterTab<TKey extends Comparable, TResultId extends Compar
                                           width: 18,
                                           height: 18,
                                           decoration: BoxDecoration(
-                                            color: CLTheme.of(context).primary,
+                                            color: _effectiveTablePrimary(context),
                                             shape: BoxShape.circle,
                                             border: Border.all(color: CLTheme.of(context).primaryBackground, width: 1.5),
                                           ),
@@ -146,7 +146,7 @@ class _PagedDataTableFilterTab<TKey extends Comparable, TResultId extends Compar
                                           width: 16,
                                           height: 16,
                                           decoration: BoxDecoration(
-                                            color: CLTheme.of(context).primary,
+                                            color: _effectiveTablePrimary(context),
                                             shape: BoxShape.circle,
                                             border: Border.all(color: CLTheme.of(context).primaryBackground, width: 1),
                                           ),
@@ -608,7 +608,9 @@ class _FiltersDialog<TKey extends Comparable, TResultId extends Comparable, TRes
             constraints: const BoxConstraints(maxWidth: 420),
             child: CLPopupSurface(
               animateUpward: openUpward,
-              child: Column(
+              child: Material(
+                type: MaterialType.transparency,
+                child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -675,6 +677,7 @@ class _FiltersDialog<TKey extends Comparable, TResultId extends Comparable, TRes
                     ),
                   ),
                 ],
+              ),
               ),
             ),
           ),

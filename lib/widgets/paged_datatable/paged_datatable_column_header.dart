@@ -207,7 +207,7 @@ class _ColumnHeaderState<TResult extends Object> extends State<_ColumnHeader<TRe
                 child: DefaultTextStyle(
                   style: theme.smallLabel.copyWith(
                     fontWeight: widget.isSorted ? FontWeight.w700 : FontWeight.w600,
-                    color: widget.isSorted ? theme.primary : theme.secondaryText,
+                    color: widget.isSorted ? _effectiveTablePrimary(context) : theme.secondaryText,
                     fontSize: 12,
                     letterSpacing: 0.3,
                   ),
@@ -228,7 +228,7 @@ class _ColumnHeaderState<TResult extends Object> extends State<_ColumnHeader<TRe
                     child: Icon(
                       Icons.arrow_upward_rounded,
                       size: 13,
-                      color: widget.isSorted ? theme.primary : theme.secondaryText,
+                      color: widget.isSorted ? _effectiveTablePrimary(context) : theme.secondaryText,
                     ),
                   ),
                 ),

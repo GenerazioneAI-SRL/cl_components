@@ -16,7 +16,17 @@ class CLTabView extends StatefulWidget {
   final String? title;
   final bool showDivider;
 
-  const CLTabView({super.key, required this.clTabItems, this.title, this.showDivider = false});
+  /// Colore dell'indicator (sottolineato 3px) del tab attivo.
+  /// Default: `theme.primary`.
+  final Color? indicatorColor;
+
+  const CLTabView({
+    super.key,
+    required this.clTabItems,
+    this.title,
+    this.showDivider = false,
+    this.indicatorColor,
+  });
 
   @override
   State<CLTabView> createState() => _CLTabViewState();
@@ -109,6 +119,7 @@ class _CLTabViewState extends State<CLTabView> with SingleTickerProviderStateMix
                 activeUnderline: _kActiveUnderline,
                 height: _kTabHeight,
                 showRail: widget.showDivider,
+                indicatorColor: widget.indicatorColor,
               ),
             );
           }),
@@ -155,6 +166,7 @@ class _CLTabUnderlineItem extends StatefulWidget {
   final double activeUnderline;
   final double height;
   final bool showRail;
+  final Color? indicatorColor;
 
   const _CLTabUnderlineItem({
     required this.item,
@@ -166,6 +178,7 @@ class _CLTabUnderlineItem extends StatefulWidget {
     required this.activeUnderline,
     required this.height,
     required this.showRail,
+    this.indicatorColor,
   });
 
   @override
@@ -186,7 +199,8 @@ class _CLTabUnderlineItemState extends State<_CLTabUnderlineItem> {
     // - inactive + hover: 1px borderColor SOLO se showRail (divider attivo)
     // - inactive: trasparente
     // Quando showRail=false: ZERO linee tranne tab attivo.
-    final Color underlineColor = widget.isActive ? theme.primary : (widget.showRail && _hovered ? theme.borderColor : Colors.transparent);
+    final Color activeUnderlineColor = widget.indicatorColor ?? theme.primary;
+    final Color underlineColor = widget.isActive ? activeUnderlineColor : (widget.showRail && _hovered ? theme.borderColor : Colors.transparent);
     final double underlineThickness = widget.isActive ? widget.activeUnderline : 1.0;
 
     final TextStyle baseStyle = theme.title.override(

@@ -91,14 +91,14 @@ class _EmptyState extends StatelessWidget {
               width: 64,
               height: 64,
               decoration: BoxDecoration(
-                color: theme.primary.withValues(alpha: 0.06),
+                color: _effectiveTablePrimary(context).withValues(alpha: 0.06),
                 borderRadius: BorderRadius.circular(Sizes.borderRadius + 4),
-                border: Border.all(color: theme.primary.withValues(alpha: 0.1)),
+                border: Border.all(color: _effectiveTablePrimary(context).withValues(alpha: 0.1)),
               ),
               child: Icon(
                 Icons.search_off_rounded,
                 size: 28,
-                color: theme.primary.withValues(alpha: 0.5),
+                color: _effectiveTablePrimary(context).withValues(alpha: 0.5),
               ),
             ),
             const SizedBox(height: Sizes.padding),

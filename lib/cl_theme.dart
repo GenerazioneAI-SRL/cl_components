@@ -46,6 +46,10 @@ abstract class CLTheme {
     required this.accentForeground,
     required this.ring,
     required this.cardBorder,
+    required this.idColor,
+    required this.certColor,
+    required this.hrColor,
+    required this.lmsColor,
   });
 
   static Color hexToColor(String code) => ColorUtils.fromHex(code);
@@ -111,6 +115,18 @@ abstract class CLTheme {
   final Color accentForeground; // Text on accent surfaces
   final Color ring; // Focus ring / outline color
   final Color cardBorder; // Card and panel border
+
+  /// Colore identificativo del modulo SkillID
+  final Color idColor;
+
+  /// Colore identificativo del modulo Certificazioni
+  final Color certColor;
+
+  /// Colore identificativo del modulo HR
+  final Color hrColor;
+
+  /// Colore identificativo del modulo LMS
+  final Color lmsColor;
 
   List<BoxShadow> get cardShadow;
 
@@ -190,6 +206,10 @@ class LightModeTheme extends CLTheme {
     super.accentForeground = const Color(0xFF31302E),
     super.ring = const Color(0xFF097FE8),
     super.cardBorder = const Color(0x1A000000),
+    super.idColor = const Color(0xFF0C8EC7),
+    super.certColor = const Color(0xFF7C3AED),
+    super.hrColor = const Color(0xFFE17B47),
+    super.lmsColor = const Color(0xFF059669),
   });
 
   @override
@@ -219,6 +239,10 @@ class DarkModeTheme extends CLTheme {
     super.accentForeground = const Color(0xFFFAFAFA),
     super.ring = const Color(0xFF3BA8D8),
     super.cardBorder = const Color(0xFF27272A),
+    super.idColor = const Color(0xFF3BA8D8),
+    super.certColor = const Color(0xFF9D6BFF),
+    super.hrColor = const Color(0xFFF59563),
+    super.lmsColor = const Color(0xFF34D399),
   });
 
   @override

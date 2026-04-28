@@ -23,6 +23,8 @@ class CLContainer extends StatefulWidget {
     this.onActionTap,
     this.glassmorphism = true,
     this.showBorder = true,
+    this.titleBackgroundColor,
+    this.titleIcon,
   });
 
   final Widget child;
@@ -44,6 +46,12 @@ class CLContainer extends StatefulWidget {
   final bool showBorder;
 
   final bool glassmorphism;
+
+  final Color? titleBackgroundColor;
+
+  /// Icona opzionale mostrata a sinistra del [title].
+  /// Ignorata se viene fornito [titleWidget].
+  final Widget? titleIcon;
 
   @override
   State<CLContainer> createState() => _CLContainerState();
@@ -77,38 +85,61 @@ class _CLContainerState extends State<CLContainer> {
       child: ClipRRect(
         borderRadius: innerBr,
         child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (hasTitle) ...[
-            Container(
-              decoration: BoxDecoration(
-                color: theme.primaryBackground,
-                border: widget.customHeader == null ? Border(bottom: BorderSide(color: theme.cardBorder, width: 1)) : null,
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: Sizes.padding, vertical: Sizes.verticalPadding),
-                child: Row(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child:
-                          widget.titleWidget != null ? widget.titleWidget! : Text(widget.title!, style: theme.bodyText.override(fontWeight: FontWeight.bold)),
-                    ),
-                    if (widget.actionTitle != null && widget.onActionTap != null && widget.actionWidget == null)
-                      SizedBox(height: 20, child: CLGhostButton.primary(text: widget.actionTitle!, onTap: widget.onActionTap!, context: context)),
-                    if (widget.actionWidget != null) widget.actionWidget!,
-                  ],
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (hasTitle) ...[
+              Container(
+                decoration: BoxDecoration(
+                  color: widget.titleBackgroundColor != null
+                      ? widget.titleBackgroundColor!.withValues(alpha: 0.08)
+                      : theme.primaryBackground,
+                  border: widget.customHeader == null
+                      ? Border(bottom: BorderSide(color: theme.cardBorder, width: 1))
+                      : null,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: Sizes.padding, vertical: Sizes.verticalPadding),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: widget.titleWidget != null
+                            ? widget.titleWidget!
+                            : Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (widget.titleIcon != null) ...[
+                                    widget.titleIcon!,
+                                    const SizedBox(width: Sizes.gapMd),
+                                  ],
+                                  Flexible(
+                                    child: Text(widget.title!,
+                                        style: theme.bodyText.override(
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                        overflow: TextOverflow.ellipsis),
+                                  ),
+                                ],
+                              ),
+                      ),
+                      if (widget.actionTitle != null && widget.onActionTap != null && widget.actionWidget == null)
+                        SizedBox(
+                            height: 20,
+                            child: CLGhostButton.primary(
+                                text: widget.actionTitle!, onTap: widget.onActionTap!, context: context)),
+                      if (widget.actionWidget != null) widget.actionWidget!,
+                    ],
+                  ),
                 ),
               ),
-            ),
+            ],
+            widget.customHeader ?? SizedBox.shrink(),
+            Flexible(child: Padding(padding: widget.contentPadding ?? EdgeInsets.zero, child: widget.child)),
           ],
-          widget.customHeader ?? SizedBox.shrink(),
-          Flexible(child: Padding(padding: widget.contentPadding ?? EdgeInsets.zero, child: widget.child)),
-        ],
-      ),
+        ),
       ),
     );
   }

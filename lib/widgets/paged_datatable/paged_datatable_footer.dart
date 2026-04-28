@@ -196,6 +196,7 @@ class _PageSizeButtonState extends State<_PageSizeButton> {
   @override
   Widget build(BuildContext context) {
     final t = widget.theme;
+    final primary = _effectiveTablePrimary(context);
 
     return MouseRegion(
       cursor: widget.selected ? SystemMouseCursors.basic : SystemMouseCursors.click,
@@ -210,9 +211,9 @@ class _PageSizeButtonState extends State<_PageSizeButton> {
           padding: const EdgeInsets.symmetric(horizontal: 10),
           decoration: BoxDecoration(
             color: widget.selected
-                ? t.primary.withValues(alpha: 0.12)
+                ? primary.withValues(alpha: 0.12)
                 : _isHovered
-                    ? t.primary.withValues(alpha: 0.04)
+                    ? primary.withValues(alpha: 0.04)
                     : Colors.transparent,
             border: !widget.isFirst ? Border(left: BorderSide(color: t.borderColor, width: 1)) : null,
           ),
@@ -222,7 +223,7 @@ class _PageSizeButtonState extends State<_PageSizeButton> {
               style: t.smallLabel.copyWith(
                 fontSize: 12,
                 fontWeight: widget.selected ? FontWeight.w700 : FontWeight.normal,
-                color: widget.selected ? t.primary : (_isHovered ? t.primaryText : t.secondaryText),
+                color: widget.selected ? primary : (_isHovered ? t.primaryText : t.secondaryText),
               ),
             ),
           ),
@@ -340,7 +341,7 @@ class _PaginationButtonState extends State<_PaginationButton> {
 
   @override
   Widget build(BuildContext context) {
-    final t = widget.theme;
+    final primary = _effectiveTablePrimary(context);
 
     return MouseRegion(
       cursor: widget.enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
@@ -354,7 +355,7 @@ class _PaginationButtonState extends State<_PaginationButton> {
           height: 36,
           decoration: BoxDecoration(
             color: _isHovered && widget.enabled
-                ? t.primary.withValues(alpha: 0.06)
+                ? primary.withValues(alpha: 0.06)
                 : Colors.transparent,
           ),
           child: Center(child: widget.child),

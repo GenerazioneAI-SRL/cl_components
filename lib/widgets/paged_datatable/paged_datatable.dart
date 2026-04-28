@@ -67,13 +67,21 @@ part 'pagination_result.dart';
 
 part 'types.dart';
 
+/// Restituisce il colore primario effettivo per gli elementi della tabella:
+/// usa `PagedDataTableTheme.buttonsColor` se valorizzato (override via
+/// `PagedDataTable(primaryColor: ...)`), altrimenti `CLTheme.primary`.
+Color _effectiveTablePrimary(BuildContext context) {
+  return PagedDataTableTheme.maybeOf(context)?.buttonsColor ?? CLTheme.of(context).primary;
+}
+
 /// A paginated DataTable that allows page caching and filtering
 /// [TKey] is the type of the page token
 /// [TResult] is the type of data the data table will show.
-class PagedDataTable<TKey extends Comparable, TResultId extends Comparable, TResult extends Object> extends StatelessWidget {
+class PagedDataTable<TKey extends Comparable, TResultId extends Comparable, TResult extends Object>
+    extends StatelessWidget {
   /// The callback that gets executed when a page is fetched.
-  final Future<(List<TResult>, Pagination?)> Function({int? page, int? perPage, Map<String, dynamic>? searchBy, Map<String, dynamic>? orderBy})
-      fetchPage;
+  final Future<(List<TResult>, Pagination?)> Function(
+      {int? page, int? perPage, Map<String, dynamic>? searchBy, Map<String, dynamic>? orderBy}) fetchPage;
 
   /// The initial page to fetch.
   final TKey initialPage;
@@ -138,7 +146,8 @@ class PagedDataTable<TKey extends Comparable, TResultId extends Comparable, TRes
   /// Builder opzionale per le azioni nella toolbar di selezione (appare quando almeno una riga è selezionata).
   /// Ritorna solo i widget delle azioni: badge "X selezionati" e "Deseleziona tutto" vengono
   /// gestiti internamente dalla tabella.
-  final List<Widget> Function(BuildContext context, int selectedCount, List<TResult> selectedItems)? selectionActionsBuilder;
+  final List<Widget> Function(BuildContext context, int selectedCount, List<TResult> selectedItems)?
+      selectionActionsBuilder;
 
   final List<int>? pageSizes;
   final int? initialPageSize;
@@ -153,6 +162,24 @@ class PagedDataTable<TKey extends Comparable, TResultId extends Comparable, TRes
   final Future Function({Map<String, dynamic>? searchBy, Map<String, dynamic>? orderBy})? downloadPage;
   final bool isFilterBarRounded;
   final bool showShimmerLoading;
+
+  /// Titolo opzionale mostrato nell'header della tabella (stessa grafica di CLContainer).
+  final String? title;
+
+  /// Widget custom da mostrare al posto di [title]. Ha precedenza su [title] e [titleIcon].
+  final Widget? titleWidget;
+
+  /// Icona opzionale mostrata a sinistra del [title]. Ignorata se [titleWidget] è valorizzato.
+  final Widget? titleIcon;
+
+  /// Colore di sfondo dell'header del titolo (applicato con alpha 0.08).
+  final Color? titleBackgroundColor;
+
+  /// Colore primario applicato agli elementi interattivi della tabella
+  /// (indicatore di sort, riga selezionata, checkbox, hover, badge filtri,
+  /// toolbar di selezione, empty state).
+  /// Se null, viene usato `CLTheme.of(context).primary`.
+  final Color? primaryColor;
 
   const PagedDataTable({
     this.downloadPage,
@@ -191,6 +218,11 @@ class PagedDataTable<TKey extends Comparable, TResultId extends Comparable, TRes
     this.expandedRowBuilder,
     this.onRowExpanded,
     this.selectionActionsBuilder,
+    this.title,
+    this.titleWidget,
+    this.titleIcon,
+    this.titleBackgroundColor,
+    this.primaryColor,
     super.key,
   });
 
@@ -208,7 +240,7 @@ class PagedDataTable<TKey extends Comparable, TResultId extends Comparable, TRes
           footerTextStyle: CLTheme.of(context).bodyLabel,
           headerTextStyle: CLTheme.of(context).bodyLabel,
           textStyle: CLTheme.of(context).bodyText,
-          buttonsColor: CLTheme.of(context).primary,
+          buttonsColor: primaryColor ?? CLTheme.of(context).primary,
           rowsTextStyle: CLTheme.of(context).bodyText,
           configuration: PagedDataTableConfiguration(
             filterBarVisibile: isFilterBarVisible,
@@ -252,8 +284,9 @@ class PagedDataTable<TKey extends Comparable, TResultId extends Comparable, TRes
         // Inline action button: icon-only CLOutlineButton compact = 32x32.
         const double inlineActionWidth = 32.0;
         const double inlineActionGap = 12.0; // gapMd between inline buttons
-        final double inlineActionsAreaWidth =
-            inlineActions.isEmpty ? 0.0 : (inlineActions.length * inlineActionWidth) + ((inlineActions.length - 1) * inlineActionGap);
+        final double inlineActionsAreaWidth = inlineActions.isEmpty
+            ? 0.0
+            : (inlineActions.length * inlineActionWidth) + ((inlineActions.length - 1) * inlineActionGap);
         // Popup 3-dot button column width (40 + Sizes.padding right gap).
         const double popupActionsColumnWidth = 40.0 + Sizes.padding;
         // Total width reserved for the actions cluster on the right edge.
@@ -290,7 +323,10 @@ class PagedDataTable<TKey extends Comparable, TResultId extends Comparable, TRes
                       children: [
                         /* FILTER TAB */
                         if (localTheme.configuration.filterBarVisibile &&
-                            (header != null || mainMenus.isNotEmpty || extraMenus.isNotEmpty || state.filters.isNotEmpty)) ...[
+                            (header != null ||
+                                mainMenus.isNotEmpty ||
+                                extraMenus.isNotEmpty ||
+                                state.filters.isNotEmpty)) ...[
                           _PagedDataTableFilterTab<TKey, TResultId, TResult>(
                             mainMenus,
                             extraMenus,
@@ -312,21 +348,24 @@ class PagedDataTable<TKey extends Comparable, TResultId extends Comparable, TRes
                               final st = context.read<_PagedDataTableState<TKey, TResultId, TResult>>();
                               final selectedCount = st.selectedRows.length;
                               final clTheme = CLTheme.of(context);
+                              final tablePrimary = _effectiveTablePrimary(context);
 
                               Widget toolbarContent;
                               if (selectedCount == 0) {
                                 toolbarContent = const SizedBox.shrink(key: ValueKey('toolbar_hidden'));
                               } else {
-                                final selectedItems =
-                                    st.selectedRows.entries.where((e) => e.value < st._items.length).map((e) => st._items[e.value]).toList();
+                                final selectedItems = st.selectedRows.entries
+                                    .where((e) => e.value < st._items.length)
+                                    .map((e) => st._items[e.value])
+                                    .toList();
                                 final actionWidgets = selectionActionsBuilder!(context, selectedCount, selectedItems);
                                 toolbarContent = Container(
                                   key: const ValueKey('toolbar_visible'),
                                   padding: const EdgeInsets.symmetric(horizontal: Sizes.padding, vertical: 10),
                                   decoration: BoxDecoration(
-                                    color: clTheme.primary.withValues(alpha: 0.06),
+                                    color: tablePrimary.withValues(alpha: 0.06),
                                     border: Border(
-                                      bottom: BorderSide(color: clTheme.primary.withValues(alpha: 0.15), width: 1),
+                                      bottom: BorderSide(color: tablePrimary.withValues(alpha: 0.15), width: 1),
                                     ),
                                   ),
                                   child: Row(
@@ -335,13 +374,13 @@ class PagedDataTable<TKey extends Comparable, TResultId extends Comparable, TRes
                                       Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                         decoration: BoxDecoration(
-                                          color: clTheme.primary.withValues(alpha: 0.12),
+                                          color: tablePrimary.withValues(alpha: 0.12),
                                           borderRadius: BorderRadius.circular(6),
                                         ),
                                         child: Text(
                                           '$selectedCount selezionat${selectedCount == 1 ? 'o' : 'i'}',
                                           style: clTheme.bodyLabel.copyWith(
-                                            color: clTheme.primary,
+                                            color: tablePrimary,
                                             fontWeight: FontWeight.w600,
                                             fontSize: 12,
                                           ),
@@ -427,7 +466,10 @@ class PagedDataTable<TKey extends Comparable, TResultId extends Comparable, TRes
                 : Column(
                     children: [
                       if (localTheme.configuration.filterBarVisibile &&
-                          (header != null || mainMenus.isNotEmpty || extraMenus.isNotEmpty || state.filters.isNotEmpty)) ...[
+                          (header != null ||
+                              mainMenus.isNotEmpty ||
+                              extraMenus.isNotEmpty ||
+                              state.filters.isNotEmpty)) ...[
                         Container(
                           width: double.infinity,
                           decoration: BoxDecoration(
@@ -471,72 +513,119 @@ class PagedDataTable<TKey extends Comparable, TResultId extends Comparable, TRes
                   );
           },
         );
-        // apply configuration to this widget only
-        child = PagedDataTableTheme(data: effectiveTheme, child: child);
-        assert(effectiveTheme.rowColors != null ? effectiveTheme.rowColors!.length == 2 : true, "rowColors must contain exactly two colors");
+        assert(effectiveTheme.rowColors != null ? effectiveTheme.rowColors!.length == 2 : true,
+            "rowColors must contain exactly two colors");
 
-        return Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(Sizes.radiusCard),
-            boxShadow: showBorder ? CLTheme.of(context).cardShadow : null,
-          ),
-          child: Material(
-            type: MaterialType.card,
-            color: CLTheme.of(context).secondaryBackground,
-            shape: RoundedRectangleBorder(
-              side: showBorder ? BorderSide(color: CLTheme.of(context).borderColor, width: 1) : BorderSide.none,
+        final titleHeader = _buildTitleHeader(context);
+
+        return PagedDataTableTheme(
+          data: effectiveTheme,
+          child: Container(
+            decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(Sizes.radiusCard),
+              boxShadow: showBorder ? CLTheme.of(context).cardShadow : null,
             ),
-            clipBehavior: Clip.antiAlias,
-            child: ResponsiveBreakpoints.of(context).isDesktop
-                ? SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Container(
-                          decoration: BoxDecoration(
-                            color: CLTheme.of(context).secondaryBackground,
+            child: Material(
+              type: MaterialType.card,
+              color: CLTheme.of(context).secondaryBackground,
+              shape: RoundedRectangleBorder(
+                side: showBorder ? BorderSide(color: CLTheme.of(context).borderColor, width: 1) : BorderSide.none,
+                borderRadius: BorderRadius.circular(Sizes.radiusCard),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: ResponsiveBreakpoints.of(context).isDesktop
+                  ? SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          if (titleHeader != null) titleHeader,
+                          Container(
+                            decoration: BoxDecoration(
+                              color: CLTheme.of(context).secondaryBackground,
+                            ),
+                            child: child,
                           ),
-                          child: child,
-                        ),
-                        localTheme.configuration.footer.footerVisible
-                            ? showFooter
-                                ? Container(
-                                    width: double.infinity,
-                                    decoration: BoxDecoration(
-                                      color: CLTheme.of(context).primaryBackground,
-                                    ),
-                                    child: _PagedDataTableFooter<TKey, TResultId, TResult>(themeData: localTheme),
-                                  )
-                                : SizedBox.shrink()
-                            : const SizedBox.shrink(),
-                      ],
+                          localTheme.configuration.footer.footerVisible
+                              ? showFooter
+                                  ? Container(
+                                      width: double.infinity,
+                                      decoration: BoxDecoration(
+                                        color: CLTheme.of(context).primaryBackground,
+                                      ),
+                                      child: _PagedDataTableFooter<TKey, TResultId, TResult>(themeData: localTheme),
+                                    )
+                                  : SizedBox.shrink()
+                              : const SizedBox.shrink(),
+                        ],
+                      ),
+                    )
+                  : SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          if (titleHeader != null) titleHeader,
+                          child,
+                          SizedBox(height: Sizes.padding),
+                          localTheme.configuration.footer.footerVisible
+                              ? showFooter
+                                  ? Container(
+                                      width: double.infinity,
+                                      decoration: BoxDecoration(
+                                        color: CLTheme.of(context).primaryBackground,
+                                      ),
+                                      child: _PagedDataTableFooter<TKey, TResultId, TResult>(themeData: localTheme),
+                                    )
+                                  : SizedBox.shrink()
+                              : const SizedBox.shrink(),
+                          !isInSnippet ? SizedBox(height: Sizes.padding) : SizedBox.shrink(),
+                        ],
+                      ),
                     ),
-                  )
-                : SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        child,
-                        SizedBox(height: Sizes.padding),
-                        localTheme.configuration.footer.footerVisible
-                            ? showFooter
-                                ? Container(
-                                    width: double.infinity,
-                                    decoration: BoxDecoration(
-                                      color: CLTheme.of(context).primaryBackground,
-                                    ),
-                                    child: _PagedDataTableFooter<TKey, TResultId, TResult>(themeData: localTheme),
-                                  )
-                                : SizedBox.shrink()
-                            : const SizedBox.shrink(),
-                        !isInSnippet ? SizedBox(height: Sizes.padding) : SizedBox.shrink(),
-                      ],
-                    ),
-                  ),
+            ),
           ),
         );
       },
+    );
+  }
+
+  Widget? _buildTitleHeader(BuildContext context) {
+    final hasTitle = title != null || titleWidget != null;
+    if (!hasTitle) return null;
+    final theme = CLTheme.of(context);
+    return Container(
+      decoration: BoxDecoration(
+        color: titleBackgroundColor != null ? titleBackgroundColor!.withValues(alpha: 0.08) : theme.primaryBackground,
+        border: Border(bottom: BorderSide(color: theme.cardBorder, width: 1)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: Sizes.padding, vertical: Sizes.verticalPadding),
+        child: Row(
+          mainAxisSize: MainAxisSize.max,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              child: titleWidget != null
+                  ? titleWidget!
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (titleIcon != null) ...[
+                          titleIcon!,
+                          const SizedBox(width: Sizes.gapMd),
+                        ],
+                        Flexible(
+                          child: Text(
+                            title!,
+                            style: theme.bodyText.override(fontWeight: FontWeight.w600),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
