@@ -27,6 +27,7 @@ export 'widgets/layout/cl_responsive_grid_shadcn.widget.dart';
 export 'widgets/cl_divider.widget.dart';
 export 'widgets/cl_separator.widget.dart';
 export 'widgets/cl_section_card.widget.dart';
+export 'widgets/cl_title.widget.dart';
 
 // Form
 export 'widgets/cl_text_field.widget.dart';

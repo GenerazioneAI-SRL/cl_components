@@ -145,7 +145,9 @@ class CLPopupMenu extends StatefulWidget {
                 child: CLPopupSurface(
                   borderRadius: BorderRadius.circular(Sizes.radiusLg),
                   animateUpward: openUpwards,
-                  child: Column(
+                  child: Material(
+                    type: MaterialType.transparency,
+                    child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -189,6 +191,7 @@ class CLPopupMenu extends StatefulWidget {
                         ),
                       ),
                     ],
+                  ),
                   ),
                 ),
               ),

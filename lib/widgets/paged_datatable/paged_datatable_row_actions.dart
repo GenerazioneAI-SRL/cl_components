@@ -149,7 +149,7 @@ class _ActionMenuItemState<TResultId extends Comparable, TResult extends Object>
             vertical: Sizes.padding * 0.6,
           ),
           decoration: BoxDecoration(
-            color: _isHovered ? theme.primary.withValues(alpha: 0.04) : Colors.transparent,
+            color: _isHovered ? _effectiveTablePrimary(context).withValues(alpha: 0.04) : Colors.transparent,
             border: !widget.isLast
                 ? Border(
                     bottom: BorderSide(color: theme.borderColor, width: 1),
@@ -181,11 +181,11 @@ class _RowSelectorCheckbox<TResultId extends Comparable, TResult extends Object>
         visualDensity: VisualDensity.compact,
         hoverColor: Colors.transparent,
         overlayColor: WidgetStateProperty.all(Colors.transparent),
-        activeColor: theme.primary,
+        activeColor: _effectiveTablePrimary(context),
         checkColor: Colors.white,
         side: WidgetStateBorderSide.resolveWith(
           (states) => BorderSide(
-            color: states.contains(WidgetState.selected) ? theme.primary : theme.borderColor,
+            color: states.contains(WidgetState.selected) ? _effectiveTablePrimary(context) : theme.borderColor,
             width: states.contains(WidgetState.selected) ? 0 : 1,
           ),
         ),

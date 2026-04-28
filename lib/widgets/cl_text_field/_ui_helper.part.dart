@@ -129,14 +129,14 @@ class _TextFieldUiHelper extends _Helper {
             w.isRounded ? CLSizes.inputHeight / 2 : CLSizes.radiusControl),
         border: Border.all(
           color: s.isFocusedRef
-              ? theme.ring
+              ? theme.primary
               : (w.isEnabled
                   ? theme.cardBorder
                   : theme.cardBorder.withValues(alpha: 0.5)),
           width: 1,
         ),
         boxShadow: s.isFocusedRef
-            ? [BoxShadow(color: theme.ring, spreadRadius: 1, blurRadius: 0)]
+            ? [BoxShadow(color: theme.primary, spreadRadius: 1, blurRadius: 0)]
             : null,
       ),
       child: Row(
@@ -235,7 +235,7 @@ class _TextFieldUiHelper extends _Helper {
       filled: true,
       fillColor: w.fillColor ?? theme.secondaryBackground,
       enabledBorder: b(theme.cardBorder, 1.0),
-      focusedBorder: b(theme.ring, 2.0),
+      focusedBorder: b(theme.primary, 2.0),
       errorBorder: b(theme.danger, 1.0),
       focusedErrorBorder: b(theme.danger, 2.0),
       disabledBorder: b(theme.cardBorder.withValues(alpha: 0.5), 1.0),

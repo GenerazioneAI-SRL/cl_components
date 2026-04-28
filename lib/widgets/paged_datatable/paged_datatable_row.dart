@@ -66,18 +66,22 @@ class _HoverableRowState<TKey extends Comparable, TResultId extends Comparable, 
     widget.onItemTap?.call(widget.model.item);
   }
 
-  ({Color rowColor, Color leftBorderColor, double leftBorderWidth}) _resolveRowDecoration(CLTheme theme, bool isSelected) {
+  ({Color rowColor, Color leftBorderColor, double leftBorderWidth}) _resolveRowDecoration(
+    CLTheme theme,
+    Color primary,
+    bool isSelected,
+  ) {
     if (isSelected) {
       return (
-        rowColor: theme.primary.withValues(alpha: 0.08),
-        leftBorderColor: theme.primary,
+        rowColor: primary.withValues(alpha: 0.08),
+        leftBorderColor: primary,
         leftBorderWidth: 2.5,
       );
     }
     if (_isHovered) {
       return (
         rowColor: theme.primaryText.withValues(alpha: 0.025),
-        leftBorderColor: theme.primary,
+        leftBorderColor: primary,
         leftBorderWidth: 2.5,
       );
     }
@@ -99,7 +103,8 @@ class _HoverableRowState<TKey extends Comparable, TResultId extends Comparable, 
     final actions = allActions.where((a) => !a.inline).toList();
     final hasExpandedBuilder = widget.expandedRowBuilder != null;
     final isSelected = model._isSelected;
-    final deco = _resolveRowDecoration(theme, isSelected);
+    final tablePrimary = _effectiveTablePrimary(context);
+    final deco = _resolveRowDecoration(theme, tablePrimary, isSelected);
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -238,7 +243,7 @@ class _ExpandIcon extends StatelessWidget {
             child: Icon(
               Icons.chevron_right_rounded,
               size: 18,
-              color: isExpanded ? theme.primary : theme.secondaryText.withValues(alpha: 0.6),
+              color: isExpanded ? _effectiveTablePrimary(context) : theme.secondaryText.withValues(alpha: 0.6),
             ),
           ),
         ),
@@ -319,7 +324,7 @@ class _ExpandedRowContent extends StatelessWidget {
       decoration: BoxDecoration(
         color: theme.primaryBackground.withValues(alpha: 0.5),
         border: Border(
-          left: BorderSide(color: theme.primary.withValues(alpha: 0.4), width: 2.5),
+          left: BorderSide(color: _effectiveTablePrimary(context).withValues(alpha: 0.4), width: 2.5),
           bottom: BorderSide(color: theme.borderColor, width: 1),
         ),
       ),
@@ -334,7 +339,7 @@ class _ExpandedRowContent extends StatelessWidget {
                   height: 24,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: theme.primary,
+                    color: _effectiveTablePrimary(context),
                   ),
                 ),
               ),

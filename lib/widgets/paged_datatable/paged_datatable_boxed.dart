@@ -190,11 +190,11 @@ class _PagedDataTableBoxed<TKey extends Comparable, TResultId extends Comparable
               width: 56,
               height: 56,
               decoration: BoxDecoration(
-                color: theme.primary.withValues(alpha: 0.06),
+                color: _effectiveTablePrimary(context).withValues(alpha: 0.06),
                 borderRadius: BorderRadius.circular(Sizes.borderRadius + 2),
-                border: Border.all(color: theme.primary.withValues(alpha: 0.1)),
+                border: Border.all(color: _effectiveTablePrimary(context).withValues(alpha: 0.1)),
               ),
-              child: Icon(Icons.search_off_rounded, size: 26, color: theme.primary.withValues(alpha: 0.5)),
+              child: Icon(Icons.search_off_rounded, size: 26, color: _effectiveTablePrimary(context).withValues(alpha: 0.5)),
             ),
             const SizedBox(height: Sizes.padding),
             Text('Nessun elemento trovato', style: theme.bodyText.copyWith(fontWeight: FontWeight.w600, color: theme.secondaryText)),
@@ -314,12 +314,12 @@ class _MobileCardState<TKey extends Comparable, TResultId extends Comparable, TR
           ),
           decoration: BoxDecoration(
             color: model._isSelected
-                ? theme.primary.withValues(alpha: 0.06)
+                ? _effectiveTablePrimary(context).withValues(alpha: 0.06)
                 : theme.secondaryBackground,
             borderRadius: BorderRadius.circular(Sizes.borderRadius),
             border: Border.all(
               color: model._isSelected
-                  ? theme.primary.withValues(alpha: 0.5)
+                  ? _effectiveTablePrimary(context).withValues(alpha: 0.5)
                   : theme.borderColor,
               width: 1,
             ),
@@ -345,7 +345,7 @@ class _MobileCardState<TKey extends Comparable, TResultId extends Comparable, TR
                           value: model._isSelected,
                           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           visualDensity: VisualDensity.compact,
-                          activeColor: theme.primary,
+                          activeColor: _effectiveTablePrimary(context),
                           checkColor: Colors.white,
                           side: BorderSide(color: theme.borderColor, width: 1),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),

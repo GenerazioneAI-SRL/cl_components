@@ -20,10 +20,7 @@ class _ShimmerRows<TKey extends Comparable, TResultId extends Comparable, TResul
       shrinkWrap: true,
       padding: EdgeInsets.zero,
       itemCount: itemCount,
-      separatorBuilder: (_, __) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: Sizes.padding * 0.5),
-        child: Divider(height: 0, color: clTheme.borderColor, thickness: 1),
-      ),
+      separatorBuilder: (_, __) => Divider(height: 0, color: clTheme.borderColor, thickness: 1),
       itemBuilder: (context, index) {
         final widthMultiplier = [0.7, 0.5, 0.85, 0.6, 0.75][index % 5];
         return Container(
@@ -91,14 +88,14 @@ class _EmptyState extends StatelessWidget {
               width: 64,
               height: 64,
               decoration: BoxDecoration(
-                color: theme.primary.withValues(alpha: 0.06),
+                color: _effectiveTablePrimary(context).withValues(alpha: 0.06),
                 borderRadius: BorderRadius.circular(Sizes.borderRadius + 4),
-                border: Border.all(color: theme.primary.withValues(alpha: 0.1)),
+                border: Border.all(color: _effectiveTablePrimary(context).withValues(alpha: 0.1)),
               ),
               child: Icon(
                 Icons.search_off_rounded,
                 size: 28,
-                color: theme.primary.withValues(alpha: 0.5),
+                color: _effectiveTablePrimary(context).withValues(alpha: 0.5),
               ),
             ),
             const SizedBox(height: Sizes.padding),

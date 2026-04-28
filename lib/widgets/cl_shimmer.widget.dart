@@ -46,8 +46,8 @@ class CLShimmer extends StatefulWidget {
     required this.height,
     int columnsCount = 4,
     this.margin,
-  }) : width = double.infinity,
-       borderRadius = 0;
+  })  : width = double.infinity,
+        borderRadius = 0;
 
   @override
   State<CLShimmer> createState() => _CLShimmerState();
@@ -78,7 +78,7 @@ class _CLShimmerState extends State<CLShimmer> with SingleTickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
-    final baseColor = CLTheme.of(context).borderColor;
+    final baseColor = CLTheme.of(context).muted;
     final highlightColor = CLTheme.of(context).secondaryBackground;
 
     return RepaintBoundary(
@@ -189,9 +189,8 @@ class _ShimmerRow extends StatelessWidget {
           // Genera le colonne normali
           ...List.generate(hasCheckboxColumn ? columnsCount - 1 : columnsCount, (index) {
             final actualIndex = hasCheckboxColumn ? index + 1 : index;
-            final width = columnWidths != null && actualIndex < columnWidths!.length
-                ? columnWidths![actualIndex]
-                : null;
+            final width =
+                columnWidths != null && actualIndex < columnWidths!.length ? columnWidths![actualIndex] : null;
             return Expanded(
               flex: width != null ? 0 : 1,
               child: Padding(
