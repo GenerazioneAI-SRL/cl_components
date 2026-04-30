@@ -49,23 +49,25 @@ class _PagedDataTableFilterTab<TKey extends Comparable, TResultId extends Compar
                   Expanded(
                     child: Row(
                       children: [
-                        // Campo di ricerca (larghezza fissa)
+                        // Campo di ricerca (larghezza preferita 25% viewport, shrink se manca spazio)
                         if (state.filters.isNotEmpty &&
                             state.filters.entries.where((element) => element.value._filter.isMainFilter == true).isNotEmpty)
-                          SizedBox(
-                            width: MediaQuery.of(context).size.width / 4,
-                            child: state.filters.entries.where((element) => element.value._filter.isMainFilter == true).map((entry) {
-                              TextTableFilter mainFilter = entry.value._filter as TextTableFilter;
-                              mainFilter.onChange = (String value) {
-                                entry.value.value = value;
-                                if (value.isEmpty) {
-                                  state.removeFilter(mainFilter.id);
-                                } else {
-                                  state.applyFilters();
-                                }
-                              };
-                              return mainFilter.buildPicker(context, entry.value);
-                            }).first,
+                          Flexible(
+                            child: SizedBox(
+                              width: MediaQuery.of(context).size.width / 4,
+                              child: state.filters.entries.where((element) => element.value._filter.isMainFilter == true).map((entry) {
+                                TextTableFilter mainFilter = entry.value._filter as TextTableFilter;
+                                mainFilter.onChange = (String value) {
+                                  entry.value.value = value;
+                                  if (value.isEmpty) {
+                                    state.removeFilter(mainFilter.id);
+                                  } else {
+                                    state.applyFilters();
+                                  }
+                                };
+                                return mainFilter.buildPicker(context, entry.value);
+                              }).first,
+                            ),
                           ),
 
                         // Pulsante filtri (solo se ci sono filtri extra)
@@ -623,7 +625,7 @@ class _FiltersDialog<TKey extends Comparable, TResultId extends Comparable, TRes
                     ),
                     child: Text(
                       'Filtra con...',
-                      style: theme.smallLabel.copyWith(color: theme.secondaryText, fontWeight: FontWeight.w600, fontSize: 11, letterSpacing: 0.5),
+                      style: theme.smallLabel,
                     ),
                   ),
                   // Filters
