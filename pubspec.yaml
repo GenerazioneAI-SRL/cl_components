@@ -1,105 +1,28 @@
 name: genai_components
-description: A comprehensive Flutter UI component library with theming, routing, state management, charts, and 30+ reusable widgets. Built for rapid app development with sensible defaults.
-version: 4.2.28
+description: GenAi design system for Skillera v2
+version: 2.0.0-dev.1
 homepage: https://github.com/generazione-ai/genai_components
 repository: https://github.com/generazione-ai/genai_components
 issue_tracker: https://github.com/generazione-ai/genai_components/issues
 
 topics:
   - ui
-  - widgets
-  - theme
-  - components
   - design-system
+  - components
+  - theme
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
-  flutter: '>=3.10.0'
+  sdk: ">=3.0.0 <4.0.0"
+  flutter: ">=3.16.0"
 
 dependencies:
   flutter:
     sdk: flutter
-
-  # Theme & styling
-  responsive_framework: '>=1.1.0 <2.0.0'
-  font_awesome_flutter: '>=10.0.0 <11.0.0'
-  flutter_svg: '>=2.0.0 <3.0.0'
-
-  # State & DI
-  provider: '>=6.0.0 <7.0.0'
-
-  # Core utilities
-  intl: '>=0.18.0 <1.0.0'
-  equatable: '>=2.0.0 <3.0.0'
-  http: '>=1.0.0 <2.0.0'
-  rxdart: '>=0.27.0 <1.0.0'
-  shared_preferences: '>=2.0.0 <3.0.0'
-  path_provider: '>=2.0.0 <3.0.0'
-  path: '>=1.8.0 <2.0.0'
-  collection: '>=1.17.0 <2.0.0'
-
-  # Form & input
-  file_picker: '>=5.0.0 <11.0.0'
-  image_picker: '>=1.0.0 <2.0.0'
-  flex_color_picker: '>=3.0.0 <4.0.0'
-  month_picker_dialog: '>=5.0.0 <7.0.0'
-  calendar_date_picker2: '>=1.0.0 <3.0.0'
-  auto_size_text: '>=3.0.0 <4.0.0'
-
-  # Icons
-  hugeicons: '>=1.0.0 <2.0.0'
-  lucide_icons_flutter: ^3.1.13
-
-  # Charts
-  fl_chart: '>=0.60.0 <2.0.0'
-
-  # Media & documents
-  video_player: '>=2.5.0 <3.0.0'
-  chewie: '>=1.5.0 <2.0.0'
-  pdf: '>=3.8.0 <4.0.0'
-  pdfrx: '>=1.0.0 <3.0.0'
-
-  # Animation
-  flutter_animate: '>=4.0.0 <5.0.0'
-
-  # Table & list
-  diffutil_sliverlist: '>=0.4.0 <1.0.0'
-
-  # Drag & drop
-  desktop_drop: '>=0.4.0 <1.0.0'
-  flutter_dropzone: '>=4.0.0 <5.0.0'
-
-  # Interactive
-  custom_interactive_viewer: '>=0.0.9 <1.0.0'
-
-  # Router & Navigation
-  go_router: '>=12.0.0 <18.0.0'
-  flutter_breadcrumb: '>=1.0.0 <2.0.0'
-
-  # ViewModel
-  stacked: '>=3.0.0 <4.0.0'
-
-  # App info
-  package_info_plus: '>=4.0.0 <10.0.0'
-
-  # HTTP parsing
-  http_parser: '>=4.0.0 <5.0.0'
-  timeago: '>=3.0.0 <4.0.0'
-
-  # Localization
-  flutter_localizations:
-    sdk: flutter
-
-  # Misc
-  universal_html: '>=2.0.0 <3.0.0'
-  star_rating: '>=0.10.0 <1.0.0'
-  flutter_hooks: '>=0.20.0 <1.0.0'
-  json_annotation: '>=4.0.0 <5.0.0'
-  mime_type: '>=1.0.0 <2.0.0'
-  uuid: '>=3.0.0 <5.0.0'
-  mime: '>=1.0.0 <3.0.0'
+  flutter_hooks: ^0.20.0
+  google_fonts: ^6.2.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^5.0.0
+  flutter_lints: ^4.0.0
+  very_good_analysis: ^6.0.0
