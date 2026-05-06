@@ -86,8 +86,7 @@ class GenAiCard extends HookWidget {
     final isDark = colors.brightness == Brightness.dark;
     final hovered = useState<bool>(false);
 
-    final effectivePadding =
-        padding ?? const EdgeInsets.all(GenAiSpacing.xl);
+    final effectivePadding = padding ?? const EdgeInsets.all(GenAiSpacing.xl);
     final radius = BorderRadius.circular(GenAiRadius.xl);
 
     final shadow = isDark
@@ -142,6 +141,10 @@ class GenAiCard extends HookWidget {
           child: InkWell(
             onTap: onTap,
             borderRadius: radius,
+            splashColor: Colors.transparent,
+            highlightColor: Colors.transparent,
+            hoverColor: Colors.transparent,
+            splashFactory: NoSplash.splashFactory,
             child: base,
           ),
         ),
@@ -184,8 +187,7 @@ class _CardHeader extends StatelessWidget {
             if (header.title != null)
               Text(header.title!, style: typography.titleMedium),
             if (header.subtitle != null) ...<Widget>[
-              if (header.title != null)
-                const SizedBox(height: GenAiSpacing.xs),
+              if (header.title != null) const SizedBox(height: GenAiSpacing.xs),
               Text(
                 header.subtitle!,
                 style: typography.bodyMedium.copyWith(

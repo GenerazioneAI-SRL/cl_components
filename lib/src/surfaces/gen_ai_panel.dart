@@ -62,8 +62,7 @@ class _GenAiPanelState extends State<GenAiPanel> {
 
   bool get _isControlled => widget.expanded != null;
 
-  bool get _expanded =>
-      _isControlled ? widget.expanded! : _internalExpanded;
+  bool get _expanded => _isControlled ? widget.expanded! : _internalExpanded;
 
   @override
   void initState() {

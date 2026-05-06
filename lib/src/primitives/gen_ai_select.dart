@@ -125,6 +125,7 @@ class GenAiSelect<T> extends StatelessWidget {
                 label: option.label,
                 enabled: enabled && !option.disabled,
                 leadingIcon: _buildLeadingIcon(context, option),
+                trailingIcon: _buildTrailingIcon(context, option),
                 style: _entryStyle(
                   tokens: tokens,
                   isSelected: option.value == value,
@@ -152,12 +153,12 @@ class GenAiSelect<T> extends StatelessWidget {
         onSelected: enabled && !isEmpty ? onChanged : null,
         trailingIcon: Icon(
           Icons.keyboard_arrow_down_rounded,
-          size: 20,
+          size: 14,
           color: colors.onSurfaceMuted,
         ),
         selectedTrailingIcon: Icon(
           Icons.keyboard_arrow_up_rounded,
-          size: 20,
+          size: 14,
           color: colors.onSurfaceMuted,
         ),
         menuStyle: MenuStyle(
@@ -224,14 +225,6 @@ class GenAiSelect<T> extends StatelessWidget {
     GenAiSelectOption<T> option,
   ) {
     final colors = Theme.of(context).genAi.colors;
-    final isSelected = option.value == value;
-    if (isSelected) {
-      return Icon(
-        Icons.check_rounded,
-        size: 18,
-        color: colors.onPrimaryContainer,
-      );
-    }
     if (option.leadingIcon != null) {
       return Icon(
         option.leadingIcon,
@@ -240,6 +233,20 @@ class GenAiSelect<T> extends StatelessWidget {
       );
     }
     return null;
+  }
+
+  Widget? _buildTrailingIcon(
+    BuildContext context,
+    GenAiSelectOption<T> option,
+  ) {
+    final colors = Theme.of(context).genAi.colors;
+    final isSelected = option.value == value;
+    if (!isSelected) return null;
+    return Icon(
+      Icons.check_rounded,
+      size: 16,
+      color: colors.onPrimaryContainer,
+    );
   }
 
   ButtonStyle _entryStyle({
@@ -271,6 +278,8 @@ class GenAiSelect<T> extends StatelessWidget {
           vertical: GenAiSpacing.sm,
         ),
       ),
+      overlayColor: const WidgetStatePropertyAll<Color>(Colors.transparent),
+      splashFactory: NoSplash.splashFactory,
     );
   }
 

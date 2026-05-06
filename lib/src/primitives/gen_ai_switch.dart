@@ -75,6 +75,7 @@ class GenAiSwitch extends StatelessWidget {
 
     final switchWidget = Theme(
       data: Theme.of(context).copyWith(
+        splashFactory: NoSplash.splashFactory,
         switchTheme: SwitchThemeData(
           thumbColor: WidgetStateProperty.resolveWith<Color?>((states) {
             if (states.contains(WidgetState.disabled)) {
@@ -93,8 +94,8 @@ class GenAiSwitch extends StatelessWidget {
           trackOutlineColor: const WidgetStatePropertyAll<Color>(
             Colors.transparent,
           ),
-          overlayColor: WidgetStatePropertyAll<Color>(colors.focusRing),
-          splashRadius: 20,
+          overlayColor: const WidgetStatePropertyAll<Color>(Colors.transparent),
+          splashRadius: 0,
         ),
       ),
       child: Switch(
@@ -157,6 +158,10 @@ class GenAiSwitch extends StatelessWidget {
       row = InkWell(
         onTap: () => onChanged!(!value),
         borderRadius: BorderRadius.circular(GenAiRadius.sm),
+        hoverColor: colors.surfaceContainer,
+        splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+        splashFactory: NoSplash.splashFactory,
         child: row,
       );
     }

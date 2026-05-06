@@ -66,6 +66,7 @@ class GenAiRadio<T> extends StatelessWidget {
 
     final radio = Theme(
       data: Theme.of(context).copyWith(
+        splashFactory: NoSplash.splashFactory,
         radioTheme: RadioThemeData(
           fillColor: WidgetStateProperty.resolveWith<Color?>((states) {
             if (states.contains(WidgetState.disabled)) {
@@ -74,8 +75,8 @@ class GenAiRadio<T> extends StatelessWidget {
             if (states.contains(WidgetState.selected)) return colors.primary;
             return colors.borderMedium;
           }),
-          overlayColor: WidgetStatePropertyAll<Color>(colors.focusRing),
-          splashRadius: 18,
+          overlayColor: const WidgetStatePropertyAll<Color>(Colors.transparent),
+          splashRadius: 0,
         ),
       ),
       child: Radio<T>(
@@ -106,7 +107,7 @@ class GenAiRadio<T> extends StatelessWidget {
         children: <Widget>[
           radio,
           if (label != null || helperText != null) ...<Widget>[
-            const SizedBox(width: GenAiSpacing.sm),
+            const SizedBox(width: GenAiSpacing.md),
             Flexible(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -129,6 +130,10 @@ class GenAiRadio<T> extends StatelessWidget {
       row = InkWell(
         onTap: () => onChanged!(value),
         borderRadius: BorderRadius.circular(GenAiRadius.sm),
+        hoverColor: colors.surfaceContainer,
+        splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+        splashFactory: NoSplash.splashFactory,
         child: row,
       );
     }

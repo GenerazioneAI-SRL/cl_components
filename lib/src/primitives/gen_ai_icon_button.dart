@@ -212,7 +212,8 @@ class _IconSpinner extends StatelessWidget {
     final color = switch (variant) {
       GenAiButtonVariant.primary => colors.onPrimary,
       GenAiButtonVariant.danger => const Color(0xFFFFFFFF),
-      GenAiButtonVariant.secondary || GenAiButtonVariant.ghost =>
+      GenAiButtonVariant.secondary ||
+      GenAiButtonVariant.ghost =>
         colors.onSurface,
     };
     return SizedBox(
@@ -235,12 +236,8 @@ class _IconDimensions {
   final double iconSize;
 }
 
-_IconDimensions _resolveIconDimensions(GenAiButtonSize size) =>
-    switch (size) {
-      GenAiButtonSize.sm =>
-        const _IconDimensions(box: 32, iconSize: 16),
-      GenAiButtonSize.md =>
-        const _IconDimensions(box: 40, iconSize: 20),
-      GenAiButtonSize.lg =>
-        const _IconDimensions(box: 48, iconSize: 24),
+_IconDimensions _resolveIconDimensions(GenAiButtonSize size) => switch (size) {
+      GenAiButtonSize.sm => const _IconDimensions(box: 32, iconSize: 16),
+      GenAiButtonSize.md => const _IconDimensions(box: 40, iconSize: 20),
+      GenAiButtonSize.lg => const _IconDimensions(box: 48, iconSize: 24),
     };

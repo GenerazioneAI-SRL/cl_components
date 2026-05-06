@@ -6,8 +6,6 @@ import 'package:genai_components/src/theme/gen_ai_theme.dart';
 
 // ignore_for_file: avoid_positional_boolean_parameters
 
-
-
 /// A design-system checkbox that wraps Material [Checkbox].
 ///
 /// Supports tristate, an inline label and a helper text. The whole row is
@@ -68,6 +66,7 @@ class GenAiCheckbox extends StatelessWidget {
 
     final checkbox = Theme(
       data: Theme.of(context).copyWith(
+        splashFactory: NoSplash.splashFactory,
         checkboxTheme: CheckboxThemeData(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(GenAiRadius.xs),
@@ -81,8 +80,8 @@ class GenAiCheckbox extends StatelessWidget {
             return Colors.transparent;
           }),
           checkColor: const WidgetStatePropertyAll<Color>(Color(0xFFFFFFFF)),
-          overlayColor: WidgetStatePropertyAll<Color>(colors.focusRing),
-          splashRadius: 18,
+          overlayColor: const WidgetStatePropertyAll<Color>(Colors.transparent),
+          splashRadius: 0,
         ),
       ),
       child: Checkbox(
@@ -145,6 +144,10 @@ class GenAiCheckbox extends StatelessWidget {
           }
         },
         borderRadius: BorderRadius.circular(GenAiRadius.sm),
+        hoverColor: colors.surfaceContainer,
+        splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+        splashFactory: NoSplash.splashFactory,
         child: row,
       );
     }

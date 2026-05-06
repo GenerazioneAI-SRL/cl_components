@@ -129,9 +129,7 @@ class GenAiSearchField extends HookWidget {
       enabled: enabled,
       autofocus: autofocus,
       prefixIcon: Icons.search,
-      suffixIcon: hasText.value
-          ? _ClearButton(onPressed: handleClear)
-          : null,
+      suffixIcon: hasText.value ? _ClearButton(onPressed: handleClear) : null,
     );
   }
 }

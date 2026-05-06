@@ -251,7 +251,7 @@ class _GenAiButtonState extends State<GenAiButton> {
     final radius = BorderRadius.circular(GenAiRadius.md);
     final shape = RoundedRectangleBorder(borderRadius: radius);
     final padding = EdgeInsets.symmetric(horizontal: dims.paddingX);
-    final hoverDuration = GenAiMotion.resolve(context, GenAiMotion.fast);
+    final hoverDuration = GenAiMotion.resolve(context, GenAiMotion.instant);
 
     Color? bg;
     Color? fg;
@@ -350,7 +350,8 @@ class _Spinner extends StatelessWidget {
     final color = switch (variant) {
       GenAiButtonVariant.primary => colors.onPrimary,
       GenAiButtonVariant.danger => const Color(0xFFFFFFFF),
-      GenAiButtonVariant.secondary || GenAiButtonVariant.ghost =>
+      GenAiButtonVariant.secondary ||
+      GenAiButtonVariant.ghost =>
         colors.onSurface,
     };
     return SizedBox(
@@ -393,7 +394,7 @@ _ButtonDimensions _resolveDimensions(GenAiButtonSize size) => switch (size) {
       GenAiButtonSize.md => const _ButtonDimensions(
           height: 40,
           minWidth: 80,
-          paddingX: 16,
+          paddingX: 14,
           iconSize: 16,
           gap: 8,
         ),

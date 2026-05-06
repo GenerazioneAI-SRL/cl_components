@@ -580,9 +580,8 @@ class _DecoratedField extends StatelessWidget {
       borderColor = colors.borderMedium;
     }
 
-    final ringColor = hasError
-        ? colors.error.withValues(alpha: 0.18)
-        : colors.focusRing;
+    final ringColor =
+        hasError ? colors.error.withValues(alpha: 0.18) : colors.focusRing;
 
     final shadows = focused
         ? <BoxShadow>[
