@@ -1,6 +1,14 @@
 /// GenAi design system — UI component library for Skillera v2.
 library genai_components;
 
+// Data display
+export 'src/data_display/table/gen_ai_data_table.dart';
+export 'src/data_display/table/gen_ai_pagination.dart';
+export 'src/data_display/table/gen_ai_table_column.dart';
+export 'src/data_display/table/gen_ai_table_data_source.dart';
+export 'src/data_display/table/gen_ai_table_page.dart';
+export 'src/data_display/table/gen_ai_table_query.dart';
+
 // Feedback
 export 'src/feedback/gen_ai_dialog.dart';
 export 'src/feedback/gen_ai_empty_state.dart';

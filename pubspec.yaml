@@ -1,5 +1,7 @@
 name: genai_components
-description: GenAi design system for Skillera v2
+description: >-
+  Design system Flutter per Skillera v2. Tokens Stripe-inspired, primitives,
+  surfaces, feedback, layout, navigation e data display con light/dark mode.
 version: 2.0.0-dev.1
 homepage: https://github.com/generazione-ai/genai_components
 repository: https://github.com/generazione-ai/genai_components

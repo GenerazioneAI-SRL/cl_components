@@ -1,205 +1,84 @@
 # genai_components
 
-[![pub.dev](https://img.shields.io/pub/v/genai_components.svg)](https://pub.dev/packages/genai_components)
-[![Flutter](https://img.shields.io/badge/Flutter-%3E%3D3.7-blue)](https://flutter.dev)
+Design system Flutter per Skillera v2. Pure UI library con tokens Stripe-inspired,
+componenti Material-wrapped + custom dove necessario, supporto light/dark mode
+di pari qualità.
 
-Flutter component library with built-in routing, auth, AI assistant, theme system, and 40+ UI widgets. Used as the foundation for enterprise Flutter web apps.
+## Stato
 
----
+`v2.0.0-dev.1` — In sviluppo. API soggetta a modifiche fino a `v2.0.0`.
 
-## Installation
+## Componenti
 
-```yaml
-dependencies:
-  genai_components: ^4.0.0
-```
+### Primitives
+Button, IconButton, TextField, TextArea, SearchField, Text, Checkbox, Radio,
+RadioGroup, Switch, Select, LoadingIndicator.
 
-```bash
-flutter pub get
-```
+### Surfaces
+Card (con CardHeader), Divider, Panel.
 
----
+### Feedback
+Skeleton (`.text` / `.box` / `.circle`), EmptyState, Loading, Dialog
+(adattivo desktop/mobile con drag-to-dismiss su mobile), Toast (4 varianti
+semantiche).
 
-## Quick Start — Full App Bootstrap
+### Layout
+PageHeader, Section, Responsive.
 
-The recommended way is to extend `CLAppConfig` and let `CLApp` handle initialization, routing, auth, providers and theming:
+### Navigation
+Breadcrumbs, Tabs (con underline scorrevole).
 
-```dart
-import 'package:genai_components/genai_components.dart';
-
-void main() {
-  runApp(CLApp(config: MyAppConfig()));
-}
-
-class MyAppConfig extends CLAppConfig {
-  @override
-  String get appName => 'My App';
-
-  @override
-  String get baseUrl => 'https://api.myapp.com/api/';
-
-  @override
-  String get oidcEndpoint => 'https://auth.myapp.com/oidc';
-
-  @override
-  CLAuthState get authState => MyAuthState();
-
-  @override
-  String get initialRoute => '/home';
-
-  @override
-  String get authRoute => '/auth';
-
-  @override
-  List<ModularRoute> get preAuthRoutes => [
-    ModuleRoute(module: AuthModule(), isVisible: false),
-  ];
-
-  @override
-  List<ModularRoute> get shellRoutes => [
-    ModuleRoute(module: HomeModule(), isVisible: true),
-    ModuleRoute(module: SettingsModule(), isVisible: true),
-  ];
-}
-```
-
----
-
-## Routing — GoRouterModular
-
-Module-based routing wrapping GoRouter:
-
-```dart
-class HomeModule extends Module {
-  @override
-  CLRoute get moduleRoute => HomeRoutes.moduleRoute;
-
-  @override
-  List<ModularRoute> get routes => [
-    ChildRoute(
-      route: HomeRoutes.moduleRoute,
-      builder: (context, state) => HomeView.builder(context),
-    ),
-  ];
-}
-```
-
----
-
-## MVVM — CLBaseViewModel
-
-```dart
-class HomeViewModel extends CLBaseViewModel {
-  List<Item> items = [];
-
-  @override
-  Future<void> initialize() async {
-    setBusy(true);
-    final response = await ApiManager.make(
-      callName: 'getItems',
-      apiUrl: ApiEndpoints.items,
-      callType: ApiCallType.GET,
-    );
-    if (response.succeeded) {
-      items = (response.jsonBody['data'] as List)
-          .map((e) => Item.fromJson(e))
-          .toList();
-    }
-    setBusy(false);
-  }
-}
-```
-
----
+### Data Display
+DataTable async-paginata, Pagination, modelli `GenAiTableColumn` /
+`GenAiTableQuery` / `GenAiTablePage` / `GenAiTableDataSource`.
 
 ## Theme
 
-```dart
-// Read anywhere in the widget tree
-final theme = CLTheme.of(context);
+Tokens centralizzati esposti via `GenAiThemeExtension` su `ThemeData`.
 
-Text('Hello', style: theme.heading1);
-Container(color: theme.primary);
-Icon(Icons.star, color: theme.warning);
-```
-
-Custom theme via `CLThemeProvider`:
+Setup minimo:
 
 ```dart
-ChangeNotifierProvider(
-  create: (_) => CLThemeProvider(
-    lightTheme: const LightModeTheme(
-      primary: Color(0xFF6366F1),
-      secondary: Color(0xFF4F46E5),
-      success: Color(0xFF16A34A),
-      danger: Color(0xFFDC2626),
-    ),
-    darkTheme: const DarkModeTheme(
-      primary: Color(0xFF818CF8),
-    ),
+MaterialApp(
+  theme: ThemeData.light().copyWith(
+    extensions: [GenAiThemeExtension.light()],
   ),
-  child: MaterialApp(...),
+  darkTheme: ThemeData.dark().copyWith(
+    extensions: [GenAiThemeExtension.dark()],
+  ),
+  // ...
 )
 ```
 
----
-
-## UI Components
-
-| Category | Components |
-|---|---|
-| **Buttons** | `CLButton`, `CLSoftButton`, `CLGhostButton`, `CLOutlineButton` |
-| **Forms** | `CLTextField`, `CLDropdown`, `CLCheckbox`, `CLFilePicker`, `CLDateInput`, `CLTimeInput` |
-| **Data** | `PagedDataTable`, `CLPagination`, `CLMonthCalendar` |
-| **Charts** | `CLBarChart`, `CLPieChart`, `CLSplineChart`, `CLAreaChart` |
-| **Layout** | `CLCard`, `CLContainer`, `CLSectionCard`, `CLPageHeader`, `CLResponsiveGrid` |
-| **Feedback** | `CLAlert`, `CLInfoBanner`, `CLShimmer`, `CLLifecycleProgress` |
-| **Media** | `CLMediaViewer`, `CLPdfViewer`, `CLVideoPlayer` |
-| **Complex** | `CLOrgChart`, `CLSurvey`, `CLAiAssistant`, `CLAnnouncement`, `CLFaq` |
-| **Misc** | `CLTabs`, `CLPill`, `CLStatusBadge`, `CLRoleBadge`, `CLPopupMenu`, `Avatar` |
-
----
-
-## AI Assistant
-
-Built-in LLM-powered assistant with tool calling, voice input and navigation:
+Accesso ergonomico ai tokens:
 
 ```dart
-AiAssistantConfig(
-  provider: OpenAiProvider(
-    apiKey: 'YOUR_KEY',
-    model: 'gpt-4o',
-  ),
-  assistantName: 'My Assistant',
-  voiceEnabled: true,
-  knownRoutes: ['home', 'settings'],
-  navigateToRoute: (route) async => GoRouter.of(context).go('/$route'),
-  globalContextProvider: () async => {
-    'userName': authState.currentUser?.name,
-    'locale': 'it_IT',
-  },
-)
+final colors = Theme.of(context).genAi.colors;
+final motion = Theme.of(context).genAi.motion;
+final typography = Theme.of(context).genAi.typography;
 ```
 
----
+## UX Patterns
 
-## Local Development
+Vedi `docs/UX_PATTERNS.md` per la documentazione dei pattern da seguire
+(loading states, optimistic UI, form validation, navigation, accessibility).
 
-Use the `cl` CLI tool to work on the library inside a consumer project:
+Vedi `docs/REBUILD_FOUNDATION_REPORT.md` per il riepilogo completo della
+foundation v2.
 
-```bash
-# Bootstrap (first time in a new project)
-curl -fsSL https://raw.githubusercontent.com/GenerazioneAI-SRL/genai_components/stable/cl -o ./cl && chmod +x ./cl
+I report di ciascuna fase di rebuild sono in `docs/PHASE_*_REPORT.md`.
 
-./cl dev              # Clone genai_components locally and link it
-./cl push "msg"       # Commit + push changes to GitHub
-./cl release patch    # Bump version → push → publish to pub.dev
-./cl prod             # Remove local clone, use pub.dev version
-./cl status           # Show current mode
-```
+## Stack tecnico
 
----
+- `flutter` (Material come base)
+- `flutter_hooks` (per hover state, debounce)
+- `google_fonts` (Inter)
 
-## License
+## Compatibilità
 
-MIT — see [LICENSE](LICENSE)
+- Flutter `>= 3.16`
+- Dart `>= 3.0`
+
+## Licenza
+
+MIT — vedi [LICENSE](LICENSE).
